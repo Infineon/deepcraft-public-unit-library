@@ -3,7 +3,7 @@
 
 DEEPCRAFT™ Studio (formerly Imagimob Studio) is an end-to-end platform for developing AI / Machine Learning (ML) models for the edge. The platform is designed to support users in creating robust and high-quality models that are ready for deployment in commercial products. 
 
-The repository contains the DEEPCRAFT™ Studio unit library. Use the units as reference code for you own custom units or create a pull request with your own units to contribute to the library. 
+This repository contains the DEEPCRAFT™ Studio unit library. Use the units as reference code for you own custom units or create a pull request with your own units to contribute to the library. 
 
 ## Signal Processing Units
 
