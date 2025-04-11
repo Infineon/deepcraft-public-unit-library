@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Filter.ConsecutiveConfidenceFilter">
+		<DisplayName>Consecutive Confidence Filter</DisplayName>
+		<DisplayPath>/Filters</DisplayPath>
+		<Description>This postprocessing unit confirms predictions by requiring consistent detections over multiple instances.</Description>
+		<Parameters>
+			<InputSocket name="input" pipe="data" />
+
+			<Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+			<DoubleOption name="threshold" text="Threshold" description="Confidence Threshold" default="0.9"/>
+			<DoubleOption name="min_detection_threshold" text="Minimum Detection Threshold" description="The minimum confidence needed for a detection to be counted" default="0.2"/>
+			<Int32Option name="count_threshold" text="Count Threshold" description="Number of detections needed to pass filter." default="3"/>
+			<Int32Option name="reset_count" text="Reset Count" description="Number of Null detections needed for filter to reset." default="4"/>
+			<Int32Option name="null_count" text="Null Count" description="" default="1"/>
+			<Int32Option name="use_confidence_tracking" text="Use confidence tracking" default="False">
+				<OneOf>
+					<Item text="True">1</Item>
+					<Item text="False">0</Item>
+				</OneOf>
+			</Int32Option>
+			<Handle name="gesture_count" text="Keep track of past detections" description="User friendly description" size="count"/>
+			<Handle name="gesture_confidence_detected" text="Keep track of past max confidences" description="User friendly description" size="count"/>
+			<Handle name="prev_detected_gesture" text="User friendly name" description="User friendly description" size="1"/>
+
+			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
+		
+	</Parameters>
+
+		<Contracts>
+			<Assert test="threshold >= 0" error="Threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="threshold &lt;= 1" error="Threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="min_detection_threshold >= 0" error="Minimum Detection Threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="min_detection_threshold &lt;= 1" error="Minimum Detection Threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="count_threshold >= 0" error="Count Threshold needs to be a positive integer." />
+			<Assert test="reset_count >= 0" error="Reset Count needs to be a positive integer." />
+			<Assert test="null_count >= 0" error="Null Count needs to be a positive integer." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="consecutiveconfidencefilter.h:consecutive_confidence_filter_f32" call="consecutive_confidence_filter_f32(input, output, gesture_count, prev_detected_gesture, gesture_confidence_detected, count, threshold, min_detection_threshold, count_threshold, reset_count, null_count, use_confidence_tracking)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+	</Unit>
+</Imaginet>

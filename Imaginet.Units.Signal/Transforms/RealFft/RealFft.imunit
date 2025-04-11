@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Signal.RealFft">
+		<DisplayName>Real Discrete Fourier Transform</DisplayName>
+		<DisplayPath>/Signal/Spectral</DisplayPath>
+
+		<Description>
+			Compute the one-dimensional discrete Fourier Transform for real input.
+
+			This function computes the one-dimensional n-point discrete Fourier Transform (DFT) of a real-valued array by means of an efficient algorithm called the Fast Fourier Transform (FFT).
+
+			<Image file="FFT.png" width="340" />
+
+			<Header>Python implementation</Header>
+			<Inline fragment="rfft.py:rfft" language="Python" />
+		</Description>
+	
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which a fft is performed. Enumerated from right to left." />
+
+			<Expression name="n" value="Math.floor(input.shape.size(axis) / 2.0) + 1" />
+			
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+			
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+
+			<OutputSocket name="output" type="input.type" shape="input.shape.replace(axis, n).insert(0,2)" shift="input.shift + d1.log(2).floor" />
+			
+			<Handle name="cmsis" size="48"/>
+
+			<Expression name="temp_ip" value="System.Tensor(System.Int32, Math.int(Math.sqrt(d1) + 2), true)" description="Work area for bit reversal" />
+			<Expression name="temp_w" value="System.Tensor(input.type, Math.int(d1/2)+2, true)" description="cos/sin lookup table" />
+			<Expression name="temp_a" value="System.Tensor(input.type, d1 * 2 + 2)" description="Temp buffer" />
+			<Expression name="temp_q" value="System.Tensor(input.type, d1 * 2 + 2)" description="Temp buffer for Q7, Q15, Q31" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32 || input.type == System.Q31 || input.type == System.Q15" error="Input array must be of type Float32, Q31 or Q15." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less then the number of input dimensions." />
+			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="Size of axis dimension must be the power of two." />
+			<Assert test="!global_use_cmsis || d1 &gt;= 32" error="CMSIS only support FFT axis with size {d1} >= 32" />
+		</Contracts>
+
+		<Init returnStatus="true">
+
+			<!--===== FLOAT 32 =====-->
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_32_f32" call="rfft_cmsis_init_32_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==32"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_64_f32" call="rfft_cmsis_init_64_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==64"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_128_f32" call="rfft_cmsis_init_128_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==128"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_256_f32" call="rfft_cmsis_init_256_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==256"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_512_f32" call="rfft_cmsis_init_512_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==512"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_1024_f32" call="rfft_cmsis_init_1024_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==1024"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_2048_f32" call="rfft_cmsis_init_2048_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==2048"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_init_4096_f32" call="rfft_cmsis_init_4096_f32(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d1==4096"/>
+			</Implementation>
+
+			<!--===== Q31 =====-->
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_32_q31" call="rfft_cmsis_init_32_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==32"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_64_q31" call="rfft_cmsis_init_64_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==64"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_128_q31" call="rfft_cmsis_init_128_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==128"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_256_q31" call="rfft_cmsis_init_256_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==256"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_512_q31" call="rfft_cmsis_init_512_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==512"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_1024_q31" call="rfft_cmsis_init_1024_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==1024"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_2048_q31" call="rfft_cmsis_init_2048_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==2048"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_init_4096_q31" call="rfft_cmsis_init_4096_q31(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d1==4096"/>
+			</Implementation>
+			
+			<!--===== Q15 =====-->
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_32_q15" call="rfft_cmsis_init_32_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==32"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_64_q15" call="rfft_cmsis_init_64_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==64"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_128_q15" call="rfft_cmsis_init_128_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==128"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_256_q15" call="rfft_cmsis_init_256_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==256"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_512_q15" call="rfft_cmsis_init_512_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==512"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_1024_q15" call="rfft_cmsis_init_1024_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==1024"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_2048_q15" call="rfft_cmsis_init_2048_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==2048"/>
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_init_4096_q15" call="rfft_cmsis_init_4096_q15(cmsis)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d1==4096"/>
+			</Implementation>
+
+		</Init>
+
+		<Implementations>
+			<Implementation language="C" fragment="rfft_libfft_f32.h:rfft_libfft_f32" call="rfft_libfft_f32(input, output, d0, d1, d2, temp_ip, temp_w, temp_a)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			
+			<Implementation language="C" fragment="rfft_cmsis_f32.h:rfft_cmsis_f32" call="rfft_cmsis_f32(cmsis, input, output, d0, d1, d2, temp_a, temp_q)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="rfft_cmsis_q31.h:rfft_cmsis_q31" call="rfft_cmsis_q31(cmsis, input, output, d0, d1, d2, temp_a, temp_q)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_q15" call="rfft_cmsis_q15(cmsis, input, output, d0, d1, d2, temp_a, temp_q)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 !=1 || d2!=1"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+			<Implementation language="C" fragment="rfft_cmsis_q15.h:rfft_cmsis_d0_d2_q15" call="rfft_cmsis_d0_d2_q15(cmsis, input, output, d1, temp_a, temp_q)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0==1"/>
+				<Conditional value="d2==1"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+
+			<Implementation language="Python" fragment="rfft.py:rfft" call="rfft(input, output, axis)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Compound unit="Imaginet.Units.Signal.ContextualWindow">
+		<DisplayName>Contextual Window (Sliding Window)</DisplayName>
+		<DisplayPath>/Signal/Temporal</DisplayPath>
+		<Description>
+			<Text>This is a wrapper for a sliding window where the windows shape and stride are automatically derived from the set contextual length and desired prediction frequency.</Text>
+		</Description>
+		<Nodes>
+			<TensorInputNode id="node_2" x="-214.1624965807523" y="418.45896808347914" enabled="true" name="Input" param="input">
+				<Description>Data to be enqueue to buffer.</Description>
+			</TensorInputNode>
+			<AssertNode id="node_8" x="231.4075274273731" y="365.09478755435856" enabled="true" name="Validation">
+				<Inputs>
+					<Input param="Length" type="Real" />
+					<Input param="PredictionFreq" type="Real" />
+					<Input param="Input" type="Tensor" />
+				</Inputs>
+				<Tests>
+					<Test assert="1/Length &gt; PredictionFreq" error="Prediction frequency {PredictionFreq} Hz is too low. Min is {1/Length} Hz" />
+					<Test assert="Input.rate &lt; PredictionFreq" error="Prediction frequency {PredictionFreq} Hz is too high. Max is {Input.rate} Hz" />
+					<Test assert="Length &lt; 1.0/Input.rate" error="Window length {Length} seconds is too low. Min is {1.0/Input.rate} seconds when sample frequency is {Input.rate} Hz." />
+				</Tests>
+			</AssertNode>
+			<UnitNode id="node_5" x="559.984415056384" y="392.8727820886581" enabled="true" unit="Imaginet.Units.Signal.SlidingWindow">
+				<ShapeArgument param="window_shape">[128,3]</ShapeArgument>
+				<Int32Argument param="stride">3</Int32Argument>
+			</UnitNode>
+			<DoubleOptionNode id="node_1" x="-212.2057634896463" y="728.9346362934346" enabled="true" name="Prediction Frequency (Hz)" param="prediction_freq">
+				<Description>How often to produce a prediction.</Description>
+				<DefaultValue>10</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>1000</MaxValue>
+			</DoubleOptionNode>
+			<TensorOutputNode id="node_3" param="output" x="951.783466097944" y="419.5837800243739" enabled="true" name="Output" />
+			<ExpressionNode id="node_7" x="206.34147860756116" y="140.99368605768473" enabled="true" name="Window Shape">
+				<Expression type="Shape" output="Output">Input.shape.insert(-1, Math.round(Length * Input.rate))</Expression>
+				<Input param="Length" type="Real" />
+				<Input param="Input" type="Tensor" />
+			</ExpressionNode>
+			<DoubleOptionNode id="node_0" x="-157.37316394442894" y="173.4480179348942" enabled="true" name="Length (seconds)" param="contextual_length_sec">
+				<Description>The length (in seconds) of the window. How many seconds should the network process for each prediction.</Description>
+				<DefaultValue>2</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>100</MaxValue>
+			</DoubleOptionNode>
+			<ExpressionNode id="node_6" x="175.31382005687215" y="673.2420859923243" enabled="true" name="Stride">
+				<Expression type="Integer" output="Output">Input.shape.flat * Math.round(Input.rate/PredictionFreq)</Expression>
+				<Input param="PredictionFreq" type="Real" />
+				<Input param="Input" type="Tensor" />
+			</ExpressionNode>
+		</Nodes>
+		<Connections>
+			<Connection>
+				<Source node="node_5" param="output" />
+				<Target node="node_3" param="value" />
+			</Connection>
+			<Connection>
+				<Source node="node_6" param="output" />
+				<Target node="node_5" param="stride" />
+			</Connection>
+			<Connection>
+				<Source node="node_2" param="value" />
+				<Target node="node_6" param="Input" />
+			</Connection>
+			<Connection>
+				<Source node="node_1" param="value" />
+				<Target node="node_6" param="PredictionFreq" />
+			</Connection>
+			<Connection>
+				<Source node="node_2" param="value" />
+				<Target node="node_5" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="node_0" param="value" />
+				<Target node="node_7" param="Length" />
+			</Connection>
+			<Connection>
+				<Source node="node_7" param="output" />
+				<Target node="node_5" param="window_shape" />
+			</Connection>
+			<Connection>
+				<Source node="node_2" param="value" />
+				<Target node="node_7" param="Input" />
+			</Connection>
+			<Connection>
+				<Source node="node_0" param="value" />
+				<Target node="node_8" param="Length" />
+			</Connection>
+			<Connection>
+				<Source node="node_1" param="value" />
+				<Target node="node_8" param="PredictionFreq" />
+			</Connection>
+			<Connection>
+				<Source node="node_2" param="value" />
+				<Target node="node_8" param="Input" />
+			</Connection>
+		</Connections>
+	</Compound>
+</Imaginet>

@@ -1,0 +1,33 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Filter.SwarmOutputFilter">
+		<DisplayName>Swarm Output Filter</DisplayName>
+		<DisplayPath>/Filters/</DisplayPath>
+		<Description>
+			This filter activates when the number of outputs within a specified time exceeds a set threshold. It is useful for triggering actions based on multiple occurrences, ensuring functions are performed only after several triggers have been detected within a given timeframe.
+		</Description>
+		<Parameters>
+			<InputSocket name="input"/>
+			<OutputSocket name="output" type="System.Float32" shape="System.Shape(1)" />
+		
+			<DoubleOption name="confidence_threshold" text="Confidence Threshold" description="The value of the input signal needed to trigger the filter [0.0, 1.0]." />
+			<Int32Option name="num_triggers" text="Triggers" description="The number of triggers (values above the confidence threshold) needed to trigger the filter." />
+			<Int32Option name="filter_length" text="Filter Length" description="The sample length of the filter, i.e for the filter to activate the specified number of triggers needs to occur within this number of samples in the input signal." />
+			<Int32Option name="filter_cooloff" text="Filter Cooloff" description="The cooloff period (measured in number of input samples) needed for a subsequent trigger to count. This stops multiple output samples in a row above the threshold to count as multiple triggers." />
+			
+			<Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="confidence_threshold >= 0" error="Confidence threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="confidence_threshold &lt;= 1" error="Confidence threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="num_triggers >= 0" error="Triggers needs to be positive." />
+			<Assert test="filter_length >= 0" error="Filter Length needs to be positive." />
+			<Assert test="filter_cooloff >= 0" error="Filter Cooloff needs to be positive." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="swarmoutputfilter.h:swarm_output_filter_f32" call="swarm_output_filter_f32(input, output, count, confidence_threshold, num_triggers, filter_length, filter_cooloff)"/>
+		</Implementations>
+	</Unit>
+</Imaginet>

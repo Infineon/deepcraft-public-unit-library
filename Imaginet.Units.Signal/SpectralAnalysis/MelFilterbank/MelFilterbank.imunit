@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Signal.MelFilterbank">
+		<DisplayName>Mel Filterbank</DisplayName>
+		<DisplayPath>/Signal/Spectral</DisplayPath>
+
+		<Description>
+			This module implements a Mel Filter Bank.
+			In other words it is a filter bank with triangular shaped bands arranged on the mel frequency scale.
+
+			An example is shown in the following figure:
+
+			<Image file="images/mel.png" width="450" />
+
+			<Image file="images/matrix.png" width="400" />
+
+			The mel scale is a quasi-logarithmic function of acoustic frequency designed such that perceptually similar pitch intervals (e.g. octaves) appear equal in width over the full hearing range.
+
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" />
+			<Int32Option name="num_filters" min="0" max="65536" default="26" ui="textbox" text="Number of filters" description="Number of triangular filters. Must even." />
+			<Int32Option name="sample_rate" min="0" max="65536"  default="16000" ui="textbox" text="Sample rate" description="Audio sample rate (Hz)." />
+			<Int32Option name="f_low" min="0" max="65536" default="300" ui="textbox" text="Low cut frequency" description="Lowest filter cut-off frequency (Hz)." />
+			<Int32Option name="f_high" min="0" max="65536" default="8000" ui="textbox" text="High cut frequency" description="Highest filter cut-off frequency (Hz)." />
+
+			<Int32Option name="shift" text="Shift" default="0" />
+			
+			<Expression name="size" value="input.shape.size(0)" />
+			<Expression name="slot" value="input.shape.slot(0)"/>
+			<Expression name="output_shift" value="(size/num_filters).log2.floor + shift" />
+			
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+		
+			<External name="filter_points" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.MelFilterbank.Mel" call="MelFilterPoints(f_low, f_high, num_filters, size, sample_rate)" />
+			<External name="filter_coefs_f32" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.MelFilterbank.Mel" call="MelFilterCoefsF32(filter_points)" />
+			<External name="filter_coefs_q31" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.MelFilterbank.Mel" call="MelFilterCoefsQ31(filter_points)" />
+			<External name="filter_coefs_q15" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.MelFilterbank.Mel" call="MelFilterCoefsQ15(filter_points)" />
+			<OutputSocket name="output" type="input.type" shape="input.shape.replace(0, num_filters)" shift="input.shift + output_shift" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="f_low &lt; f_high" error="Low cut frequency ({f_low} Hz) must be less then high cut frequency ({f_high} Hz)" />
+			<Assert test="f_high &lt;= sample_rate / 2" error="High cut frequency ({f_high} Hz) must be equal or less than half of sample rate ({sample_rate} Hz) due to Nyquist–Shannon sampling theorem." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="mel.h:mel_f32" call="mel_f32(input, filter_points, size, slot, num_filters, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="mel_cmsis.h:mel_cmsis_f32" call="mel_cmsis_f32(input, filter_points, filter_coefs_f32, size, slot, num_filters, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			
+			<Implementation language="C" fragment="mel_cmsis.h:mel_cmsis_q31" call="mel_cmsis_q31(input, filter_points, filter_coefs_q31, size, slot, num_filters, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+			
+			<Implementation language="C" fragment="mel_cmsis.h:mel_cmsis_q15" call="mel_cmsis_q15(input, filter_points, filter_coefs_q15, size, slot, num_filters, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+			
+			<Implementation language="Python" fragment="mel.py:mel" call="mel(input, filter_points, output, size)" />
+		</Implementations>
+
+	</Unit>
+</Imaginet>

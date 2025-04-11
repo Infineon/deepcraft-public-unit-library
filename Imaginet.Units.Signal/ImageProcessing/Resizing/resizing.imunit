@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Math.Resizing">
+		<DisplayName>Resizing</DisplayName>
+		<DisplayPath>/Image Processing</DisplayPath>
+		<Description>Resize image using nearest neighbor interpolation</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" />
+
+			<Int32Option
+			  name="target_height"
+			  min="1"
+			  ui="textbox"
+			  text="Target Height"
+			  description="Output height in pixels" />
+
+			<Int32Option
+			  name="target_width"
+			  min="1"
+			  ui="textbox"
+			  text="Target Width"
+			  description="Output width in pixels" />
+
+			<!-- Precomputed values -->
+			<Expression name="channels" value="input.shape.count == 2 ? 1 : input.shape.size(-3)" description="Number of channels" />
+			<Expression name="index_offset" value="channels == 3 ? 1 : 0" description="Number of channels" />
+			<Expression name="input_height" value="input.shape.size(1+index_offset)" />
+			<Expression name="input_width" value="input.shape.size(0+index_offset)" />
+			<Expression name="step_height" value="input.shape.step(1+index_offset)" />
+			<Expression name="step_width" value="input.shape.step(0+index_offset)" />
+
+			<OutputSocket name="output" pipe="data" type="input.type"
+						  shape="input.shape.count == 2 ? System.Shape(target_height, target_width) : System.Shape(target_height, target_width, channels)" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.shape.count >= 2" error="Input must be at least 2D (HxW or HxWxC)." />
+			<Assert test="input_height > 0" error="Input height must be greater than 0" />
+			<Assert test="input_width > 0" error="Input width must be greater than 0" />
+			<Assert test="target_height > 0" error="Target height must be positive" />
+			<Assert test="target_width > 0" error="Target width must be positive" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="resizing.h:resize_nearest_f32"
+							call="resize_nearest_f32(input, input_height, input_width, step_height, step_width, target_height, target_width, channels, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+	</Unit>
+</Imaginet>

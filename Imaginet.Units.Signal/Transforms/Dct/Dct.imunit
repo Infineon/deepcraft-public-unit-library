@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Signal.Dct">
+		<DisplayName>Discrete Cosine Transform</DisplayName>
+		<DisplayPath>/Signal/Spectral</DisplayPath>
+
+		<Description>
+			Compute the one-dimensional discrete Cosine Transform for real input.
+
+			This function computes the one-dimensional n-point discrete Cosine Transform (DCT) of a real-valued array.
+
+			<Text italic="True">Note: If size of output axis is a power of two an FFT implementation is used, else a naive O(n^2) implementation.</Text>
+
+			<Image file="type2.png" width="300" />
+
+			<Header>Python implementation</Header>
+			<Inline fragment="dct.py:dct" language="Python" />
+
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which a DCT is performed. Enumerated from right to left." />
+			<Int32Option name="output_count" min="0" ui="textbox" text="Output axis size" description="Number of data points kept in output axis. Must be equal or less than input size of axis, or if zero size of axis is used." />
+
+			<Expression name="output_size" value="output_count &lt;= 0 ? input.shape.size(axis) : output_count" />
+
+			<OutputSocket name="output" type="input.type" shape="input.shape.replace(axis, output_size)" />
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+
+			<!-- some bit magic to check is d1 is a power of two -->
+			<Expression name="is_pow2" value="(d1 &amp; d1 - 1)==0" />
+
+			<Expression name="temp_ip" value="System.Tensor(System.Int32, Math.int(Math.sqrt(d1) + 2), true)" description="Work area for bit reversal" />
+			<Expression name="temp_w" value="System.Tensor(input.type, Math.int(d1*5/4)+1, true)" description="cos/sin lookup table" />
+			<!-- TODO: Move to flash? -->
+			<Expression name="temp_a" value="System.Tensor(input.type, d1)" description="Temp buffer" />
+			<!-- TODO: Can be removed with refactoring -->
+		</Parameters>
+
+		<Contracts>
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions." />
+			<Assert test="output_count &lt;= d1" error="Output size ({output_count}) must be equal of less than the input axis ({d1})" />
+			<Assert test="input.type == System.Float32" error="Input array must be of type float32." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="dct_opt.h:dct_ndim_f32" call="dct_ndim_f32(input, output, output_size, d0, d1, d2, temp_ip, temp_w, temp_a)">
+				<Conditional value="is_pow2" />
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="dct_naive.h:dct_naive_f32" call="dct_naive_f32(input, output, output_size, d0, d1, d2)">
+				<Conditional value="!is_pow2" />
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="Python" fragment="dct.py:dct" call="dct(input, output, axis, output_size)" />
+
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

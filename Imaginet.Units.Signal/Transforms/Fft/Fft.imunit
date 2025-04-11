@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Signal.Fft">
+		<DisplayName>Complex Discrete Fourier Transform</DisplayName>
+		<DisplayPath>/Signal/Spectral</DisplayPath>
+
+		<Description>
+			Compute the one-dimensional discrete Fourier Transform for complex input.
+
+			This function computes the one-dimensional n-point discrete Fourier Transform (DFT) of a complex-valued array by means of an efficient algorithm called the Fast Fourier Transform (FFT).
+
+			This unit takes complex numbers as input. This means that the rightmost dimension (axis=0), should contain the imaginary part of the complex numbers. This also means that the size of this dimension must always be 2.
+			Furthermore the C implementation of FFT requires the input array size to be a power of two.
+
+			<Header>Python implementation</Header>
+			<Inline fragment="cfft.py:cfft" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which a fft is performed. Enumerated from right to left." />
+
+			<OutputSocket name="output" type="input.type" shape="input.shape"/>
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+
+			<Expression name="temp_a" value="System.Tensor(input.type, 2 * d1)" description="Temp input/output buffer." />
+			<Expression name="temp_ip" value="System.Tensor(System.Int32, Math.int(Math.sqrt(d1) + 2), true)" description="Work area for bit reversal" />
+			<Expression name="temp_w" value="System.Tensor(input.type, d1 / 2, true)" description="cos/sin lookup table" /> TODO: Move to flash?
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32" error="Input array must be of type float32." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions." />
+			<Assert test="axis &gt; 0" error="The first (inner) axis is the complex dimension. Therefore axis must be &gt;0." />
+			<Assert test="input.shape.size(0) == 2" error="The first (inner) axis is the complex dimension. Therefore this axis has to be be equal to two." />
+			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="Size of axis dimension must be the power of two." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="cfft_opt.h:cdft_ndim_f32" call="cdft_ndim_f32(input, output, d0, d1, d2, temp_ip, temp_w, temp_a)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="Python" fragment="cfft.py:cfft" call="cfft(input, output, axis)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

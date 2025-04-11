@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Signal.SlidingWindow">
+		<DisplayName>Sliding Window (data points)</DisplayName>
+		<DisplayPath>/Signal/Temporal</DisplayPath>
+		
+		<Tags>
+			<ContextPushData/>
+		</Tags>
+
+		<Description>
+			Fixed-width sliding window. Typically used as the last preprocessing layer.
+			The contents of the sliding window will then be classified by the AI model(s).
+
+			<Header>Usage</Header>
+			The window shape controls the amount of data that the window will contain.
+			Set it to X,Y where X equals the length of the window and Y equals the output of the previous preprocessing layer.
+
+			The stride controls the amount of data points to input into the window before making a new classification.
+			Set it to X*t where X equals X from above and t is the amount of time steps.
+
+			<Header>Example</Header>
+			Let's say your data has a sampling rate of 100Hz and you want to classify a new window of data every second.
+			Then you set the stride to X*100 where again X is the output of the previous layer.
+
+		</Description>
+
+		<Parameters>
+			<InputSocket
+			  name="input"
+			  text="Data Input"
+			  description="Data to be enqueue to buffer." />
+
+			<InputSocket
+			  name="time_input"
+			  timestamps="yes"
+			  text="Time Input"
+			  description="Array with time codes." />
+
+			<ShapeOption
+			  name="window_shape"
+			  text="Window shape"
+			  default="[128,3]"
+			  description="Shape of window" />
+
+			<Int32Option
+			  name="stride"
+			  min="1"
+			  ui="textbox"
+			  text="Stride"
+			  default="3"
+			  description="Number of data points to stride. Must be a multiple of the output size of the previous layer. 
+        If the output of the previous layer is [4,3] the stride must be a multiple of 12."/>
+
+			<Expression
+				name="input_size"
+				value="input.shape.flat"
+				description="Number of elements in input (chunk)" />
+
+			<Expression
+				name="stride_count"
+				value="stride / input_size"
+				description="Number of input chunks to stride" />
+
+			<Expression
+				name="window_count"
+				value="window_shape.flat / input_size"
+				description="Number of input chunks in window" />
+
+			<Expression
+				name="timestamp_count"
+				value="time_input == null ? 0 : (time_input.shape.flat)"
+				description="Number of input timestamps" />
+
+			<OutputSocket
+			  name="output"
+			  type="input.type"
+			  shape="window_shape"
+			  rate="(input.rate * input_size) / Math.real(stride)"
+			  rateIsApprox="true"
+			  text="Output Window"
+			  description="Output data buffer to write window to." />
+
+			<OutputSocket
+			  name="time_output"
+			  type="System.Float32"
+			  shape="System.Shape(2)"
+			  timestamps="yes"
+			  text="Time Output"
+			  conditional="time_input != null"
+			  description="Output time buffer to write timestamps to." />
+
+			<Expression
+				name="time_buffer_byte_size"
+				value="time_input == null ? 0 : (window_count * 2 * time_input.type.size)"
+				description="Size of timestamp buffer in bytes" />
+
+			<Expression
+				name="input_byte_size"
+				value="input.shape.flat * input.type.size"
+				description="Size of window in bytes" />
+			
+			<Expression
+				name="input_count"
+				value="1" />
+
+			<Expression
+				name="data_buffer_byte_size"
+				value="input_byte_size * window_count"
+				description="Number of bytes in data buffer." />
+			
+			<Expression
+				name="merge_time"
+				value="false"
+				description="This should always be false" />
+
+			<Handle
+			  name="handle"
+			  size="208 + data_buffer_byte_size + time_buffer_byte_size"
+			  description="Allocate memory for the object handle."/>
+		</Parameters>
+
+		<Contracts>
+			<Assert
+			  test="stride &lt;= window_shape.flat"
+			  error="Stride ({stride}) can't be bigger than window size ({window_shape.flat})" />
+			<Assert
+			  test="window_shape.flat % input_size == 0"
+			  error="Window shape ({window_shape.flat}) must be a multiple of input size ({input_size})" />
+			<Assert
+			  test="stride % input_size == 0"
+			  error="Stride ({stride}) must be a multiple of input size ({input_size})" />
+		</Contracts>
+
+
+		<Init>
+			<!-- Init C implementation with timestamps -->
+			<Implementation language="C" fragment="fixwin_time.h:fixwin_time_init" call="fixwin_time_init(handle, input_byte_size, window_count)">
+				<Conditional value="time_input != null" />
+			</Implementation>
+
+			<!-- Init C implementation without timestamps -->
+			<Implementation language="C" fragment="fixwin.h:fixwin_init" call="fixwin_init(handle, input_byte_size, window_count)">
+				<Conditional value="time_input == null" />
+			</Implementation>
+
+		</Init>
+
+		<SoftReset>
+			<!-- Init C implementation with timestamps -->
+			<Implementation language="C" fragment="fixwin_time.h:fixwin_time_init" call="fixwin_time_init(handle, input_byte_size, window_count)">
+				<Conditional value="time_input != null" />
+			</Implementation>
+
+			<!-- Init C implementation without timestamps -->
+			<Implementation language="C" fragment="fixwin.h:fixwin_init" call="fixwin_init(handle, input_byte_size, window_count)">
+				<Conditional value="time_input == null" />
+			</Implementation>
+
+		</SoftReset>
+
+		<Body returnStatus="true">
+			<!-- Enqueue C implementation with timestamps -->
+			<Implementation language="C" fragment="fixwin_time.h:fixwin_time_enqueue" call="fixwin_time_enqueue(handle, input, time_input, timestamp_count)">
+				<Conditional value="time_input != null" />
+			</Implementation>
+
+			<!-- Enqueue C implementation without timestamps -->
+			<Implementation language="C" fragment="fixwin.h:fixwin_enqueue" call="fixwin_enqueue(handle, input)">
+				<Conditional value="time_input == null" />
+			</Implementation>
+
+		</Body>
+
+		<NewDomain>
+			<!-- Dequeue C implementation with timestamps -->
+			<Implementation language="C" fragment="fixwin_time.h:fixwin_time_dequeue" call="fixwin_time_dequeue(handle, output, window_count, stride_count, time_output, merge_time)">
+				<Conditional value="time_input != null" />
+			</Implementation>
+
+			<!-- Dequeue C implementation without timestamps -->
+			<Implementation language="C" fragment="fixwin.h:fixwin_dequeue" call="fixwin_dequeue(handle, output, window_count, stride_count)">
+				<Conditional value="time_input == null" />
+			</Implementation>
+
+		</NewDomain>
+
+		<Status>
+			<Implementation language="C" fragment="fixwin_time.h:fixwin_time_can_enqueue" call="fixwin_time_can_enqueue(handle, input_count)">
+				<Conditional value="time_input != null" />
+			</Implementation>
+
+			<Implementation language="C" fragment="fixwin.h:fixwin_can_enqueue" call="fixwin_can_enqueue(handle, input_count)">
+				<Conditional value="time_input == null" />
+			</Implementation>
+		</Status>
+
+	</Unit>
+</Imaginet>

@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Signal.Hann">
+		<DisplayName>Hann smoothing</DisplayName>
+		<DisplayPath>/Signal/Spectral</DisplayPath>
+
+		<Description>
+			It is also known as the raised cosine window, Hann filter, von Hann window, etc.
+
+			<Image file="images/Hann.png" width="500" />
+
+			<Image file="images/Hann2.png" width="438" />
+
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input"  />
+			<BoolOption name="sym" default="True" text="Symmetric">
+				<Description>
+					When True (default), generates a symmetric window, for use in filter design.
+					When False, generates a periodic window, for use in spectral analysis.
+				</Description>
+			</BoolOption>
+			<Int32Option
+				name="axis"
+				min="0"
+				max="9"
+				ui="textbox"
+				text="Axis"
+				description="Axis along which the window is applied. Enumerated from right to left." />
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+			<External name="window_f32" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.Hann.Hann" call="HannTableF32(d1, sym)" />
+			<External name="window_q31" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.Hann.Hann" call="HannTableQ31(d1, sym)" />
+			<External name="window_q15" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.Hann.Hann" call="HannTableQ15(d1, sym)" />
+			<External name="window_q7" assembly="Imaginet.Units.Signal" class="Imaginet.Units.Signal.Hann.Hann" call="HannTableQ7(d1, sym)" />
+	
+			<OutputSocket name="output" type="input.type" shape="input.shape" />
+		</Parameters>
+
+		<Implementations>
+			<Implementation language="C" fragment="hann_mul.h:hannmul_f32" call="hannmul_f32(input, window_f32, d0, d1, d2, output)">
+				<Conditional value="!global_use_cmsis || d0 != 1"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="hann_mul_cmsis.h:hannmul_cmsis_f32" call="hannmul_cmsis_f32(input, window_f32, output, d1, d2)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="d0 == 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="hann_mul_cmsis.h:hannmul_cmsis_q31" call="hannmul_cmsis_q31(input, window_q31, output, d1, d2)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d0 == 1" />
+			</Implementation>
+			<Implementation language="C" fragment="hann_mul_cmsis.h:hannmul_cmsis_sparse_q31" call="hannmul_cmsis_sparse_q31(input, window_q31, d0, d1, d2, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="d0 != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="hann_mul_cmsis.h:hannmul_cmsis_q15" call="hannmul_cmsis_q15(input, window_q15, output, d1, d2)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d0 == 1" />
+			</Implementation>
+			<Implementation language="C" fragment="hann_mul_cmsis.h:hannmul_cmsis_sparse_q15" call="hannmul_cmsis_sparse_q15(input, window_q15, d0, d1, d2, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="d0 != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="hann_mul_cmsis.h:hannmul_cmsis_q7" call="hannmul_cmsis_q7(input, window_q7, output, d1, d2)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q7" />
+				<Conditional value="d0 == 1" />
+			</Implementation>
+			<Implementation language="C" fragment="hann_mul_cmsis.h:hannmul_cmsis_sparse_q7" call="hannmul_cmsis_sparse_q7(input, window_q7, d0, d1, d2, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q7" />
+				<Conditional value="d0 != 1" />
+			</Implementation>
+			
+			<Implementation language="Python" fragment="hann_mul.py:hann_mul" call="hann_mul(input, window_f32, output)" />
+		</Implementations>
+
+
+	</Unit>
+
+</Imaginet>

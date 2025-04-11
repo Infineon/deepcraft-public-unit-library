@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Compound unit="Imaginet.Units.Signal.MelSpectrogram">
+    <DisplayName>Mel Spectrogram</DisplayName>
+    <DisplayPath>/Signal/Spectral</DisplayPath>
+    <Description>
+      <Text>In sound processing, the mel-frequency cepstrum (MFC) is a representation of the short-term power spectrum of a sound, based on a linear cosine transform of a log power spectrum on a nonlinear mel scale of frequency.
+
+The difference between the cepstrum (i.e. the inverse FFT of the log spectrum) and the mel-frequency cepstrum is that in the MFC, the frequency bands are equally spaced on the mel scale, which approximates the human auditory system's response more closely than the linearly-spaced frequency bands used in the normal cepstrum.
+This frequency warping can allow for better representation of sound data.
+
+Note that in this particular implementation of MFCC the last DCT is omitted.</Text>
+      <Image file="images/mfcc.png" width="450" />
+    </Description>
+    <Nodes>
+      <ExpressionNode id="node_15" x="508.600000000033" y="256.77999999998565" enabled="true" name="Shape from Filters">
+        <Expression type="Shape" output="Output">System.Shape(
+Math.pow(2,(NumFilters*6).log2.ceil + 1)
+)</Expression>
+        <Input param="NumFilters" type="Integer" />
+      </ExpressionNode>
+      <UnitNode id="node_9" x="235.19999999997378" y="730.2400000000267" enabled="true" unit="Imaginet.Units.Math.Log" />
+      <Int32OptionNode id="node_3" x="66.40000000000376" y="531.7799999999959" enabled="true" name="Low Cut Frequency" param="low_cut_freq">
+        <Description>Minimum frequency (Hz).</Description>
+        <DefaultValue>300</DefaultValue>
+        <MinValue>1</MinValue>
+        <MaxValue>2147483647</MaxValue>
+      </Int32OptionNode>
+      <UnitNode id="node_8" x="855.2000000000078" y="580.0400000000211" enabled="true" unit="Imaginet.Units.Math.AddConstant">
+        <DoubleArgument param="A">1</DoubleArgument>
+      </UnitNode>
+      <UnitNode id="node_1" x="784.5999999999577" y="78.43999999998752" enabled="true" name="Short-time Fourier Window" unit="Imaginet.Units.Signal.SlidingWindow">
+        <ShapeArgument param="window_shape">[512]</ShapeArgument>
+        <Int32Argument param="stride">160</Int32Argument>
+      </UnitNode>
+      <Int32OptionNode id="node_12" x="63.40000000000441" y="624.5800000000052" enabled="true" name="High Cut Frequency" param="high_cut_freq">
+        <Description>Maximum frequency (Hz).</Description>
+        <DefaultValue>8000</DefaultValue>
+        <MinValue>1</MinValue>
+        <MaxValue>2147483647</MaxValue>
+      </Int32OptionNode>
+      <AssertNode id="node_18" x="506.71398218841523" y="23.315425240541686" enabled="true" name="Only 1D is supported.">
+        <Inputs>
+          <Input param="Input" type="Tensor" />
+        </Inputs>
+        <Tests>
+          <Test assert="Input.shape.flat !=1" error="Input shape must be 1D. This restriction will be removed in future versions." />
+        </Tests>
+      </AssertNode>
+      <UnitNode id="node_7" x="580.8000000000279" y="547.6399999999878" enabled="true" unit="Imaginet.Units.Signal.MelFilterbank">
+        <Int32Argument param="sample_rate">16000</Int32Argument>
+        <Int32Argument param="shift">-3</Int32Argument>
+        <Int32Argument param="f_low">300</Int32Argument>
+        <Int32Argument param="num_filters">26</Int32Argument>
+        <Int32Argument param="f_high">8000</Int32Argument>
+      </UnitNode>
+      <UnitNode id="node_5" x="554.9999999999841" y="400.6400000000085" enabled="true" unit="Imaginet.Units.Signal.RealFft" />
+      <ExpressionNode id="node_14" x="60.79999999999029" y="431.9800000000136" enabled="true" name="Get Frequency">
+        <Expression type="Integer" output="Output">Input.rate.round</Expression>
+        <Input param="Input" type="Tensor" />
+      </ExpressionNode>
+      <UnitNode id="node_4" x="795.3999999999871" y="263.63999999999356" enabled="true" unit="Imaginet.Units.Signal.Hamming" />
+      <TensorOutputNode id="node_2" param="output" x="862.5666666666675" y="777.7622222222149" enabled="true" name="Features" />
+      <Int32OptionNode id="node_11" x="240.79999999999427" y="348.44000000000256" enabled="true" name="Number of Filters" param="output_features">
+        <Description>Number of Mel filters. This defines the output shape.</Description>
+        <DefaultValue>40</DefaultValue>
+        <MinValue>0</MinValue>
+        <MaxValue>1000</MaxValue>
+      </Int32OptionNode>
+      <DoubleOptionNode id="node_16" x="238.19999999998214" y="247.600000000007" enabled="true" name="Output Frequency" param="output_freq">
+        <Description>This defines the internal stride, and thus the output frequency</Description>
+        <DefaultValue>100</DefaultValue>
+        <MinValue>0</MinValue>
+        <MaxValue>1.7976931348623157E+308</MaxValue>
+      </DoubleOptionNode>
+      <UnitNode id="node_6" x="878.0000000000092" y="401.4400000000007" enabled="true" unit="Imaginet.Units.Math.Norm">
+        <Int32Argument param="shift">-2</Int32Argument>
+      </UnitNode>
+      <UnitNode id="node_10" x="552.0000000000075" y="741.2399999999872" enabled="true" unit="Imaginet.Units.Math.Clip">
+        <DoubleArgument param="min">0</DoubleArgument>
+        <DoubleArgument param="max">4</DoubleArgument>
+      </UnitNode>
+      <TensorInputNode id="node_0" x="14.799999999999073" y="81.40000000000174" enabled="true" name="Audio In" param="input">
+        <Description>PCM input samples.</Description>
+      </TensorInputNode>
+      <ExpressionNode id="node_17" x="473.7999999999814" y="154.58000000000325" enabled="true" name="Compute Stride">
+        <Expression type="Integer" output="Output">Math.round(Input.rate / Frequency)</Expression>
+        <Input param="Frequency" type="Real" />
+        <Input param="Input" type="Tensor" />
+      </ExpressionNode>
+    </Nodes>
+    <Connections>
+      <Connection>
+        <Source node="node_0" param="value" />
+        <Target node="node_1" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_1" param="output" />
+        <Target node="node_4" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_4" param="output" />
+        <Target node="node_5" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_5" param="output" />
+        <Target node="node_6" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_6" param="output" />
+        <Target node="node_7" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_7" param="output" />
+        <Target node="node_8" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_8" param="output" />
+        <Target node="node_9" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_9" param="output" />
+        <Target node="node_10" param="input" />
+      </Connection>
+      <Connection>
+        <Source node="node_10" param="output" />
+        <Target node="node_2" param="value" />
+      </Connection>
+      <Connection>
+        <Source node="node_11" param="value" />
+        <Target node="node_7" param="num_filters" />
+      </Connection>
+      <Connection>
+        <Source node="node_3" param="value" />
+        <Target node="node_7" param="f_low" />
+      </Connection>
+      <Connection>
+        <Source node="node_12" param="value" />
+        <Target node="node_7" param="f_high" />
+      </Connection>
+      <Connection>
+        <Source node="node_0" param="value" />
+        <Target node="node_14" param="Input" />
+      </Connection>
+      <Connection>
+        <Source node="node_14" param="output" />
+        <Target node="node_7" param="sample_rate" />
+      </Connection>
+      <Connection>
+        <Source node="node_11" param="value" />
+        <Target node="node_15" param="NumFilters" />
+      </Connection>
+      <Connection>
+        <Source node="node_15" param="output" />
+        <Target node="node_1" param="window_shape" />
+      </Connection>
+      <Connection>
+        <Source node="node_16" param="value" />
+        <Target node="node_17" param="Frequency" />
+      </Connection>
+      <Connection>
+        <Source node="node_0" param="value" />
+        <Target node="node_17" param="Input" />
+      </Connection>
+      <Connection>
+        <Source node="node_17" param="output" />
+        <Target node="node_1" param="stride" />
+      </Connection>
+      <Connection>
+        <Source node="node_0" param="value" />
+        <Target node="node_18" param="Input" />
+      </Connection>
+    </Connections>
+  </Compound>
+</Imaginet>

@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Function unit="Imaginet.Units.Signal.FftShift">
+		<DisplayName>FFT Shift</DisplayName>
+		<DisplayPath>/Signal/Spectral</DisplayPath>
+
+		<Description>
+			Shift the zero-frequency component to the center of the spectrum.
+			<Header>Python implementation</Header>
+			<Code language="Python">
+				import numpy as np
+
+				def fft_shift(input_data, output_data, axis):
+				input_shifted = np.fft.fftshift(input_data, axes=(-axis-1))
+				np.copyto(output_data, input_shifted)
+			</Code>
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which a fft shift is performed. Enumerated from right to left." />
+			<OutputSocket name="output" type="input.type" shape="input.shape" pipe="data" />
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less then the number of input dimensions." />
+			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="Size of axis dimension must be the power of two." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="fft_shift.h:fft_shift_f32" call="fft_shift_f32(input, output, d0, d1, d2)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="fft_shift.h:fft_shift_q31" call="fft_shift_q31(input, output, d0, d1, d2)">
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+			<Implementation language="C" fragment="fft_shift.h:fft_shift_q15" call="fft_shift_q15(input, output, d0, d1, d2)">
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+			<Implementation language="Python" fragment="fft_shift.py:fft_shift_py" call="fft_shift(input, output, axis)" />
+		</Implementations>
+	</Function>
+
+</Imaginet>

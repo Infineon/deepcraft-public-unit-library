@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Signal.SubAvg">
+		<DisplayName>Average Subtract</DisplayName>
+		<DisplayPath>/Signal/Deprecated</DisplayPath>
+
+		<Tags>
+			<HideInLibrary/>
+		</Tags>
+		
+		<Description>
+			Remove offset by subtracting the average from each element given an axis.
+
+			<Header>Python implementation</Header>
+			<Inline fragment="subavg.py:subavg" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which an average subtract is performed. Enumerated from right to left." />
+			<OutputSocket name="output" type="input.type" shape="input.shape" />
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="axis &lt; input.shape.count" error="Axis ({axis}) must be one of input dimensions (0...{input.shape.count-1})." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="subavg.h:subavg_f32" call="subavg_f32(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="Python" fragment="subavg.py:subavg" call="subavg(input, axis, output)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>
