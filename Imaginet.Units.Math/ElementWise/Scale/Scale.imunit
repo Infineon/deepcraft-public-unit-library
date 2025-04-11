@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Scale">
+		<DisplayName>Scale</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			Multiply input with given constant.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input" />
+			<Expression name="count" value="input.shape.flat" description="Number of elements" />
+			<DoubleOption name="scale" text="Scale" default="1" description="The constant" />
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output buffer. It will have the same shape as the input."/>
+		</Parameters>
+		
+		<Contracts>
+			<Assert 
+				test="input.type == System.Float32"
+				error="The input tensor ({input.type}) must have type: Float32" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="scale.h:scale_f32" call="scale_f32(input, count, scale, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>			
+			<Implementation language="Python" fragment="scale.py:scale" call="scale(input, scale, output)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

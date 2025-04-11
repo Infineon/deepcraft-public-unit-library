@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Math.Log">
+		<DisplayName>Logarithm</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			Compute logarithm, the logarithm is the inverse function to exponentiation.
+
+			<Image file="images/log.png" width="340" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<DoubleOption name="base" min="0" default="0" ui="textbox" text="Logarithm base" description="Base of the logarithm. If 0, natural base is used. Default 0." />
+			
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+			
+			<Expression name="count" value="input.shape.flat" />
+			<Expression name="scale" value="base == 0 ? 1 : (1.0 / Math.log(base))" />
+
+			<!-- Quantized -->
+			<Expression name="in_shift" value="input.shift" />
+			<Expression name="out_shift" value="(input.shift + 8).log2.floor" />
+			<Expression name="actual_base" value="base == 0 ? Math.E : base" />
+			<Expression name="shift_corr" value="input.type == System.Q15 ? 1 : 0" />
+			<Expression name="offset_q" value="(2.pow(in_shift).log / actual_base.log).quantize(input.type, out_shift)"/>
+			<Expression name="scale_q" value="actual_base.log.inv.quantize(input.type, out_shift + shift_corr)" />
+
+			<OutputSocket name="output" type="input.type" shape="input.shape" shift="out_shift"/>
+		</Parameters>
+
+		<Contracts>
+			<Assert test="base &gt; 1 || base == 0" error="The base must be bigger than 1" />
+			<Assert 
+				test="input.type == System.Float32 || input.type == System.Q31 || input.type == System.Q15" 
+				error="The input tensor ({input.type}) must have type: Float32, Q31 or Q15" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="Python" fragment="log.py:log" call="log(input, output, base)" />
+
+			<Implementation language="C" fragment="log.h:ln_f32" call="ln_f32(input, count, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="base == 0" />
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="log.h:log10_f32" call="log10_f32(input, count, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="base == 10" />
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="log.h:log_f32" call="log_f32(input, count, scale, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="base != 10" />
+				<Conditional value="base != 0" />
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<!-- CMSIS -->
+
+			<Implementation language="C" fragment="log_cmsis.h:log_cmsis_f32" call="log_cmsis_f32(input, count, scale, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="log_cmsis.h:log_cmsis_q31" call="log_cmsis_q31(input, count, offset_q, scale_q, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+
+			<Implementation language="C" fragment="log_cmsis.h:log_cmsis_q15" call="log_cmsis_q15(input, count, offset_q, scale_q, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+
+		</Implementations>
+
+	</Unit>
+</Imaginet>

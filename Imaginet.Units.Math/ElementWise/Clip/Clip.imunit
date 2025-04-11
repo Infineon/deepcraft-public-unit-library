@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Clip">
+		<DisplayName>Clip</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			Given an interval, values outside the interval are clipped to the interval edges.
+			Returns min &lt;= input &lt;= max
+
+			<Header>Python implementation</Header>
+			<Inline fragment="clip.py:clip" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<DoubleOption name="min" default="-3.40282347E+38" />
+			<DoubleOption name="max" default="3.40282347E+38" />
+			
+			<Expression name="min_i8" value="min.max(-128).round" />
+			<Expression name="max_i8" value="max.min(127).round" />
+			<Expression name="min_i16" value="min.max(-32768).round" />
+			<Expression name="max_i16" value="max.min(32767).round" />
+			<Expression name="min_i32" value="min.max(-2147483647).round" />
+			<Expression name="max_i32" value="max.min(2147483647).round" />
+
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+			<OutputSocket name="output" type="input.type" shape="input.shape" />
+			<Expression name="count" value="input.shape.flat" />
+			<Expression name="min_quantized" value="min.quantize(input.type, input.shift)" />
+			<Expression name="max_quantized" value="max.quantize(input.type, input.shift)" />
+		</Parameters>
+
+		<Implementations>
+			<Implementation language="C" fragment="clip.h:clip_f32" call="clip_f32(input, count, min, max, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="clip.h:clip_i8" call="clip_i8(input, count, min_i8, max_i8, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+
+			<Implementation language="C" fragment="clip.h:clip_i16" call="clip_i16(input, count, min_i16, max_i16, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int16" />
+			</Implementation>
+
+			<Implementation language="C" fragment="clip.h:clip_i32" call="clip_i32(input, count, min_i32, max_i32, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int32" />
+			</Implementation>
+
+
+			<Implementation language="C" fragment="clip_cmsis.h:clip_cmsis_f32" call="clip_cmsis_f32(input, count, min, max, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="clip_cmsis.h:clip_cmsis_q31" call="clip_cmsis_q31(input, count, min_quantized, max_quantized, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+
+			<Implementation language="C" fragment="clip_cmsis.h:clip_cmsis_q15" call="clip_cmsis_q15(input, count, min_quantized, max_quantized, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+
+			<Implementation language="C" fragment="clip_cmsis.h:clip_cmsis_q7" call="clip_cmsis_q7(input, count, min_quantized, max_quantized, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q7" />
+			</Implementation>
+
+
+			<Implementation language="Python" fragment="clip.py:clip" call="clip(input, min, max, output)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.BitUtilization">		
+		<DisplayName>Bit Utilization</DisplayName>
+		<DisplayPath>/Math/Quantization</DisplayPath>
+		
+		<Description>
+			The number of leading redundant sign bits in x, i.e. the number of bits following the most significant bit that are identical to it.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />			
+			<Expression name="count" value="input.shape.flat()" />
+			<OutputSocket name="output" type="System.Int8" shape="input.shape" />			
+		</Parameters>
+
+		<Contracts>
+			<Assert 
+				test="input.type == System.Q31 || input.type == System.Q15 || input.type == System.Q7" 
+				error="BitUtilization unit only works for quantized tensors (Q31, Q15 or Q7)" />
+		</Contracts>
+
+		<Implementations>
+				
+			<!-- Q31 to ... -->
+			<Implementation language="C" fragment="bit_utilization.h:bit_utilization_q31" call="bit_utilization_q31(input, output, count)">
+				<Conditional>input.type == System.Q31</Conditional>
+			</Implementation>
+
+			
+			<!-- Q15 to ... -->
+			<Implementation language="C" fragment="bit_utilization.h:bit_utilization_q15" call="bit_utilization_q15(input, output, count)">
+				<Conditional>input.type == System.Q15</Conditional>
+			</Implementation>
+
+	
+			<!-- Q7 to ... -->
+			<Implementation language="C" fragment="bit_utilization.h:bit_utilization_q7" call="bit_utilization_q7(input, output, count)">
+				<Conditional>input.type == System.Q7</Conditional>
+			</Implementation>
+
+		</Implementations>
+
+	</Unit>
+</Imaginet>

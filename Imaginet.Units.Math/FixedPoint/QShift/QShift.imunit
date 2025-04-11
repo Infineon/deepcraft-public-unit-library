@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.QShift">		
+		<DisplayName>Shift</DisplayName>
+		<DisplayPath>/Math/Quantization</DisplayPath>
+		
+		<Description>
+			Moves the binary point without changing the numeric value other than saturation and decimal truncation.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />			
+			<Expression name="count" value="input.shape.flat()" />
+			<Int32Option 
+				name="shift" 
+			description="Number of positions to move the binary-faction-point. Positive to the right, negative to the left." />
+			<OutputSocket name="output" type="input.type" shape="input.shape" shift="input.shift + shift"/>			
+		</Parameters>
+
+		<Contracts>
+			<!--<Assert test="shift &lt;= input.shift " error="Shift to big. Max is {input.shift}" />
+			<Assert test="shift &gt;=  " error="Shift to small. Min is {i}" />-->
+			<Assert 
+				test="input.type == System.Q31 || input.type == System.Q15 || input.type == System.Q7" 
+				error="QShift unit only works for quantized tensors (Q31, Q15 or Q7)" />
+		</Contracts>
+
+		<Implementations>
+				
+			<!-- Q31 to ... -->
+			<Implementation language="C" fragment="qshift.h:qshift_q31" call="qshift_q31(input, shift, output, count)">
+				<Conditional>input.type == System.Q31</Conditional>
+			</Implementation>
+
+			
+			<!-- Q15 to ... -->
+			<Implementation language="C" fragment="qshift.h:qshift_q15" call="qshift_q15(input, shift, output, count)">
+				<Conditional>input.type == System.Q15</Conditional>
+			</Implementation>
+
+	
+			<!-- Q7 to ... -->
+			<Implementation language="C" fragment="qshift.h:qshift_q7" call="qshift_q7(input, shift, output, count)">
+				<Conditional>input.type == System.Q7</Conditional>
+			</Implementation>
+
+		</Implementations>
+
+	</Unit>
+</Imaginet>

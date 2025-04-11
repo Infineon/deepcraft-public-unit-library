@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.AddConstant">
+		<DisplayName>Add Constant</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			Computes (x+A) given a constant A.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" description="Input" />
+			<Expression name="count" value="input.shape.flat" description="Number of elements" />
+			
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+			<Int32Option name="shift" value="0" />
+			<DoubleOption name="A" text="Constant" description="The constant A" />
+			<Expression name="A_quantized" value="A.quantize(input.type, input.shift + shift)" />
+			<Expression name="A_round" value="A.round()" />
+			<OutputSocket 
+				name="output"
+				type="input.type"
+				shape="input.shape"
+				text="Output" 
+				description="Output buffer. It will have the same shape as the input." 
+				shift="input.shift + shift" />
+		</Parameters>
+
+		<Implementations>
+			<Implementation language="C" fragment="addi.h:addi_f32" call="addi_f32(input, count, A, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="addi.h:addi_i8" call="addi_i8(input, count, A_round, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+
+			<Implementation language="C" fragment="addi.h:addi_i16" call="addi_i16(input, count, A_round, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int16" />
+			</Implementation>
+
+			<Implementation language="C" fragment="addi.h:addi_i32" call="addi_i32(input, count, A_round, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int32" />
+			</Implementation>
+						
+
+			<Implementation language="C" fragment="addi_cmsis.h:addi_cmsis_f32" call="addi_cmsis_f32(input, count, A, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="addi_cmsis.h:addi_cmsis_q31" call="addi_cmsis_q31(input, count, A_quantized, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="shift == 0"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+
+			<Implementation language="C" fragment="addi_cmsis.h:addi_cmsis_q15" call="addi_cmsis_q15(input, count, A_quantized, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="shift == 0"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+			
+			<Implementation language="C" fragment="addi_cmsis.h:addi_cmsis_q7" call="addi_cmsis_q7(input, count, A_quantized, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="shift == 0"/>
+				<Conditional value="input.type == System.Q7" />
+			</Implementation>
+
+			<!-- Shifted -->
+
+			<Implementation language="C" fragment="addi_cmsis.h:addi_shift_cmsis_q31" call="addi_shift_cmsis_q31(input, count, A_quantized, shift, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="shift != 0"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+
+			<Implementation language="C" fragment="addi_cmsis.h:addi_shift_cmsis_q15" call="addi_shift_cmsis_q15(input, count, A_quantized, shift, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="shift != 0"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+
+			<Implementation language="C" fragment="addi_cmsis.h:addi_shift_cmsis_q7" call="addi_shift_cmsis_q7(input, count, A_quantized, shift, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="shift != 0"/>
+				<Conditional value="input.type == System.Q7" />
+			</Implementation>
+
+			<!-- Python -->
+			
+			<Implementation language="Python" fragment="addi.py:addi" call="addi(input, A, output)"/>
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

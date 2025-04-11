@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Quantize">
+		<DisplayName>Quantize</DisplayName>
+		<DisplayPath>/Math/Quantization</DisplayPath>
+
+		<Description>
+			Convert floating point to 
+			Shifted Fixed Point (Q7, Q15, Q31) or Scaled Fixed Point (D8, D16, D32)
+		</Description>
+   
+		<Parameters>
+			<InputSocket name="input" />
+			
+			<StringOption name="output_type" text="Output Type" description="Output type to convert to" default="q15" >
+				<OneOf>
+					<Item text="Shifted Fixed Point (8 bit)">q7</Item>
+					<Item text="Shifted Fixed Point (16 bit)">q15</Item>
+					<Item text="Shifted Fixed Point (32 bit)">q31</Item>
+
+					<!--
+					<Item text="Scaled Fixed Point (8 bit)">d8</Item>
+					<Item text="Scaled Fixed Point (16 bit)">d16</Item>
+					<Item text="Scaled Fixed Point (32 bit)">d32</Item>
+					
+					<Item text="Signed Integer (8 bit)">i8</Item>
+					<Item text="Signed Integer (16 bit)">i16</Item>
+					<Item text="Signed Integer (32 bit)">i32</Item>
+					-->
+				</OneOf>
+			</StringOption>
+
+			<Expression name="count" value="input.shape.flat()" />
+
+			<!-- todo: show only if output_type is one of q7,q15,q31-->
+			<Int32Option name="shift" text="Shift" default="0" description="Only valid whe type is Shifted Fixed Point"/>
+
+			<!-- todo: show only if output_type is one of d8,d16,d32
+			<DoubleOption name="scale" text="Scale" default="1" description="Only valid whe type is Scaled Fixed Point"/>
+			<Int32Option name="offset" text="Offset" default="0" description="Only valid whe type is Scaled Fixed Point"/>
+			-->
+			<Expression name="scale" value="1"/>
+			<Expression name="offset" value="0"/>
+				
+			<OutputSocket
+				name="output" 
+				description="Quantized output"
+				type="System.parseType(output_type)" 
+				shape="input.shape" 
+				shift="shift" 
+				scale="scale" 
+				offset="offset" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32" error="Input must be a float tensor." />
+		</Contracts>
+
+		<Implementations>
+			
+			<!-- Float32 to Shifted Fixed Point -->
+			<Implementation language="C" fragment="quantize_q.h:quantize_f32_to_q7" call="quantize_f32_to_q7(input, output, count, shift)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.Q7</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="quantize_q.h:quantize_f32_to_q15" call="quantize_f32_to_q15(input, output, count, shift)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.Q15</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="quantize_q.h:quantize_f32_to_q31" call="quantize_f32_to_q31(input, output, count, shift)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.Q31</Conditional>
+			</Implementation>
+			
+			<!-- Float32 to Scaled Fixed Point -->
+			<Implementation language="C" fragment="quantize_d.h:quantize_f32_to_d8" call="quantize_f32_to_d8(input, output, count, scale, offset)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.D8</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="quantize_d.h:quantize_f32_to_d16" call="quantize_f32_to_d16(input, output, count, scale, offset)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.D16</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="quantize_d.h:quantize_f32_to_d32" call="quantize_f32_to_d32(input, output, count, scale, offset)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.D32</Conditional>
+			</Implementation>
+	
+			<!-- Float32 to Integer -->
+			<Implementation language="C" fragment="quantize_i.h:quantize_f32_to_i8" call="quantize_f32_to_i8(input, output, count)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.Int8</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="quantize_i.h:quantize_f32_to_i16" call="quantize_f32_to_i16(input, output, count)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.Int16</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="quantize_i.h:quantize_f32_to_i32" call="quantize_f32_to_i32(input, output, count)">
+				<Conditional>input.type == System.Float32</Conditional>
+				<Conditional>output.type == System.Int32</Conditional>
+			</Implementation>
+		
+		</Implementations>
+
+	</Unit>
+</Imaginet>

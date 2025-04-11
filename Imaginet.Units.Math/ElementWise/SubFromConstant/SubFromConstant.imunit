@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.SubFromConstant">
+		<DisplayName>Subtract From Constant (A-x)</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			Computes (A-x) given a constant A.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" description="Input" />
+			<Expression name="count" value="input.shape.flat" description="Number of elements" />
+			<DoubleOption name="A" text="Constant" description="The constant A" />
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output buffer. It will have the same shape as the input."/>
+		</Parameters>
+
+		<Contracts>
+			<Assert 
+				test="input.type == System.Float32"
+				error="The input tensor ({input.type}) must have type: Float32" />
+		</Contracts>
+
+		
+		<Implementations>
+			<Implementation language="C" fragment="subir.h:subir_f32" call="subir_f32(input, count, A, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="Python" fragment="subir.py:subir" call="subir(input, A, output)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

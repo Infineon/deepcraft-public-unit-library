@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Math.Pow">
+		<DisplayName>Power</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			Compute power given an exponent.
+
+			<Image file="images/pow.png" width="340" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<DoubleOption name="exponent" default="10" ui="textbox" text="Exponent" description="The exponent" />
+			<OutputSocket name="output" type="input.type" shape="input.shape" />
+			<Expression name="count" value="input.shape.flat" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="exponent &gt; 0" error="Exponent must be a positive number." />
+			<Assert 
+				test="input.type == System.Float32"
+			    error="The input tensor ({input.type}) must have type: Float32" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="Python" fragment="pow.py:pow" call="pow(input, output, exponent)" />
+			<Implementation language="C" fragment="pow.h:pow_f32" call="pow_f32(input, count, exponent, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+</Imaginet>

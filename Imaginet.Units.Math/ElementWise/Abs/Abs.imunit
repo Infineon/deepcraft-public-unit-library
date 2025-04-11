@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Abs">
+		<DisplayName>Abs</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			Calculate the absolute value element-wise.
+
+			<Header>Python implementation</Header>
+			<Inline fragment="abs.py:abs" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input" />
+			<Expression name="count" value="input.shape.flat" description="Number of elements" />		
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output buffer. It will have the same shape as the input."/>
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+		</Parameters>
+
+		<Implementations>
+			<Implementation language="C" fragment="abs.h:abs_f32" call="abs_f32(input, count, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="abs.h:abs_i8" call="abs_i8(input, count, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+
+			<Implementation language="C" fragment="abs.h:abs_i16" call="abs_i16(input, count, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int16" />
+			</Implementation>
+
+			<Implementation language="C" fragment="abs.h:abs_i32" call="abs_i32(input, count, output)">
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="input.type == System.Int32" />
+			</Implementation>
+			
+
+			<Implementation language="C" fragment="abs_cmsis.h:abs_cmsis_f32" call="abs_cmsis_f32(input, count, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<Implementation language="C" fragment="abs_cmsis.h:abs_cmsis_q31" call="abs_cmsis_q31(input, count, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+
+			<Implementation language="C" fragment="abs_cmsis.h:abs_cmsis_q15" call="abs_cmsis_q15(input, count, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+
+			<Implementation language="C" fragment="abs_cmsis.h:abs_cmsis_q7" call="abs_cmsis_q7(input, count, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q7" />
+			</Implementation>
+			
+			
+			<Implementation language="Python" fragment="abs.py:abs" call="abs(input, output)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

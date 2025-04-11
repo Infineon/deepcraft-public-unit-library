@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Dequantize">		
+		<DisplayName>Dequantize</DisplayName>
+		<DisplayPath>/Math/Quantization</DisplayPath>
+		
+		<Description>
+			Convert Shifted Fixed Point (Q7, Q15, Q31) or 
+			Scaled Fixed Point (D8, D16, D32) to floating point
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			
+			<Expression name="count" value="input.shape.flat()" />
+			<OutputSocket name="output" type="System.Float32" shape="input.shape" />
+
+			<Expression name="shift" value="input.shift" />
+			<Expression name="offset" value="input.offset" />
+			<Expression name="scale" value="input.scale" />
+			
+		</Parameters>
+
+		<Contracts>
+			<Assert
+				test="
+					input.type == System.Q31 || input.type == System.Q15 ||  input.type == System.Q7 ||
+					input.type == System.D32 || input.type == System.D16 ||  input.type == System.D8 ||
+					input.type == System.Int32 || input.type == System.Int16 ||  input.type == System.Int8" 
+				error="Input must be one of Q31, Q15, Q7, D32, D16, D8, Int32, Int16, Int8." />
+		</Contracts>
+
+
+		<Implementations>
+
+
+			<!-- Shifted Fixed Point -->
+			<Implementation language="C" fragment="dequantize_q.h:dequantize_q31_to_f32" call="dequantize_q31_to_f32(input, output, count, shift)">
+				<Conditional>input.type == System.Q31</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="dequantize_q.h:dequantize_q15_to_f32" call="dequantize_q15_to_f32(input, output, count, shift)">
+				<Conditional>input.type == System.Q15</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="dequantize_q.h:dequantize_q7_to_f32" call="dequantize_q7_to_f32(input, output, count, shift)">
+				<Conditional>input.type == System.Q7</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+
+			<!-- Scaled Fixed Point -->
+			<Implementation language="C" fragment="dequantize_d.h:dequantize_d32_to_f32" call="dequantize_d32_to_f32(input, output, count, scale, offset)">
+				<Conditional>input.type == System.D32</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="dequantize_d.h:dequantize_d16_to_f32" call="dequantize_d16_to_f32(input, output, count, scale, offset)">
+				<Conditional>input.type == System.D16</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="dequantize_d.h:dequantize_d8_to_f32" call="dequantize_d8_to_f32(input, output, count, scale, offset)">
+				<Conditional>input.type == System.D8</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+			
+			<!-- Integer -->
+			<Implementation language="C" fragment="dequantize_i.h:dequantize_i32_to_f32" call="dequantize_i32_to_f32(input, output, count)">
+				<Conditional>input.type == System.Int32</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="dequantize_i.h:dequantize_i16_to_f32" call="dequantize_i16_to_f32(input, output, count)">
+				<Conditional>input.type == System.Int16</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+			<Implementation language="C" fragment="dequantize_i.h:dequantize_i8_to_f32" call="dequantize_i8_to_f32(input, output, count)">
+				<Conditional>input.type == System.Int8</Conditional>
+				<Conditional>output.type == System.Float32</Conditional>
+			</Implementation>
+
+		</Implementations>
+
+	</Unit>
+</Imaginet>
