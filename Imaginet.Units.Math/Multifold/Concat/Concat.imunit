@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Concat">
+		<DisplayName>Concatenate</DisplayName>
+		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+
+		<Description>
+			Join a sequence of arrays along an existing axis.
+
+			The arrays must have the same shape, except in the dimension corresponding to axis.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="i0" text="Input 0" description="Input" />
+			<InputSocket name="i1" text="Input 1" description="Input (optional)" optional="true" />
+			
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="The axis along which the arrays will be joined." />
+
+			<Expression name="size0" value="i0.shape.size(axis)" />
+			<Expression name="size1" value="i1 == null ? 0 : i1.shape.size(axis)" />
+			<Expression name="output_shape" value="i0.shape.replace(axis, size0 + size1)" />
+
+			<Expression name="step" value="output_shape.step(axis)" />
+			<Expression name="size" value="output_shape.size(axis)" />
+			<Expression name="slot" value="output_shape.slot(axis)" />
+
+			<Expression name="bytes0" value="size0 * step * i0.type.size" />
+			<Expression name="bytes1" value="size1 * step * i0.type.size" />
+
+			<OutputSocket name="output" type="i0.type" shape="output_shape" text="Output" description="The concatenated array."/>
+		</Parameters>
+
+		<Contracts>
+			<Assert test="i0.shape.remove(axis) == i1.shape.remove(axis)" error="All tensors must have the same shape except at given axis" />
+		</Contracts>
+			
+	
+		<Implementations>
+			<Implementation language="C" fragment="concat.h:concat_x2" call="concat_x2(i0, i1, step, bytes0, bytes1, slot, output)">
+			</Implementation>
+
+			<Implementation language="Python" fragment="concat.py:concat" call="concat(i0, output, axis)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

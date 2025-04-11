@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Math.Median">
+    <DisplayName>Median</DisplayName>
+    <DisplayPath>/Math/Axial</DisplayPath>
+    <Description>This function finds the middle number in a tensor by imagining that the tensor is sorted and picking the central value, storing it as the median.</Description>
+    <Parameters>
+      <InputSocket name="input" pipe="data" />
+      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(0, 1)" />
+      <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+    </Parameters>
+	  <Contracts>
+		  <Assert
+			  test="output.shape.count == 1"
+			  error="Input tensor needs to be 1D." />
+	  </Contracts>
+    <Implementations>
+      <Implementation language="C" fragment="median.h:median_f32" call="median_f32(input, output, count)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>

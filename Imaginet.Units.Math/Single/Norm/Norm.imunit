@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Math.Norm">
+		<DisplayName>Frobenius norm</DisplayName>
+		<DisplayPath>/Math/Axial</DisplayPath>
+
+		<Description>
+			Compute the Frobenius norm along the given axis.
+
+			<Header>Python implementation</Header>
+			<Inline fragment="norm.py:norm" language="Python" />
+
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which to compute the vector norms. Enumerated from right to left." />
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+
+			<Int32Option name="shift" text="Shift" default="0" />
+
+			<Expression name="output_shift" value="(d1.sqrt).log2.ceil + shift" />
+			
+			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type" shift="input.shift + output_shift" />
+
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+			
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.shape.count &gt;= 2" error="norm(axis) requires an input with two or more dimensions since it reduces one dimension." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less that number of input dimensions." />
+		</Contracts>
+
+		<Implementations>
+			<!-- NO CMSIS -->
+			<Implementation language="C" fragment="norm.h:norm_sparse_f32" call="norm_sparse_f32(input, d0, d1, d2, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="d0 != 1"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="norm.h:norm_f32" call="norm_f32(input, d1, d2, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="d0 == 1"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<!-- CMSIS f32 -->
+			<Implementation language="C" fragment="norm_cmsis_f32.h:norm_sparse_cmsis_f32" call="norm_sparse_cmsis_f32(input, d0, d1, d2, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 != 1"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="norm_cmsis_f32.h:norm_cmsis_f32" call="norm_cmsis_f32(input, d1, d2, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 == 1"/>
+				<Conditional value="d1 != 2"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="norm_cmsis_f32.h:norm_cmsis_cmplx_f32" call="norm_cmsis_cmplx_f32(input, d2, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 == 1"/>
+				<Conditional value="d1 == 2"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			
+			<!-- CMSIS q31 -->
+			<Implementation language="C" fragment="norm_cmsis_q31.h:norm_sparse_cmsis_q31" call="norm_sparse_cmsis_q31(input, d0, d1, d2, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 != 1"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+			<Implementation language="C" fragment="norm_cmsis_q31.h:norm_cmsis_q31" call="norm_cmsis_q31(input, d1, d2, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 == 1"/>
+				<Conditional value="d1 != 2"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+			<Implementation language="C" fragment="norm_cmsis_q31.h:norm_cmsis_cmplx_q31" call="norm_cmsis_cmplx_q31(input, d2, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 == 1"/>
+				<Conditional value="d1 == 2"/>
+				<Conditional value="input.type == System.Q31" />
+			</Implementation>
+
+			<!-- CMSIS q15 -->
+			<Implementation language="C" fragment="norm_cmsis_q15.h:norm_sparse_cmsis_q15" call="norm_sparse_cmsis_q15(input, d0, d1, d2, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 != 1"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+			<Implementation language="C" fragment="norm_cmsis_q15.h:norm_cmsis_q15" call="norm_cmsis_q15(input, d1, d2, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 == 1"/>
+				<Conditional value="d1 != 2"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+			<Implementation language="C" fragment="norm_cmsis_q15.h:norm_cmsis_cmplx_q15" call="norm_cmsis_cmplx_q15(input, d2, output, output_shift)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="d0 == 1"/>
+				<Conditional value="d1 == 2"/>
+				<Conditional value="input.type == System.Q15" />
+			</Implementation>
+
+
+			<Implementation language="Python" fragment="norm.py:norm" call="norm(input, axis, output)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

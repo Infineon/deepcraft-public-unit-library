@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Math.DotT">
+		<DisplayName>Dot Product Transpose</DisplayName>
+		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+
+		<Description>
+			Computes dot product transposed to increase memory locality.
+			Defined as: dott(A,B) = dot(A,B.T).T
+
+			<Header>Python implementation</Header>
+			<Inline fragment="dott.py:dott" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="a" />
+			<InputSocket name="b" />
+			<Expression name="d0" value="a.shape.size(0)" />
+			<Expression name="d1" value="a.shape.size(1)" />
+			<Expression name="d2" value="b.shape.size(1)" />
+
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="The axis in the result array along which the input arrays are multiplied and summed." />
+
+			<OutputSocket name="output" type="a.type" shape="a.shape.remove(0).insert(1,b.shape.size(1))" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="axis == 0" error="Only case when axis is 0 is implemented." />
+			<Assert test="a.shape.size(0) == b.shape.size(0)" error="Last dimension for a and b must be equal" />
+			<Assert test="a.shape.count == 1 | a.shape.count == 2" error="First argument to dot must be 1D or 2D" />
+			<Assert test="b.shape.count == 1 | b.shape.count == 2" error="Second argument to dot must be 1D or 2D" />
+			<Assert test="a.type == b.type" error="Operand types must match. {a.type} not same as {b.type}" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="dott.h:dott_f32" call="dott_f32(a, b, output, d0, d1, d2)" >
+				<!--<Conditional value="!global_use_cmsis"/>-->
+				<Conditional value="a.type == System.Float32" />
+			</Implementation>
+			<Implementation language="Python" fragment="dott.py:dott" call="dott(a, b, output)" />
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

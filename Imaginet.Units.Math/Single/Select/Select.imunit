@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Math.Select">
+    <DisplayName>Select</DisplayName>
+	<DisplayPath>/Math/Axial</DisplayPath>
+    <Description>Select N elements from given axis</Description>
+
+	<Parameters>
+      <InputSocket name="input" pipe="data" />
+           
+	  <Int32Option
+		name="axis"
+		min="0" 
+		max="9"
+		ui="textbox" 
+		text="Axis" 
+		description="Axis along which an select is performed. Enumerated from right to left." />
+
+	  <Int32Option
+		name="index"
+		min="0"
+		ui="textbox"
+		text="Index"
+		description="The start index of items to take along the given axis." />
+		
+	   <Int32Option
+		name="count"
+		min="0" 
+		ui="textbox" 
+		text="Count" 
+		description="The number of items to take along the given axis." />
+	   
+	  	<Expression name="d0" value="input.shape.step(axis)" />
+		<Expression name="d1" value="input.shape.size(axis)" />
+		<Expression name="d2" value="input.shape.slot(axis)" />
+	  
+		 <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(axis, count)" />
+    </Parameters>
+	
+	<Contracts>
+		<Assert test="axis &lt; input.shape.count" error="Axis ({axis}) must be one of input dimensions (0...{input.shape.count-1})." />
+		<Assert test="(count + index) &lt;= input.shape.size(axis)" error="Count+Index ({count}+{index}) must be less than {input.shape.size(axis)}." />
+	</Contracts>
+
+    <Implementations>
+      <Implementation language="C" fragment="select.h:select_f32" call="select_f32(input, d0, d1, count, d2, index, output)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>

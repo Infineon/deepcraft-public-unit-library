@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Take">
+		<DisplayName>Take</DisplayName>
+		<DisplayPath>/Math/Axial</DisplayPath>
+
+		<Description>
+			Take elements from an array along an axis.
+			
+			<Header>Python implementation</Header>
+			<Inline fragment="take.py:take" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" default="-1" text="Axis" >
+				<Description>
+					Axis along which a given index is selected.
+					Positive numbers are enumerated from right (0) to left.
+					Negative numbers are enumerated from left to right.
+				</Description>
+			</Int32Option>
+			<Int32Option name="index" default="-1" text="Index" description="Index in axis">
+				<Description>
+					Negative numbers are enumerated in reverse order. e.g -1 is the last index.
+				</Description>
+			</Int32Option>
+			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type" />
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+			<Expression name="real_index" value="index % d1" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.shape.count &gt;= 2" error="Requires an input ({input.shape}) with two or more dimensions since it reduces one dimension." />
+			<Assert test="axis &lt; input.shape.count" error="Axis ({axis}) must be one of input dimensions (0...{input.shape.count-1})." />
+			<Assert test="index &lt; d1" error="Index out of range. Max is {d1-1}" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="take.h:take_f32" call="take_f32(input, d0, d1, d2, real_index, output)" >
+				<Conditional value="output.type == System.Float32" />	
+			</Implementation>
+			<Implementation language="C" fragment="take.h:take_i8" call="take_i8(input, d0, d1, d2, real_index, output)" >
+				<Conditional value="output.type == System.Int8 || output.type == System.Q7" />
+			</Implementation>
+			<Implementation language="C" fragment="take.h:take_i16" call="take_i16(input, d0, d1, d2, real_index, output)" >
+				<Conditional value="output.type == System.Int16 || output.type == System.Q15" />
+			</Implementation>
+			<Implementation language="C" fragment="take.h:take_i32" call="take_i32(input, d0, d1, d2, real_index, output)" >
+				<Conditional value="output.type == System.Int32 || output.type == System.Q31" />	
+			</Implementation>
+            <Implementation language="C" fragment="take.h:take_u8" call="take_u8(input, d0, d1, d2, real_index, output)" >
+                <Conditional value="output.type == System.UInt8" />
+            </Implementation>
+            <Implementation language="C" fragment="take.h:take_u16" call="take_u16(input, d0, d1, d2, real_index, output)" >
+                <Conditional value="output.type == System.UInt16" />
+            </Implementation>
+            <Implementation language="C" fragment="take.h:take_u32" call="take_u32(input, d0, d1, d2, real_index, output)" >
+                <Conditional value="output.type == System.UInt32" />
+            </Implementation>
+		</Implementations>
+	</Unit>
+</Imaginet>

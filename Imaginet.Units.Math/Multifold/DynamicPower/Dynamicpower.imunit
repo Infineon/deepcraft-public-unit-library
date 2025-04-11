@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Math.DynamicPower">
+    <DisplayName>Dynamic Power</DisplayName>
+    <DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+    <Description>This function computes element-wise powers of an input tensor using a streamable exponent value.</Description>
+    <Parameters>
+      <InputSocket name="input" pipe="data" />
+	  <InputSocket name="exponent" pipe="data" />
+      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
+      <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+    </Parameters>
+
+	<Contracts>
+		<Assert test="exponent.shape.flat==1" error="Tensor containing exponent must be shape [1]." />
+	</Contracts>
+	
+    <Implementations>
+      <Implementation language="C" fragment="dynamicpower.h:dynamic_power_f32" call="dynamic_power_f32(input, exponent, output, count)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>

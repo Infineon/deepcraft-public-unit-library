@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Argmax">
+		<DisplayName>Argmax</DisplayName>
+		<DisplayPath>/Math/Axial</DisplayPath>
+
+		<Description>
+			Returns the indices of the maximum values along an axis.
+
+
+			<Header>Python implementation</Header>
+			<Inline fragment="argmax.py:argmax" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which an argmax is performed. Enumerated from right to left." />
+			<OutputSocket name="output" shape="input.shape.count &gt;= 2 ? input.shape.remove(axis) : System.Shape(1)" type="System.Int16" />
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+		</Parameters>
+
+		<Contracts>
+			<!--<Assert test="input.shape.count &gt;= 2" error="Argmax requires an input with two or more dimensions since it reduces one dimension." />-->
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less that number of input dimensions." />
+		
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="Python" fragment="argmax.py:argmax" call="argmax(input, axis, output)" />
+			<Implementation language="C" fragment="argmax_f.h:argmax_f32" call="argmax_f32(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			
+			<Implementation language="C" fragment="argmax_i.h:argmax_i32" call="argmax_i32(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Int32" />
+			</Implementation>
+			<Implementation language="C" fragment="argmax_i.h:argmax_i16" call="argmax_i16(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Int16" />
+			</Implementation>
+			<Implementation language="C" fragment="argmax_i.h:argmax_i8" call="argmax_i8(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+
+            <Implementation language="C" fragment="argmax_i.h:argmax_u32" call="argmax_u32(input, d0, d1, d2, output)">
+                <Conditional value="input.type == System.UInt32" />
+            </Implementation>
+            <Implementation language="C" fragment="argmax_i.h:argmax_u16" call="argmax_u16(input, d0, d1, d2, output)">
+                <Conditional value="input.type == System.UInt16" />
+            </Implementation>
+            <Implementation language="C" fragment="argmax_i.h:argmax_u8" call="argmax_u8(input, d0, d1, d2, output)">
+                <Conditional value="input.type == System.UInt8" />
+            </Implementation>
+		</Implementations>
+
+	</Unit>
+</Imaginet>

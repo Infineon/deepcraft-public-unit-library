@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Stack">
+		<DisplayName>Stack</DisplayName>
+		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+
+		<Tags>
+			<!-- fix the todos first-->
+			<HideInLibrary/>
+		</Tags>
+
+		<Description>
+			Join a sequence of arrays along a new axis.
+
+			Each array must have the same shape.
+			
+			<Header>Python implementation</Header>
+			<Inline fragment="stack.py:stack" language="Python" />
+		</Description>
+
+		<Parameters>
+
+			<!-- todo: Create an InputSocketList parameter -->
+			<InputSocket name="i0" text="Input 0" description="Input" />
+			<InputSocket name="i1" text="Input 1" description="Input (optional)" optional="true" />
+			<InputSocket name="i2" text="Input 2" description="Input (optional)" optional="true" />
+			<InputSocket name="i3" text="Input 3" description="Input (optional)" optional="true" />
+					
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="The axis in the result array along which the input arrays are stacked." />
+
+			<Expression name="count_inputs" >
+				(i0 == null ? 0 : 1) +
+				(i1 == null ? 0 : 1) +
+				(i2 == null ? 0 : 1) +
+				(i3 == null ? 0 : 1)
+			</Expression>
+		
+			<Expression name="output_shape" value="i0.shape.insert(axis, count_inputs)" />
+			
+			<Expression name="step" value="output_shape.step(axis)" />
+			<Expression name="size" value="output_shape.size(axis)" />
+			<Expression name="slot" value="output_shape.slot(axis)" />
+			
+			<OutputSocket name="output" type="i0.type" shape="output_shape" text="Output" description="The stacked array has one more dimension than the input arrays."/>
+		</Parameters>
+
+		<Contracts>
+			<!-- todo: assert d0, d1, d2, d3 have the same shape and type-->
+			<!--<Assert test="" error="All tensors must have the same shape" />-->
+			<!--<Assert test="" error="All tensors must have the same type" />-->
+		</Contracts>
+			
+	
+		<Implementations>
+			<Implementation language="C" fragment="stack.h:stack_x2_f32" call="stack_x2_f32(i0, i1, step, size, slot, output)">
+				<Conditional>i2 == null &amp;&amp; i3 == null</Conditional>
+				<Conditional value="i0 == null || i0.type == System.Float32" />
+				<Conditional value="i1 == null || i1.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="stack.h:stack_x4_f32" call="stack_x4_f32(i0, i1, i2, i3, step, size, slot, output)">
+				<Conditional>i2 != null || i3 != null</Conditional>
+				<Conditional value="i0 == null ||i0.type == System.Float32" />
+				<Conditional value="i1 == null || i1.type == System.Float32" />
+				<Conditional value="i2 == null ||i2.type == System.Float32" />
+				<Conditional value="i3 == null || i3.type == System.Float32" />
+			</Implementation>
+			
+			<!--<Implementation language="Python" fragment="stack.py:stack" call="stack(input, output)" />-->
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

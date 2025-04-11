@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Min">
+		<DisplayName>Min</DisplayName>
+		<DisplayPath>/Math/Axial</DisplayPath>
+
+		<Description>
+			Computes the minimum value along an axis. Collapses the dimension of the selected axis.
+
+			<Header>Python implementation</Header>
+			<Inline fragment="min.py:min" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which the min operation is performed. Enumerated from right to left." />
+			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type"/>
+			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
+			<Expression name="step" value="input.shape.step(axis)" />
+			<Expression name="size" value="input.shape.size(axis)" />
+			<Expression name="slot" value="input.shape.slot(axis)" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="min.h:min_sparse_f32" call="min_sparse_f32(input, step, size, slot, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="step != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="min.h:min_f32" call="min_f32(input, size, slot, output)">
+				<Conditional value="!global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<!-- CMSIS Float32-->
+			
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_sparse_f32" call="min_cmsis_sparse_f32(input, step, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="step != 1" />
+			</Implementation>
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_f32" call="min_cmsis_f32(input, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Float32" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+
+			<!-- CMSIS Q31-->
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_sparse_q31" call="min_cmsis_sparse_q31(input, step, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="step != 1" />
+			</Implementation>
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_q31" call="min_cmsis_q31(input, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q31" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<!-- CMSIS Q15-->
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_sparse_q15" call="min_cmsis_sparse_q15(input, step, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="step != 1" />
+			</Implementation>
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_q15" call="min_cmsis_q15(input, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q15" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<!-- CMSIS Q7-->
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_sparse_q7" call="min_cmsis_sparse_q7(input, step, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q7" />
+				<Conditional value="step != 1" />
+			</Implementation>
+			<Implementation language="C" fragment="min_cmsis.h:min_cmsis_q7" call="min_cmsis_q7(input, size, slot, output)">
+				<Conditional value="global_use_cmsis"/>
+				<Conditional value="input.type == System.Q7" />
+				<Conditional value="step == 1" />
+			</Implementation>
+			
+			<Implementation language="Python" fragment="min.py:min" call="min_py(input, axis, output)" />
+		</Implementations>
+
+	</Unit>
+</Imaginet>

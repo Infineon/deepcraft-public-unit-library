@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Reshape">
+		<DisplayName>Reshape</DisplayName>
+		<DisplayPath>/Meta</DisplayPath>
+
+		<Description>
+			The reshape layer is used to reshape the output of the previous layer into a different shape.
+			It is typically used as a first layer to reshape the preprocessor input into a shape that represents the data in a better way.
+
+			<Header>Example</Header>
+			The preprocessor input is always flat (One-dimensional).
+			If our preprocessor input contains 3 columns of accelerometer data followed by 3 columns of gyroscope data the preprocessor input will be 6 (2*3).
+
+			In this case we might want to group the accelerometer data and the gyroscope data into two separate columns.
+			This way we will be able process them separately. Adding a reshape layer as the first layer with an input of 2,3 achieves this.
+
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" />
+
+			<ShapeOption name="shape" text="Shape" default="[3]" />
+
+			<ReturnSocket name="output" text="Output" />
+
+
+			<StringOption
+				name="axis_names"
+				text="Axis Names (Deprecated)"
+				description="Comma separated list of axis names. Should match the tensor rank. Note! This property is deprecated, use unit 'Labels' instead." />
+
+			<StringOption
+				name="axis_labels"
+				text="Axis Labels (Deprecated)"
+				description="Axis labels. One parentheses group of label for each tensor rank. Example shape [3,2,2] would be described as (x0,x1,x2),(y0,y1),(z0,z1). Note! This property is deprecated, use unit 'Labels' instead." />
+
+
+		</Parameters>
+		
+		<Contracts>
+			<Assert 
+				test="input == null || input.shape.flat == shape.flat" 
+				error="Input shape ({input.shape}) and output shape ({shape}) must have the same number of elements."/>
+		</Contracts>
+				
+		<Implementations>
+			<Factory
+				assembly="Imaginet.Units.Math"
+				class="Imaginet.Units.Math.Reshape.Reshape"
+				call="Build(input, shape, axis_names, axis_labels, output)" />
+		</Implementations>
+
+	</Unit>
+</Imaginet>

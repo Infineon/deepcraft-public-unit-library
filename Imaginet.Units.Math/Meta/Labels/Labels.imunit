@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Labels">
+		<DisplayName>Labels</DisplayName>
+		<DisplayPath>/Meta</DisplayPath>
+
+		<Description>
+			Set name on dimensions and/or attach labels to a dimension.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" />
+
+			<ReturnSocket name="output" text="Output" />
+
+			<StringOption
+				name="axis_names"
+				text="Axis Names"
+			  description="Comma separated list of axis names. Should match the tensor rank" />
+
+			<StringOption
+				name="axis_labels"
+				text="Axis Labels"
+				description="Axis labels. One parentheses group of label for each tensor rank. Example shape [3,2,2] would be described as {x0,x1,x2},{y0,y1},{z0,z1}" />
+		</Parameters>
+						
+		<Implementations>
+			<Factory
+				assembly="Imaginet.Units.Math"
+				class="Imaginet.Units.Math.Labels.Labels"
+				call="Build(input, axis_names, axis_labels, output)" />
+		</Implementations>
+
+	</Unit>
+</Imaginet>

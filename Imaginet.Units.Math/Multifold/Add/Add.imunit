@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Add">
+		<DisplayName>Addition</DisplayName>
+		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+
+		<Description>
+			Add arguments with broadcasting.
+			
+			<Header>Python implementation</Header>
+			<Inline fragment="add.py:add" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="a" description="First operand" />
+			<InputSocket name="b" description="Second operand" />
+			<OutputSocket name="output" type="a.type" shape="a.shape" text="Output" description="Output buffer. It will have the same shape as the first operand." />
+
+			<Expression name="bcast" value="a.shape.broadcast(b.shape)" conditional="b != null"  description="Result from shape broadcast"/>
+
+			<Expression name="left" value="bcast.left" conditional="bcast != null" description="The product of axis length of left parts in dimensions with no boardcast, minimum 1" />
+			<Expression name="group1" value="bcast.group1" conditional="bcast != null" description="The product of axis length of left group which needs boardcasting, minimum 1" />
+			<Expression name="middle" value="bcast.middle" conditional="bcast != null" description="The product of axis length of middle parts in dimensions with no boardcast, minimum 1" />
+			<Expression name="group2" value="bcast.group2" conditional="bcast != null" description="The product of axis length of right group which needs boardcasting, minimum 1" />
+			<Expression name="right" value="bcast.right" conditional="bcast != null" description="The product of axis length of right parts in dimensions with no boardcast, minimum 1" />
+
+			<Expression name="count" value="a.shape.flat" />
+		</Parameters>
+
+		<Implementations>
+			<Implementation
+				  language="C"
+				  fragment="add.h:add_f32"
+				  call="add_f32(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Float32" />
+				<Conditional value="b.type == System.Float32" />
+			</Implementation>
+
+			<Implementation
+				language="Python"
+				fragment="add.py:add"
+				call="add(a, b, output)" />
+		</Implementations>
+	</Unit>
+</Imaginet>

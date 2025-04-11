@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Prod">
+		<DisplayName>Product</DisplayName>
+		<DisplayPath>/Math/Axial</DisplayPath>
+
+		<Description>
+			Compute product over given dimension
+
+			<Header>Python implementation</Header>
+			<Inline fragment="prod.py:prod" language="Python" />
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" description="The input array to operate on." />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which a product is performed." />
+			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type" description="Output array to write result to."  />
+
+			<Expression name="d0" value="input.shape.step(axis)" />
+			<Expression name="d1" value="input.shape.size(axis)" />
+			<Expression name="d2" value="input.shape.slot(axis)" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.shape.count &gt;= 2" error="Prod requires an input with two or more dimensions since it reduces one dimension." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less that number of input dimensions." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="prod.h:prod_f32" call="prod_f32(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="Python" fragment="prod.py:prod" call="prod(input, axis, output)" />
+		</Implementations>
+
+	</Unit>
+</Imaginet>

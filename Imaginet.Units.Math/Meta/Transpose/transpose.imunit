@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Math.Transpose">
+		<DisplayName>Transpose</DisplayName>
+		<DisplayPath>/Meta/</DisplayPath>
+		<Description>
+			The transpose function reorients a matrix by reflecting its elements across the main diagonal, such that the element at position (i,j) in the original matrix moves to position (j,i) in the transposed matrix.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" />
+			<Expression name="rows" value="input.shape.size(1)" />
+			<Expression name="cols" value="input.shape.size(0)" />
+			<OutputSocket name="output" pipe="data" type="input.type"
+						  shape="input.shape.replace(0,rows).replace(1,cols)" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.shape.count == 2" error="Input must be 2D." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="transpose.h:transpose_f32" call="transpose_f32(input, output, rows, cols)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+	</Unit>
+</Imaginet>
