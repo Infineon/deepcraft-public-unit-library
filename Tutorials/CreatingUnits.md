@@ -6,7 +6,7 @@ This tutorial provides the detailed instructions on how to create **Native Units
 
 ## 1. Create a Graph Project
 
-Before you create a **Native Unit** or **Graph Unit**, you need to create a Graph Project.To know how create a Graph Project, refer to [Graph UX Getting Started](https://developer.imagimob.com/getting-started/graph-ux).  
+Before you create a **Native Unit** or **Graph Unit**, you need to create a Graph Project. To know how create a Graph Project, refer to [Graph UX Getting Started](https://developer.imagimob.com/getting-started/graph-ux).  
 
 For more general information on the graph, refer to: [Graph UX Overview](https://developer.imagimob.com/getting-started/graph-ux/graph-ux-overview).
 
