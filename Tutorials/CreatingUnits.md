@@ -17,8 +17,8 @@ For more general information on the graph, refer to: [Graph UX Overview](https:/
 ## 2. Create a Unit
 
 You can create a **Native Unit** or **Graph Unit** as per your need.
-- Right-click the directory and select New>Native Unit to create a Native Unit.
-- Right-click the directory and select New>Graph Unit to create a Graph Unit.
+- Right-click the directory and select **New>Native Unit** to create a Native Unit.
+- Right-click the directory and select **New>Graph Unit** to create a Graph Unit.
   
 ![Create Unit](Images/2-CreateUnit.png)
 
