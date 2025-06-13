@@ -8,8 +8,6 @@ DEEPCRAFT™ Studio (formerly Imagimob Studio) is an end-to-end platform for dev
 
 This repository contains the unit library from the node explorer pulled from **DEEPCRAFT™ Studio**. For the best experience, we recommend accessing these units directly through the [DEEPCRAFT™ Studio platform](https://www.imagimob.com/studio).
 
-> **Note**: For commercial use, please review our [standard terms and conditions](https://developer.imagimob.com/legal/studio-terms-and-conditions).
-
 ---
 
 ## 🚀 Usage
@@ -38,4 +36,4 @@ To submit a unit:
 
 ## 📜 License
 
-For details on commercial usage, refer to the [DEEPCRAFT™ Studio terms and conditions](https://developer.imagimob.com/legal/studio-terms-and-conditions).
+This project is licensed under the **MIT License**.
