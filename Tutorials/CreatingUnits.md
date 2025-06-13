@@ -59,7 +59,7 @@ The image above shows the default `.h` file after creating a unit.
 ![Attach Input and Output](Images/3_5-AttachInputAndOutputNativeUnit.png)
 
 1. Open the Graph-UX project containing the unit.
-2. Drag and drop the `.imunit` file from the unit folder into the Graph.
+2. Drag and drop the `.imunit` file from the unit folder into the Canvas.
 3. Add a capture device and a data track to the graph and connect them to the unit.
 
 ### 3.5 Adding Input Parameters to the Unit
@@ -132,7 +132,7 @@ To implement the logic:
 ![Windowed Max in Graph](Images/4_4-WindowedMaxInGraphGraphUnit.png)
 
 1. Open the Graph-UX project containing the unit.
-2. Drag and drop the `.imunit` file into the Graph.
+2. Drag and drop the `.imunit` file into the Canvas.
 3. Add a capture device and a data track and connect them to the unit.
 4. Add another data track connected directly to the capture device to compare the altered and unaltered signals.
 5. Press the play button.
