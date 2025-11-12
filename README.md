@@ -18,7 +18,7 @@ These units are designed to be seamlessly integrated with **DEEPCRAFT™ Studio*
 
 ## 🤝 Contribution
 
-We welcome contributions from all users! New units can be submitted, subject to the **DEEPCRAFT™ review process**. To learn how to create your own unit, check out the resources in the **tutorial folder**.
+We welcome contributions from all users! New units can be submitted, subject to the **DEEPCRAFT™ review process**. You can read more about this under the **Contributing** tab. To learn how to create your own unit, check out the resources in the **tutorial folder**. 
 
 ---
 
@@ -37,3 +37,4 @@ To submit a unit:
 ## 📜 License
 
 This project is licensed under the **MIT License**.
+
