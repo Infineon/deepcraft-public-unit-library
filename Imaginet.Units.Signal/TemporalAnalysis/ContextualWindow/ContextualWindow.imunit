@@ -2,7 +2,7 @@
 <Imaginet version="2.0.0.0">
 	<Compound unit="Imaginet.Units.Signal.ContextualWindow">
 		<DisplayName>Contextual Window (Sliding Window)</DisplayName>
-		<DisplayPath>/Signal/Temporal</DisplayPath>
+		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
 		<Description>
 			<Text>This is a wrapper for a sliding window where the windows shape and stride are automatically derived from the set contextual length and desired prediction frequency.</Text>
 		</Description>

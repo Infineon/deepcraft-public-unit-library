@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Take">
 		<DisplayName>Take</DisplayName>
-		<DisplayPath>/Math/Axial</DisplayPath>
+		<DisplayPath>/Math/Slicing and Shaping</DisplayPath>
 
 		<Description>
 			Take elements from an array along an axis.

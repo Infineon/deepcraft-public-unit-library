@@ -2,11 +2,11 @@
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Math.Median">
     <DisplayName>Median</DisplayName>
-    <DisplayPath>/Math/Axial</DisplayPath>
+    <DisplayPath>/Math/Statistics</DisplayPath>
     <Description>This function finds the middle number in a tensor by imagining that the tensor is sorted and picking the central value, storing it as the median.</Description>
     <Parameters>
       <InputSocket name="input" pipe="data" />
-      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(0, 1)" />
+      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(0, 1)" description="Output buffer. It will have the same shape as the input but with the selected axis reduced."/>
       <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
     </Parameters>
 	  <Contracts>

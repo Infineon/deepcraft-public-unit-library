@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Imaginet version="2.0.0.0">
 	<Unit name="Imaginet.Units.Math.Resizing">
-		<DisplayName>Resizing</DisplayName>
-		<DisplayPath>/Image Processing</DisplayPath>
-		<Description>Resize image using nearest neighbor interpolation</Description>
+		<DisplayName>Image Resize</DisplayName>
+		<DisplayPath>/Image Processing/Spatial Transformations</DisplayPath>
+		<Description>Resize an image from any resolution to any resolution using nearest neighbor or bilinear interpolation.</Description>
 
 		<Parameters>
 			<InputSocket name="input" pipe="data" />
@@ -13,14 +13,26 @@
 			  min="1"
 			  ui="textbox"
 			  text="Target Height"
-			  description="Output height in pixels" />
+			  description="Output height in pixels." />
 
 			<Int32Option
 			  name="target_width"
 			  min="1"
 			  ui="textbox"
 			  text="Target Width"
-			  description="Output width in pixels" />
+			  description="Output width in pixels." />
+
+					<Int32Option
+		  name="interpolation_mode"
+		  ui="textbox"
+		  text="Interpolation Mode"
+		  description="Interpolation method used for resizing."
+		  default="0">
+			<OneOf>
+				<Item text="Nearest Neighbor">0</Item>
+				<Item text="Bilinear">1</Item>
+			</OneOf>
+		</Int32Option>
 
 			<!-- Precomputed values -->
 			<Expression name="channels" value="input.shape.count == 2 ? 1 : input.shape.size(-3)" description="Number of channels" />
@@ -31,7 +43,7 @@
 			<Expression name="step_width" value="input.shape.step(0+index_offset)" />
 
 			<OutputSocket name="output" pipe="data" type="input.type"
-						  shape="input.shape.count == 2 ? System.Shape(target_height, target_width) : System.Shape(target_height, target_width, channels)" />
+						  shape="input.shape.count == 2 ? System.Shape(target_height, target_width) : System.Shape(target_height, target_width, channels)" description="Output buffer. It will have the desired shape." />
 		</Parameters>
 
 		<Contracts>
@@ -40,12 +52,17 @@
 			<Assert test="input_width > 0" error="Input width must be greater than 0" />
 			<Assert test="target_height > 0" error="Target height must be positive" />
 			<Assert test="target_width > 0" error="Target width must be positive" />
+			<Assert test="interpolation_mode >= 0 &amp;&amp; interpolation_mode &lt;= 1" error="Interpolation mode must be 0 (Nearest Neighbor) or 1 (Bilinear)" />
 		</Contracts>
 
 		<Implementations>
 			<Implementation language="C" fragment="resizing.h:resize_nearest_f32"
 							call="resize_nearest_f32(input, input_height, input_width, step_height, step_width, target_height, target_width, channels, output)">
-				<Conditional value="input.type == System.Float32" />
+				<Conditional value="input.type == System.Float32 &amp;&amp; interpolation_mode == 0" />
+			</Implementation>
+			<Implementation language="C" fragment="resizing.h:resize_bilinear_f32"
+							call="resize_bilinear_f32(input, input_height, input_width, step_height, step_width, target_height, target_width, channels, output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; interpolation_mode == 1" />
 			</Implementation>
 		</Implementations>
 	</Unit>

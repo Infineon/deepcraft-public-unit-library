@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.BitUtilization">		
 		<DisplayName>Bit Utilization</DisplayName>
-		<DisplayPath>/Math/Quantization</DisplayPath>
+		<DisplayPath>/Utilities/Quantization</DisplayPath>
 		
 		<Description>
 			The number of leading redundant sign bits in x, i.e. the number of bits following the most significant bit that are identical to it.

@@ -40,13 +40,18 @@ typedef struct
 #define CBUFFER_SUCCESS 0
 #define CBUFFER_NOMEM -1
 
+// Reset instance (clear buffer)
+static inline void cbuffer_reset(cbuffer_t* buf) {
+	buf->read = 0;
+	buf->write = 0;
+	buf->used = 0;
+}
+
 // Initializes a cbuffer handle with given memory and size.
 static inline void cbuffer_init(cbuffer_t *dest, void *mem, int size) {
 	dest->buf = mem;
 	dest->size = size;
-	dest->used = 0;
-	dest->read = 0;
-	dest->write = 0;
+	cbuffer_reset(dest);
 }
 
 // Returns the number of free bytes in buffer.
@@ -107,44 +112,12 @@ static inline int cbuffer_advance(cbuffer_t *buf, int count) {
 	return CBUFFER_SUCCESS;
 }
 
-// Reset instance (clear buffer)
-static inline void cbuffer_reset(cbuffer_t *buf) {
-	buf->read = 0;
-	buf->write = 0;
-	buf->used = 0;
-}
-
-// Copies given "count" bytes to the "dst" buffer without advancing the buffer read offset.
-// Returns CBUFFER_SUCCESS on success or CBUFFER_NOMEM if count is more than available data.
-static inline int cbuffer_copyto(cbuffer_t *buf, void *dst, int count, int offset) {
-	
-	if (count > cbuffer_get_used(buf))
-		return CBUFFER_NOMEM;
-
-	int a0 = buf->read + offset;
-	if (a0 >= buf->size)
-		a0 -= buf->size;
-
-	int c0 = count;
-	if (a0 + c0 > buf->size)
-		c0 = buf->size - a0;
-	
-	memcpy(dst, buf->buf + a0, c0);
-	
-	int c1 = count - c0;
-
-	if (c1 > 0)
-		memcpy(((char *)dst) + c0, buf->buf, c1);
-
-	return CBUFFER_SUCCESS;
-}
-
 // Returns a read pointer at given offset and  
 // updates *can_read_bytes (if not NULL) with the number of bytes that can be read.
 // 
 // Note! Byte count written to can_read_bytes can be less than what cbuffer_get_used() returns.
 // This happens when the read has to be split in two since it's a circular buffer.
-static inline void *cbuffer_readptr(cbuffer_t* buf, int offset, int *can_read_bytes)
+static inline void* cbuffer_readptr(cbuffer_t* buf, int offset, int* can_read_bytes)
 {
 	int a0 = buf->read + offset;
 	if (a0 >= buf->size)
@@ -158,6 +131,27 @@ static inline void *cbuffer_readptr(cbuffer_t* buf, int offset, int *can_read_by
 		*can_read_bytes = c0;
 	}
 	return buf->buf + a0;
+}
+
+// Copies given "count" bytes to the "dst" buffer without advancing the buffer read offset.
+// Returns CBUFFER_SUCCESS on success or CBUFFER_NOMEM if count is more than available data.
+static inline int cbuffer_copyto(cbuffer_t *buf, void *dst, int count, int offset) {
+	
+	if (count > cbuffer_get_used(buf))
+		return CBUFFER_NOMEM;
+
+	int can_read_bytes;
+	void* src_ptr = cbuffer_readptr(buf, offset, &can_read_bytes);
+
+	int c0 = (count < can_read_bytes) ? count : can_read_bytes;
+	memcpy(dst, src_ptr, c0);
+	
+	int c1 = count - c0;
+
+	if (c1 > 0)
+		memcpy(((char *)dst) + c0, buf->buf, c1);
+
+	return CBUFFER_SUCCESS;
 }
 
 #pragma IMAGINET_FRAGMENT_END

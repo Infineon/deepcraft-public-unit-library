@@ -1,0 +1,29 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Filter.Threshold">
+		<DisplayName>Threshold</DisplayName>
+		<DisplayPath>/Signal Processing/Postprocessing</DisplayPath>
+		<Description>
+			Outputs the original value when it is greater than or equal to a threshold, otherwise 0.0. Useful for suppressing low values while preserving higher ones.
+		</Description>
+		<Parameters>
+			<InputSocket name="input" />
+			<OutputSocket name="output" type="input.type" shape="input.shape" />
+
+			<DoubleOption name="threshold" text="Threshold" description="Values below this become 0; values at/above are preserved" />
+			<Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="threshold >= 0" error="Threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="threshold &lt;= 1" error="Threshold needs to be in the range [0.0, 1.0]." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="threshold.h:threshold_f32" call="threshold_f32(input, output, count, threshold)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+	</Unit>
+</Imaginet>
+

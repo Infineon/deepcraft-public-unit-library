@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Concat">
 		<DisplayName>Concatenate</DisplayName>
-		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+		<DisplayPath>/Math/Slicing and Shaping</DisplayPath>
 
 		<Description>
 			Join a sequence of arrays along an existing axis.

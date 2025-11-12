@@ -2,7 +2,7 @@
 <Imaginet version="2.0.0.0">
 	<Unit name="Imaginet.Units.Filter.ConsecutiveConfidenceFilter">
 		<DisplayName>Consecutive Confidence Filter</DisplayName>
-		<DisplayPath>/Filters</DisplayPath>
+		<DisplayPath>/Signal Processing/Postprocessing</DisplayPath>
 		<Description>This postprocessing unit confirms predictions by requiring consistent detections over multiple instances.</Description>
 		<Parameters>
 			<InputSocket name="input" pipe="data" />
@@ -19,9 +19,9 @@
 					<Item text="False">0</Item>
 				</OneOf>
 			</Int32Option>
-			<Handle name="gesture_count" text="Keep track of past detections" description="User friendly description" size="count"/>
-			<Handle name="gesture_confidence_detected" text="Keep track of past max confidences" description="User friendly description" size="count"/>
-			<Handle name="prev_detected_gesture" text="User friendly name" description="User friendly description" size="1"/>
+		<Handle name="gesture_count" text="Keep track of past detections" description="User friendly description" size="count"/>
+		<Handle name="gesture_confidence_detected" text="Keep track of past max confidences" description="User friendly description" size="count*4"/>
+		<Handle name="prev_detected_gesture" text="User friendly name" description="User friendly description" size="1"/>
 
 			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
 		
@@ -38,7 +38,7 @@
 		</Contracts>
 
 		<Implementations>
-			<Implementation language="C" fragment="consecutiveconfidencefilter.h:consecutive_confidence_filter_f32" call="consecutive_confidence_filter_f32(input, output, gesture_count, prev_detected_gesture, gesture_confidence_detected, count, threshold, min_detection_threshold, count_threshold, reset_count, null_count, use_confidence_tracking)">
+			<Implementation language="C" fragment="consecutive_confidence_filter.h:consecutive_confidence_filter_f32" call="consecutive_confidence_filter_f32(input, output, gesture_count, prev_detected_gesture, gesture_confidence_detected, count, threshold, min_detection_threshold, count_threshold, reset_count, null_count, use_confidence_tracking)">
 				<Conditional value="input.type == System.Float32" />
 			</Implementation>
 		</Implementations>

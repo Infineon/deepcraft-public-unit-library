@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Imaginet version="2.0.0.0">
 	<Unit name="Imaginet.Units.Math.Crop">
-		<DisplayName>Crop</DisplayName>
-		<DisplayPath>/Image Processing</DisplayPath>
+		<DisplayName>Image Crop</DisplayName>
+		<DisplayPath>/Image Processing/Image Manipulation</DisplayPath>
 		<Description>Crop image along height and width dimensions, preserving channels.</Description>
 
 		<Parameters>
@@ -13,36 +13,35 @@
 			  min="0"
 			  ui="textbox"
 			  text="Start Height"
-			  description="Starting index for height dimension" />
+			  description="Starting index for height dimension." />
 
 			<Int32Option
 			  name="count_height"
 			  min="1"
 			  ui="textbox"
 			  text="Crop Height"
-			  description="Number of rows to keep" />
+			  description="Number of rows to keep." />
 
 			<Int32Option
 			  name="start_width"
 			  min="0"
 			  ui="textbox"
 			  text="Start Width"
-			  description="Starting index for width dimension" />
+			  description="Starting index for width dimension." />
 
 			<Int32Option
 			  name="count_width"
 			  min="1"
 			  ui="textbox"
 			  text="Crop Width"
-			  description="Number of columns to keep" />
+			  description="Number of columns to keep." />
 
 			<!-- Precomputed values -->
 			<Expression name="channels" value="input.shape.count == 2 ? 1 : input.shape.size(-3)" description="Number of channels" />
 			<Expression name="index_offset" value="channels == 3 ? 1 : 0" description="Number of channels" />
 			<Expression name="input_height" value="input.shape.size(1+index_offset)" />
 			<Expression name="input_width" value="input.shape.size(0+index_offset)" />
-			<OutputSocket name="output" pipe="data" type="input.type"
-						  shape="input.shape.count == 2 ? System.Shape(count_height, count_width) : System.Shape(count_height, count_width, channels)" />
+			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.count == 2 ? System.Shape(count_height, count_width) : System.Shape(count_height, count_width, channels)" description="Output buffer. It will have the desired shape based on the crop."/>
 		</Parameters>
 
 		<Contracts>

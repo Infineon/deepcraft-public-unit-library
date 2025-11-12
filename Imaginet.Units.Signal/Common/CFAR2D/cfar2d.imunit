@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.CFAR2D">
+    <DisplayName>CFAR 2D</DisplayName>
+    <DisplayPath>/Signal Processing/Frequency Domain</DisplayPath>
+
+	<Description>The CFAR 2D is a two-dimensional Cell-Averaging CFAR algorithm for radar target detection in both range and Doppler dimensions simultaneously. It processes a [count_chirps, count_samples, count_antennas] input array, comparing each cell's signal to a threshold based on surrounding noise in both dimensions, scaled by a bias. Outputs pairs of (range_index, doppler_index) for each detected target.</Description>
+
+    <Parameters>
+      <InputSocket name="input" pipe="data" />
+      <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+	  <Expression name="count_antennas" value="input.shape.size(0)" description="Number of antennas" />
+	  <Expression name="count_samples" value="input.shape.size(1)" description="Number of samples" />
+	  <Expression name="count_chirps" value="input.shape.size(2)" description="Number of chirps" />
+	  <Int32Option name="num_targets" ui="textbox" text="Number of targets" description="Specifies how many targets to detect." default="1">
+  		<OneOf>
+			<Item text="1">1</Item>
+			<Item text="2">2</Item>
+			<Item text="3">3</Item>
+		</OneOf>
+	  </Int32Option>
+
+	   <Int32Option name="antenna_mode" ui="textbox" text="Antenna Mode" description="Defines how antenna data is combined.">
+  		<OneOf>
+			<Item text="Average">0</Item>
+			<Item text="Max">1</Item>
+		</OneOf>
+	   </Int32Option>
+
+	  <Int32Option name="window_size_range" default="8" ui="textbox" text="Reference Cells Range" description="Number of reference cells in the range dimension sliding window used to estimate noise around the cell under test (CUT)." />
+	  <Int32Option name="window_size_doppler" default="8" ui="textbox" text="Reference Cells Doppler" description="Number of reference cells in the Doppler dimension sliding window used to estimate noise around the cell under test (CUT)." />
+	  <Int32Option name="gap_cells_range" default="2" ui="textbox" text="Gap Cells Range" description="Number of gap cells on each side of the CUT in range dimension to prevent target self-shadowing." />
+	  <Int32Option name="gap_cells_doppler" default="2" ui="textbox" text="Gap Cells Doppler" description="Number of gap cells on each side of the CUT in Doppler dimension to prevent target self-shadowing." />
+	  <DoubleOption name="bias" default="1.5" ui="textbox" text="Bias" description="Bias (α) to compute the detection threshold from the noise estimate, controlling the false alarm rate." />
+	  <BoolOption name="output_amplitude" text="Output Amplitude" description="Enable or disable amplitude output. When disabled, only target index pairs are output." default="false" />
+
+      <OutputSocket name="output" pipe="data" type="input.type" shape="System.Shape((output_amplitude ? 3 : 2)*num_targets)" />
+    </Parameters>
+
+	<Contracts>
+		<Assert test="bias >= 0" error="Bias needs to be positive." />
+		<Assert test="window_size_range >= 0" error="Reference Cells Range needs to be positive." />
+		<Assert test="window_size_doppler >= 0" error="Reference Cells Doppler needs to be positive." />
+		<Assert test="gap_cells_range >= 0" error="Gap Cells Range needs to be positive." />
+		<Assert test="gap_cells_doppler >= 0" error="Gap Cells Doppler needs to be positive." />
+		<Assert test="input.shape.count == 3" error="Unexpected input tensor format ({output.shape}). Expect tensor to have shape [Chirps, Samples, Antennas]" />
+	</Contracts>
+
+	<Implementations>
+      <Implementation language="C" fragment="cfar2d.h:cfar_2d_f32" call="cfar_2d_f32(input, output, antenna_mode, window_size_range, window_size_doppler, gap_cells_range, gap_cells_doppler, bias, num_targets, count_antennas, count_samples, count_chirps, output_amplitude)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+
+	</Unit>
+</Imaginet>

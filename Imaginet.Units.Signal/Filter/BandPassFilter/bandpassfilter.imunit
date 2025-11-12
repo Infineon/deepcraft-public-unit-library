@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Compound unit="Imaginet.Units.Filter.BandPassFilter">
+	  <DisplayName>Band Pass Filter</DisplayName>
+	  <DisplayPath>/Signal Processing/Time Domain</DisplayPath>
+	  <Description>
+		  <Text>A bandpass filter is a type of filter that allows signals within a specific frequency range to pass through while attenuating (reducing the amplitude of) signals at frequencies outside this range.</Text>
+	  </Description>
+	  <Nodes>
+		  <UnitNode id="node_1" x="677.8616666666667" y="549.7049999999999" enabled="true" unit="Imaginet.Units.Filter.HighPassFilter" />
+		  <TensorInputNode id="node_4" x="81.57999999999993" y="426.375" enabled="true" name="Input" param="node_4_input" />
+		  <TensorOutputNode id="node_5" param="node_5_output" x="999.6616666666666" y="570.375" enabled="true" name="Output" description="Output buffer. It will have the same shape as the input."/>
+		  <DoubleOptionNode id="node_3" x="42.75833333333321" y="283.375" enabled="true" name="High Cutoff Frequency" param="node_3_input">
+			  <MinValue>-1.7976931348623157E+308</MinValue>
+			  <MaxValue>1.7976931348623157E+308</MaxValue>
+		  </DoubleOptionNode>
+		  <UnitNode id="node_0" x="356.0616666666665" y="406.70500000000004" enabled="true" unit="Imaginet.Units.Filter.LowPassFilter" />
+		  <DoubleOptionNode id="node_2" x="45.12999999999988" y="569.3749999999999" enabled="true" name="Low Cutoff Frequency" param="node_2_input">
+			  <MinValue>-1.7976931348623157E+308</MinValue>
+			  <MaxValue>1.7976931348623157E+308</MaxValue>
+		  </DoubleOptionNode>
+	  </Nodes>
+	  <Connections>
+		  <Connection>
+			  <Source node="node_2" param="value" />
+			  <Target node="node_1" param="cutoff_freq" />
+		  </Connection>
+		  <Connection>
+			  <Source node="node_0" param="output" />
+			  <Target node="node_1" param="input" />
+		  </Connection>
+		  <Connection>
+			  <Source node="node_3" param="value" />
+			  <Target node="node_0" param="cutoff_freq" />
+		  </Connection>
+		  <Connection>
+			  <Source node="node_4" param="value" />
+			  <Target node="node_0" param="input" />
+		  </Connection>
+		  <Connection>
+			  <Source node="node_1" param="output" />
+			  <Target node="node_5" param="value" />
+		  </Connection>
+	  </Connections>
+  </Compound>
+</Imaginet>

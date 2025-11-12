@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Quantize">
 		<DisplayName>Quantize</DisplayName>
-		<DisplayPath>/Math/Quantization</DisplayPath>
+		<DisplayPath>/Utilities/Quantization</DisplayPath>
 
 		<Description>
 			Convert floating point to 

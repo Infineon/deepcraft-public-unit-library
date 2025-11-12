@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Signal.SlidingWindow">
 		<DisplayName>Sliding Window (data points)</DisplayName>
-		<DisplayPath>/Signal/Temporal</DisplayPath>
+		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
 		
 		<Tags>
 			<ContextPushData/>

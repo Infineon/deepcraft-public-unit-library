@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Reshape">
 		<DisplayName>Reshape</DisplayName>
-		<DisplayPath>/Meta</DisplayPath>
+		<DisplayPath>/Math/Slicing and Shaping</DisplayPath>
 
 		<Description>
 			The reshape layer is used to reshape the output of the previous layer into a different shape.

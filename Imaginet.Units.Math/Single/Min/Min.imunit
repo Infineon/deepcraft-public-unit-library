@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Min">
 		<DisplayName>Min</DisplayName>
-		<DisplayPath>/Math/Axial</DisplayPath>
+		<DisplayPath>/Math/Tensor Reductions</DisplayPath>
 
 		<Description>
 			Computes the minimum value along an axis. Collapses the dimension of the selected axis.
@@ -14,7 +14,7 @@
 		<Parameters>
 			<InputSocket name="input" />
 			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which the min operation is performed. Enumerated from right to left." />
-			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type"/>
+			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type" description="Output buffer. It will have the same shape as the input but with the selected axis reduced."/>
 			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
 			<Expression name="step" value="input.shape.step(axis)" />
 			<Expression name="size" value="input.shape.size(axis)" />

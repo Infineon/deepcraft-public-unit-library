@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Cast">
+		<DisplayName>Cast</DisplayName>
+		<DisplayPath>/Utilities</DisplayPath>
+
+		<Description>
+			Cast/convert tensor elements from one type to another.
+			Supports basic types: integers (signed/unsigned) and floating point.
+			
+			Integer-to-integer conversions use range mapping to preserve full dynamic range.
+			Float conversions can be configured via Float Conversion Mode:
+			- Clamp: Traditional clamping to target range
+			- Range [0,1]: Maps normalized [0,1] float range to full integer range
+			- Range [-1,1]: Maps normalized [-1,1] float range to full integer range
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" />
+			
+			<StringOption name="output_type" text="Output Type" description="Target type to cast to" default="float32" >
+				<OneOf>
+					<Item text="Float 32-bit">float32</Item>
+					<Item text="Signed Integer 8-bit">int8</Item>
+					<Item text="Signed Integer 16-bit">int16</Item>
+					<Item text="Signed Integer 32-bit">int32</Item>
+					<Item text="Unsigned Integer 8-bit">uint8</Item>
+					<Item text="Unsigned Integer 16-bit">uint16</Item>
+					<Item text="Unsigned Integer 32-bit">uint32</Item>
+				</OneOf>
+			</StringOption>
+
+			<StringOption name="float_mode" text="Float Conversion Mode" description="How to handle float32 to integer conversions" default="range_0_1" >
+				<OneOf>
+					<Item text="Clamp to target range">clamp</Item>
+					<Item text="Range map [0,1] to target">range_0_1</Item>
+					<Item text="Range map [-1,1] to target">range_neg1_1</Item>
+				</OneOf>
+			</StringOption>
+
+			<Expression name="count" value="input.shape.flat()" />
+			
+			<OutputSocket
+				name="output" 
+				description="Cast output"
+				type="System.parseType(output_type)" 
+				shape="input.shape" />
+		</Parameters>
+
+		<Implementations>
+		
+		<!-- Float32 to other types - Clamp mode -->
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i8_clamp" call="cast_f32_to_i8_clamp(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int8 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i16_clamp" call="cast_f32_to_i16_clamp(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int16 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i32_clamp" call="cast_f32_to_i32_clamp(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u8_clamp" call="cast_f32_to_u8_clamp(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt8 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u16_clamp" call="cast_f32_to_u16_clamp(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt16 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u32_clamp" call="cast_f32_to_u32_clamp(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+
+		<!-- Float32 to other types - Range [0,1] mode -->
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i8_range_0_1" call="cast_f32_to_i8_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int8 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i16_range_0_1" call="cast_f32_to_i16_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int16 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i32_range_0_1" call="cast_f32_to_i32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u8_range_0_1" call="cast_f32_to_u8_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt8 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u16_range_0_1" call="cast_f32_to_u16_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt16 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u32_range_0_1" call="cast_f32_to_u32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+
+		<!-- Float32 to other types - Range [-1,1] mode -->
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i8_range_neg1_1" call="cast_f32_to_i8_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int8 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i16_range_neg1_1" call="cast_f32_to_i16_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int16 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_i32_range_neg1_1" call="cast_f32_to_i32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.Int32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u8_range_neg1_1" call="cast_f32_to_u8_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt8 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u16_range_neg1_1" call="cast_f32_to_u16_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt16 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_f32_to_u32_range_neg1_1" call="cast_f32_to_u32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; output.type == System.UInt32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+
+		<!-- Int8 to other types -->
+		<Implementation language="C" fragment="cast.h:cast_i8_to_f32_clamp" call="cast_i8_to_f32_clamp(input, output, count)">
+			<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_i8_to_f32_range_0_1" call="cast_i8_to_f32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_i8_to_f32_range_neg1_1" call="cast_i8_to_f32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i8_to_i16" call="cast_i8_to_i16(input, output, count)">
+				<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.Int16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i8_to_i32" call="cast_i8_to_i32(input, output, count)">
+				<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.Int32"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i8_to_u8" call="cast_i8_to_u8(input, output, count)">
+				<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.UInt8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i8_to_u16" call="cast_i8_to_u16(input, output, count)">
+				<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.UInt16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i8_to_u32" call="cast_i8_to_u32(input, output, count)">
+				<Conditional value="input.type == System.Int8 &amp;&amp; output.type == System.UInt32"/>
+			</Implementation>
+
+		<!-- Int16 to other types -->
+		<Implementation language="C" fragment="cast.h:cast_i16_to_f32_clamp" call="cast_i16_to_f32_clamp(input, output, count)">
+			<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_i16_to_f32_range_0_1" call="cast_i16_to_f32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_i16_to_f32_range_neg1_1" call="cast_i16_to_f32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i16_to_i8" call="cast_i16_to_i8(input, output, count)">
+				<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.Int8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i16_to_i32" call="cast_i16_to_i32(input, output, count)">
+				<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.Int32"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i16_to_u8" call="cast_i16_to_u8(input, output, count)">
+				<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.UInt8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i16_to_u16" call="cast_i16_to_u16(input, output, count)">
+				<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.UInt16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i16_to_u32" call="cast_i16_to_u32(input, output, count)">
+				<Conditional value="input.type == System.Int16 &amp;&amp; output.type == System.UInt32"/>
+			</Implementation>
+
+		<!-- Int32 to other types -->
+		<Implementation language="C" fragment="cast.h:cast_i32_to_f32_clamp" call="cast_i32_to_f32_clamp(input, output, count)">
+			<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_i32_to_f32_range_0_1" call="cast_i32_to_f32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_i32_to_f32_range_neg1_1" call="cast_i32_to_f32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i32_to_i8" call="cast_i32_to_i8(input, output, count)">
+				<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.Int8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i32_to_i16" call="cast_i32_to_i16(input, output, count)">
+				<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.Int16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i32_to_u8" call="cast_i32_to_u8(input, output, count)">
+				<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.UInt8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i32_to_u16" call="cast_i32_to_u16(input, output, count)">
+				<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.UInt16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_i32_to_u32" call="cast_i32_to_u32(input, output, count)">
+				<Conditional value="input.type == System.Int32 &amp;&amp; output.type == System.UInt32"/>
+			</Implementation>
+
+		<!-- UInt8 to other types -->
+		<Implementation language="C" fragment="cast.h:cast_u8_to_f32_clamp" call="cast_u8_to_f32_clamp(input, output, count)">
+			<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_u8_to_f32_range_0_1" call="cast_u8_to_f32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_u8_to_f32_range_neg1_1" call="cast_u8_to_f32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u8_to_i8" call="cast_u8_to_i8(input, output, count)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.Int8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u8_to_i16" call="cast_u8_to_i16(input, output, count)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.Int16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u8_to_i32" call="cast_u8_to_i32(input, output, count)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.Int32"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u8_to_u16" call="cast_u8_to_u16(input, output, count)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.UInt16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u8_to_u32" call="cast_u8_to_u32(input, output, count)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output.type == System.UInt32"/>
+			</Implementation>
+
+		<!-- UInt16 to other types -->
+		<Implementation language="C" fragment="cast.h:cast_u16_to_f32_clamp" call="cast_u16_to_f32_clamp(input, output, count)">
+			<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_u16_to_f32_range_0_1" call="cast_u16_to_f32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_u16_to_f32_range_neg1_1" call="cast_u16_to_f32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u16_to_i8" call="cast_u16_to_i8(input, output, count)">
+				<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.Int8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u16_to_i16" call="cast_u16_to_i16(input, output, count)">
+				<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.Int16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u16_to_i32" call="cast_u16_to_i32(input, output, count)">
+				<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.Int32"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u16_to_u8" call="cast_u16_to_u8(input, output, count)">
+				<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.UInt8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u16_to_u32" call="cast_u16_to_u32(input, output, count)">
+				<Conditional value="input.type == System.UInt16 &amp;&amp; output.type == System.UInt32"/>
+			</Implementation>
+
+		<!-- UInt32 to other types -->
+		<Implementation language="C" fragment="cast.h:cast_u32_to_f32_clamp" call="cast_u32_to_f32_clamp(input, output, count)">
+			<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;clamp&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_u32_to_f32_range_0_1" call="cast_u32_to_f32_range_0_1(input, output, count)">
+			<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_0_1&quot;"/>
+		</Implementation>
+		<Implementation language="C" fragment="cast.h:cast_u32_to_f32_range_neg1_1" call="cast_u32_to_f32_range_neg1_1(input, output, count)">
+			<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.Float32 &amp;&amp; float_mode == &quot;range_neg1_1&quot;"/>
+		</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u32_to_i8" call="cast_u32_to_i8(input, output, count)">
+				<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.Int8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u32_to_i16" call="cast_u32_to_i16(input, output, count)">
+				<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.Int16"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u32_to_i32" call="cast_u32_to_i32(input, output, count)">
+				<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.Int32"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u32_to_u8" call="cast_u32_to_u8(input, output, count)">
+				<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.UInt8"/>
+			</Implementation>
+			<Implementation language="C" fragment="cast.h:cast_u32_to_u16" call="cast_u32_to_u16(input, output, count)">
+				<Conditional value="input.type == System.UInt32 &amp;&amp; output.type == System.UInt16"/>
+			</Implementation>
+
+		</Implementations>
+	</Unit>
+</Imaginet> 

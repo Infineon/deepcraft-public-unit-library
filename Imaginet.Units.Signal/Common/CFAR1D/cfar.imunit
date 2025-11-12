@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.CFAR1D">
+    <DisplayName>CFAR 1D</DisplayName>
+    <DisplayPath>/Signal Processing/Frequency Domain</DisplayPath>
+    
+	<Description>The CFAR 1D is a Cell-Averaging CFAR algorithm for radar target detection in range or Doppler dimensions. It processes a [count_chirps, count_samples, count_antennas] input array, comparing each cell's signal to a threshold based on surrounding noise, scaled by a bias. Outputs target indices and signal strengths only.</Description>
+
+    <Parameters>
+      <InputSocket name="input" pipe="data" />									
+      <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+	  <Expression name="count_antennas" value="input.shape.size(0)" description="Number of antennas" />
+	  <Expression name="count_samples" value="input.shape.size(1)" description="Number of samples" />
+	  <Expression name="count_chirps" value="input.shape.size(2)" description="Number of chirps" />	  
+	  <Int32Option name="num_targets" ui="textbox" text="Number of targets" description="Specifies how many targets to detect." default="1">
+  		<OneOf>
+			<Item text="1">1</Item>
+			<Item text="2">2</Item>
+			<Item text="3">3</Item>
+		</OneOf>
+	  </Int32Option>
+	  <Int32Option name="dimensions" ui="textbox" text="Dimensions" description="Determines whether the algorithm analyzes range bins or Doppler bins.">
+  		<OneOf>
+			<Item text="Range">0</Item>
+			<Item text="Doppler">1</Item>
+		</OneOf>
+	   </Int32Option>
+	   
+	   <Int32Option name="antenna_mode" ui="textbox" text="Antenna Mode" description="Defines how antenna data is combined.">
+  		<OneOf>
+			<Item text="Average">0</Item>
+			<Item text="Max">1</Item>
+		</OneOf>
+	   </Int32Option>
+	  
+	  <Int32Option name="window_size" default="8" ui="textbox" text="Reference Cells" description="Number of reference cells in the sliding window used to estimate noise around the cell under test (CUT)." />
+	  <Int32Option name="gap_cells" default="2" ui="textbox" text="Gap Cells" description="Number of gap cells on each side of the CUT to prevent target self-shadowing." />
+	  <DoubleOption name="bias" default="1.5" ui="textbox" text="Bias" description="Bias (α) to compute the detection threshold from the noise estimate, controlling the false alarm rate." />
+	  <BoolOption name="output_amplitude" text="Output Amplitude" description="Enable or disable amplitude output. When disabled, only target indices are output." default="true" />
+
+      <OutputSocket name="output" pipe="data" type="input.type" shape="System.Shape((output_amplitude ? 2 : 1)*num_targets)" />
+    </Parameters>
+	
+	<Contracts>
+		<Assert test="bias >= 0" error="Bias needs to be positive." />
+		<Assert test="window_size >= 0" error="Reference Cells needs to be positive." />
+		<Assert test="gap_cells >= 0" error="Gap Cells needs to be positive." />
+		<Assert test="input.shape.count == 3" error="Unexpected input tensor format ({output.shape}). Expect tensor to have shape [Chirps, Samples, Antennas]" />
+	</Contracts>
+	
+	<Implementations>
+      <Implementation language="C" fragment="cfar.h:cfar_1d_f32" call="cfar_1d_f32(input, output, dimensions, antenna_mode, window_size, gap_cells, bias, num_targets, count_antennas, count_samples, count_chirps, output_amplitude)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  
+	</Unit>
+</Imaginet>

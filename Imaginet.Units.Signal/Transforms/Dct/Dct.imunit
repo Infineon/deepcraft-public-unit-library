@@ -3,7 +3,7 @@
 
 	<Unit name="Imaginet.Units.Signal.Dct">
 		<DisplayName>Discrete Cosine Transform</DisplayName>
-		<DisplayPath>/Signal/Spectral</DisplayPath>
+		<DisplayPath>/Signal Processing/Frequency Domain</DisplayPath>
 
 		<Description>
 			Compute the one-dimensional discrete Cosine Transform for real input.

@@ -2,17 +2,16 @@
 <Imaginet version="2.0.0.0">
 	<Unit name="Imaginet.Units.Math.Transpose">
 		<DisplayName>Transpose</DisplayName>
-		<DisplayPath>/Meta/</DisplayPath>
+		<DisplayPath>/Math/Slicing and Shaping</DisplayPath>
 		<Description>
-			The transpose function reorients a matrix by reflecting its elements across the main diagonal, such that the element at position (i,j) in the original matrix moves to position (j,i) in the transposed matrix.
+			The transpose function reorients a 2D matrix by reflecting its elements across the main diagonal, such that the element at position (i,j) in the original matrix moves to position (j,i) in the transposed matrix.
 		</Description>
 
 		<Parameters>
 			<InputSocket name="input" pipe="data" />
 			<Expression name="rows" value="input.shape.size(1)" />
 			<Expression name="cols" value="input.shape.size(0)" />
-			<OutputSocket name="output" pipe="data" type="input.type"
-						  shape="input.shape.replace(0,rows).replace(1,cols)" />
+			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(0,rows).replace(1,cols)" description="Output buffer. If the input has input shape (i,j), the output shap is (j,i)."/>
 		</Parameters>
 
 		<Contracts>
