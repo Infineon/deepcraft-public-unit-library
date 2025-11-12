@@ -9,9 +9,9 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" text="Input" description="Input" />
+			<InputSocket name="input" text="Input"/>
 			<Expression name="count" value="input.shape.flat" description="Number of elements" />
-			<DoubleOption name="scale" text="Scale" default="1" description="The constant" />
+			<DoubleOption name="scale" text="Scale" default="1" description="The constant to multiply input with." />
 			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output buffer. It will have the same shape as the input."/>
 		</Parameters>
 		

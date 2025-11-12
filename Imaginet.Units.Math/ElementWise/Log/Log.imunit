@@ -28,7 +28,7 @@
 			<Expression name="offset_q" value="(2.pow(in_shift).log / actual_base.log).quantize(input.type, out_shift)"/>
 			<Expression name="scale_q" value="actual_base.log.inv.quantize(input.type, out_shift + shift_corr)" />
 
-			<OutputSocket name="output" type="input.type" shape="input.shape" shift="out_shift"/>
+			<OutputSocket name="output" type="input.type" shape="input.shape" shift="out_shift" description="Output buffer. It will have the same shape as the input."/>
 		</Parameters>
 
 		<Contracts>

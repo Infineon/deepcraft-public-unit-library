@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.QShift">		
 		<DisplayName>Shift</DisplayName>
-		<DisplayPath>/Math/Quantization</DisplayPath>
+		<DisplayPath>/Utilities/Quantization</DisplayPath>
 		
 		<Description>
 			Moves the binary point without changing the numeric value other than saturation and decimal truncation.

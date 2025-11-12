@@ -2,7 +2,7 @@
 <Imaginet version="2.0.0.0">
   <Compound unit="Imaginet.Units.Signal.MelSpectrogram">
     <DisplayName>Mel Spectrogram</DisplayName>
-    <DisplayPath>/Signal/Spectral</DisplayPath>
+    <DisplayPath>/Signal Processing/Frequency Domain</DisplayPath>
     <Description>
       <Text>In sound processing, the mel-frequency cepstrum (MFC) is a representation of the short-term power spectrum of a sound, based on a linear cosine transform of a log power spectrum on a nonlinear mel scale of frequency.
 

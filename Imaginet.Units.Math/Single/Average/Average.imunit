@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Average">
 		<DisplayName>Average</DisplayName>
-		<DisplayPath>/Math/Axial</DisplayPath>
+		<DisplayPath>/Math/Tensor Reductions</DisplayPath>
 
 		<Description>
 			Compute the weighted average along the specified axis.
@@ -14,7 +14,7 @@
 		<Parameters>
 			<InputSocket name="input" />
 			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which an average is performed. Enumerated from right to left." />
-			<OutputSocket name="output" type="input.type" shape="input.shape.remove(axis)" />
+			<OutputSocket name="output" type="input.type" shape="input.shape.remove(axis)" description="Output buffer. It will have the same shape as the input but with the selected axis reduced."/>
 			<Expression name="d0" value="input.shape.step(axis)" />
 			<Expression name="d1" value="input.shape.size(axis)" />
 			<Expression name="d2" value="input.shape.slot(axis)" />

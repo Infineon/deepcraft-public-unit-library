@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.DisplayBoundingBox">
+    <DisplayName>Display Bounding Box</DisplayName>
+    <DisplayPath>/Image Processing/Image Manipulation</DisplayPath>
+    <Description>Displays bounding boxes onto an image based on detection results from object detection models. Takes filtered detection data from units like BoundingBoxFilter and overlays rectangular boxes on the input image.</Description>
+
+    <Parameters>
+      <InputSocket name="image" pipe="data" />
+      <InputSocket name="detections" pipe="data" />
+      
+      <Expression name="detection_axis" value="0" />
+      <Expression name="confidence_axis" value="1" />
+      
+      <!-- Image dimensions -->
+      <Expression name="channels" value="image.shape.count == 2 ? 1 : image.shape.size(-3)" description="Number of channels in image" />
+      <Expression name="index_offset" value="channels == 3 ? 1 : 0" description="Channel offset for indexing" />
+      <Expression name="image_height" value="image.shape.size(1+index_offset)" />
+      <Expression name="image_width" value="image.shape.size(0+index_offset)" />
+	  <Expression name="confidence_axis_size" value="detections.shape.size(confidence_axis)" />
+
+
+		<!-- Detection tensor dimensions -->
+      <Expression name="max_detections" value="detections.shape.size(detection_axis)" description="Maximum number of detections" />
+      <Expression name="confidence_count" value="detections.shape.size(confidence_axis)" description="Number of confidence values per detection" />
+      
+      <!-- Rendering options -->
+      <Int32Option name="box_thickness" text="Box Thickness" description="Thickness of bounding box lines in pixels" default="2" min="1" max="10" />
+            
+      <BoolOption name="show_confidence" text="Show Confidence" description="Whether to display confidence scores" default="true" />
+      
+      <BoolOption name="show_class_name" text="Show Class Name" description="Whether to display class names on bounding boxes" default="true" />
+	  <Expression name="class_offset" value="4" description="Offset for classes" />
+	  <Expression name="num_classes" value="confidence_axis_size - class_offset" description="Offset for classes" />
+
+      <Expression name="class_names" value="detections.shape.getLabels(confidence_axis, class_offset, num_classes)" description="Labels for classes" />   
+
+      <OutputSocket name="output" pipe="data" type="image.type" shape="image.shape" description="Image with bounding boxes overlaid" />
+    </Parameters>
+
+    <Contracts>
+      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC)." />
+      <Assert test="detections.shape.count == 2" error="Detections input must be 2D [confidence_count, max_detections]." />
+      <Assert test="confidence_count >= 4" error="Detection data must have at least 4 elements (x, y, w, h) per detection." />
+      <Assert test="box_thickness >= 1" error="Box thickness must be at least 1 pixel." />
+    </Contracts>
+
+    <Implementations>
+      <Implementation language="C" fragment="display_bounding_box.h:display_bounding_box_f32" 
+                      call="display_bounding_box_f32(image, detections, output, image_height, image_width, channels, max_detections, confidence_count, box_thickness, show_class_name, show_confidence, class_names)">
+        <Conditional value="image.type == System.Float32 &amp;&amp; detections.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet> 

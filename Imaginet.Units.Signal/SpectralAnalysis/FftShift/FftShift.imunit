@@ -3,7 +3,7 @@
 
 	<Function unit="Imaginet.Units.Signal.FftShift">
 		<DisplayName>FFT Shift</DisplayName>
-		<DisplayPath>/Signal/Spectral</DisplayPath>
+		<DisplayPath>/Signal Processing/Frequency Domain</DisplayPath>
 
 		<Description>
 			Shift the zero-frequency component to the center of the spectrum.

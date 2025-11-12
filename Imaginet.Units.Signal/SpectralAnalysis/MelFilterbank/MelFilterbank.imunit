@@ -3,7 +3,7 @@
 
 	<Unit name="Imaginet.Units.Signal.MelFilterbank">
 		<DisplayName>Mel Filterbank</DisplayName>
-		<DisplayPath>/Signal/Spectral</DisplayPath>
+		<DisplayPath>/Signal Processing/Spectral Utilities</DisplayPath>
 
 		<Description>
 			This module implements a Mel Filter Bank.

@@ -3,7 +3,7 @@
 
 	<Unit name="Imaginet.Units.Math.Norm">
 		<DisplayName>Frobenius norm</DisplayName>
-		<DisplayPath>/Math/Axial</DisplayPath>
+		<DisplayPath>/Math/Tensor Reductions</DisplayPath>
 
 		<Description>
 			Compute the Frobenius norm along the given axis.
@@ -25,7 +25,7 @@
 
 			<Expression name="output_shift" value="(d1.sqrt).log2.ceil + shift" />
 			
-			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type" shift="input.shift + output_shift" />
+			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type" shift="input.shift + output_shift" description="Output buffer. It will have the same shape as the input but with the selected axis reduced."/>
 
 			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
 			

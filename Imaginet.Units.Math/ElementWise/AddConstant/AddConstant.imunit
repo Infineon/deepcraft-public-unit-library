@@ -9,7 +9,7 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" description="Input" />
+			<InputSocket name="input" />
 			<Expression name="count" value="input.shape.flat" description="Number of elements" />
 			
 			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>

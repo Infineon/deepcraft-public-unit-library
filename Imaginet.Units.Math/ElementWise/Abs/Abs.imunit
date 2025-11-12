@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Abs">
-		<DisplayName>Abs</DisplayName>
+		<DisplayName>Absolute Value</DisplayName>
 		<DisplayPath>/Math/Element Wise</DisplayPath>
 
 		<Description>
@@ -12,7 +12,7 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" text="Input" description="Input" />
+			<InputSocket name="input" text="Input"/>
 			<Expression name="count" value="input.shape.flat" description="Number of elements" />		
 			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output buffer. It will have the same shape as the input."/>
 			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>

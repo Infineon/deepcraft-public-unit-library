@@ -3,11 +3,7 @@
 
 	<Unit name="Imaginet.Units.Signal.PowToDb">
 		<DisplayName>Power to Decibel</DisplayName>
-		<DisplayPath>/Signal/Spectral</DisplayPath>
-
-		<Tags>
-			<RequireLicenseKey>Audio</RequireLicenseKey>
-		</Tags>
+		<DisplayPath>/Signal Processing/Frequency Domain</DisplayPath>
 
 		<Description>
 			Convert a power spectrogram (amplitude squared) to decibel (dB) units.

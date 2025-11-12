@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Div">
 		<DisplayName>Division</DisplayName>
-		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+		<DisplayPath>/Math/Multi-Tensor Operations</DisplayPath>
 
 		<Description>
 			Divide arguments with broadcasting.

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.ScaleImage">
+    <DisplayName>Image Scale</DisplayName>
+    <DisplayPath>/Image Processing/Spatial Transformations</DisplayPath>
+    <Description>Scales an image with 1 or 3 channels by a given factor, maintaining the same aspect ratio.</Description>
+
+    <Parameters>
+      <InputSocket 
+		    name="input" 
+		    pipe="data" />
+		
+	  <Int32Option name="scale_mode" ui="textbox" text="Scaling Mode" description="Defines if the image gets downscaled or upscaled.">
+	      <OneOf>
+			  <Item text="Upscale">0</Item>
+			  <Item text="Downscale">1</Item>
+		  </OneOf>
+	  </Int32Option>
+		
+  	  <Int32Option
+		  	name="scale_factor"
+		  	text="Scale Factor"
+		  	description="Scales the resolution of the image by given scale factor."
+	  		min="1"
+	  		default="1"/>
+	      
+	  <Expression 
+			name="y_size" 
+			value="input.shape.size(-1)" 
+			description="Number of elements in y_dim" />
+		  
+	  <Expression 
+			name="x_size" 
+			value="input.shape.size(-2)" 
+			description="Number of elements in x_dim" />
+	  
+	  <Expression 
+			name="channels" 
+			value="input.shape.count == 2 ? 1 : input.shape.size(0)" 
+			description="Number of channels" />
+		
+	  <Expression
+			name="x_output_size"
+			value="scale_mode == 0 ? x_size*scale_factor : x_size/scale_factor"
+			description="Number of channels" />
+
+	  <Expression
+			name="y_output_size"
+			value="scale_mode == 0 ? y_size*scale_factor : y_size/scale_factor"
+			description="Number of channels" />
+		
+		<OutputSocket 
+		    name="output" 
+		    pipe="data" 
+		    type="input.type" 
+		    shape="input.shape.replace(-1, y_output_size).replace(-2, x_output_size)"
+			description="Output buffer. It will have the same aspect ratio as input but with a shape that is scaled by an integer."/>
+		
+    </Parameters>
+	  
+	<Contracts>
+			<Assert
+				test="output.shape.count == 2 || (output.shape.count == 3)"
+				error="Unexpected input tensor format ({output.shape}). Expect tensor to have shape [width, height] or [width, height, channels] where channels is one or three" />
+			<Assert
+				test="scale_factor>=1"
+				error="Negative Scale Factor." />
+    </Contracts>
+	  
+    <Implementations>
+      <Implementation language="C" fragment="upscale_image.h:upscale_image_f32" call="upscale_image_f32(input, output, scale_factor, x_size, y_size, channels)">
+		  <Conditional value="(input.type == System.Float32)&amp;&amp;(scale_mode == 0)" />
+      </Implementation>
+		
+	  <Implementation language="C" fragment="downscale_image.h:downscale_image_f32" call="downscale_image_f32(input, output, scale_factor, x_size, y_size, channels)">
+	    <Conditional value="(input.type == System.Float32)&amp;&amp;(scale_mode == 1)" />
+	  </Implementation>
+
+	</Implementations>
+  </Unit>
+</Imaginet>

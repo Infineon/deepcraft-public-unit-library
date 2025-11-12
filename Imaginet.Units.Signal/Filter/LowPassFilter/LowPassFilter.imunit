@@ -2,31 +2,32 @@
 <Imaginet version="2.0.0.0">
 	<Unit name="Imaginet.Units.Filter.LowPassFilter">
 		<DisplayName>Low Pass Filter</DisplayName>
-		<DisplayPath>/Filters/</DisplayPath>
-		
+		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
+
 		<Description>
 			A first-order low pass filter that allows low-frequency sounds to pass through while blocking or reducing the volume of high-frequency sounds.
 			<Image file="LPF.png" width="450" />
 		</Description>
-		
+
 		<Parameters>
 			<InputSocket name="input" pipe="data" />
-			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
+			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" description="Output buffer. It will have the same shape as the input."/>
 			<Expression name="count" value="input.shape.flat" description="Number of elements in input" />
-			<DoubleOption name="alpha" text="Alpha" description="The filter alpha setting [0,1]. A high value makes the filter decay slower." min="0.0" max="1.0" default="0.95" />
+			<Expression name="freq" value="input.rate" description="Frequency rate" />
+			<DoubleOption name="cutoff_freq" text="Cutoff Frequency" description="The cutoff frequency of a filter marks the boundary in a system's frequency response where the filter begins to attenuate (reduce the amplitude of) signals passing through it." default="10" />
 			<Handle name="state" text="state" description="Internal state of the filter" size="input.shape.flat*4"/>
+
 		</Parameters>
 
 		<Contracts>
-			<Assert test="alpha >= 0" error="Alpha needs to be in the range [0.0, 1.0]." />
-			<Assert test="alpha &lt;= 1" error="Alpha needs to be in the range [0.0, 1.0]." />
+			<Assert test="cutoff_freq >= 0" error="Cutoff Frequency needs to be positive." />
 		</Contracts>
 
 		<Implementations>
-			<Implementation language="C" fragment="lowpassfilter.h:lowpass_filter_f32" call="lowpass_filter_f32(input, state, output, alpha, count)">
+			<Implementation language="C" fragment="lowpassfilter.h:lowpass_filter_f32" call="lowpass_filter_f32(input, state, output, cutoff_freq, count, freq)">
 				<Conditional value="input.type == System.Float32" />
 			</Implementation>
 		</Implementations>
-		
+
 	</Unit>
 </Imaginet>

@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Sub">
 		<DisplayName>Subtraction</DisplayName>
-		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+		<DisplayPath>/Math/Multi-Tensor Operations</DisplayPath>
 
 		<Description>
 			Subtract arguments with broadcasting.

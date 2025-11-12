@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Labels">
 		<DisplayName>Labels</DisplayName>
-		<DisplayPath>/Meta</DisplayPath>
+		<DisplayPath>/Annotation</DisplayPath>
 
 		<Description>
 			Set name on dimensions and/or attach labels to a dimension.

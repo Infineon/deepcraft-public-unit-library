@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.DetectionFilter">
+    <DisplayName>Bounding Box Filter</DisplayName>
+    <DisplayPath>/Signal Processing/Postprocessing</DisplayPath>
+    <Description>The detection filter applies a Non-Max Suppression (NMS) which is a post-processing technique used in object detection algorithms. It eliminates redundant overlapping bounding boxes by first filtering out those with low confidence scores and then selecting only the most confident ones. It works by sorting the remaining bounding boxes by their confidence scores, and iteratively suppressing boxes that overlap significantly with the currently selected highest-scoring box.	</Description>
+
+	<Tags>
+	</Tags>
+	  
+    <Parameters>
+      <InputSocket name="input" pipe="data" />
+      <Int32Option name="max_detections" text="Max detections" description="Max number of detections per inference." default="5" />
+      <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+      <DoubleOption name="threshold" text="Threshold" description="The required confidence for the detection to pass the filter." default="0.7"/>
+      <DoubleOption name="iou_threshold" text="IOU Threshold" description="Sets the overlap threshold for removing duplicate detections. Lower values remove more overlapping boxes, higher values keep more overlapping boxes." default="0.5"/>
+      <BoolOption name="include_detected_flag" text="Include Detected Flag" description="If enabled, adds an additional value to each detection indicating whether it contains a detection (1) or is just padding (0)." default="false" />
+            
+
+      <Expression name="detection_axis_input" value="1" />
+      <Expression name="confidence_axis_input" value="0" />
+
+      <Expression name="detection_axis_output" value="confidence_axis_input" />
+      <Expression name="confidence_axis_output" value="detection_axis_input" />
+
+      <Expression name="detection_count" value="input.shape.size(detection_axis_input)" description="Number of elements in the detection axis." />
+      <Expression name="confidence_count" value="input.shape.size(confidence_axis_input)" description="Number of elements in the confidence axis." />
+      <Expression name="output_confidence_count" value="confidence_count - 1 + (include_detected_flag ? 1 : 0)" description="Output confidence count - adds 1 if detected flag is enabled" />
+
+      <Expression name="class_offset" value="5" description="Offset for classes" />
+      <Expression name="num_values_boundingbox" value="4" description="Number of values in bounding box" /> 
+      <Expression name="num_values_classes" value="confidence_count - class_offset" description="Number of values in classes" /> 
+
+      <Expression name="labels_boundingbox" value="input.shape.getLabels(confidence_axis_input, 0, num_values_boundingbox)" description="Labels for bounding box" />
+      <Expression name="labels_classes" value="input.shape.getLabels(confidence_axis_input, class_offset, num_values_classes)" description="Labels for classes" />
+      <Expression name="detection_flag_label" value="&quot;detection_flag&quot;" description="Detection flag label" />
+
+      <Expression name="output_shape" value="input.shape.replace(detection_axis_output, max_detections).replace(confidence_axis_output, output_confidence_count)" description="Output shape" />
+      <Expression name="output_shape_with_labels" value="output_shape.withLabels(confidence_axis_output,(include_detected_flag?labels_boundingbox+&quot;,&quot;+labels_classes+&quot;,&quot;+detection_flag_label:labels_boundingbox+&quot;,&quot;+labels_classes))" description="Output shape with labels" /> 
+      <OutputSocket name="output" pipe="data" type="input.type" shape="output_shape_with_labels" />
+    </Parameters>
+
+	<Contracts>
+		<Assert
+			test="max_detections>=1"
+			error="Max number of detections has to be more than 1." />
+		<Assert
+			test="threshold&lt;=1"
+			error="Threshold has to be less or equal to 1." />
+		<Assert
+			test="threshold>=0"
+			error="Threshold cant be negative." />
+		<Assert
+			test="iou_threshold&lt;=1"
+			error="IOU threshold has to be less or equal to 1." />
+		<Assert
+			test="iou_threshold>=0"
+			error="IOU threshold cant be negative." />
+		<Assert
+			test="input.type == System.Float32 || input.type == System.Int8"
+			error="Input must be Float32 or Int8." />
+	</Contracts>
+	  
+    <Implementations>
+      <!-- Float32 implementations -->
+      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_confidence_detection_f32" call="detectionfilter_confidence_detection_f32(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+        <Conditional value="input.type == System.Float32 &amp;&amp; detection_axis_input == 0" />
+      </Implementation>
+      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_detection_confidence_f32" call="detectionfilter_detection_confidence_f32(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+        <Conditional value="input.type == System.Float32 &amp;&amp; detection_axis_input == 1" />
+      </Implementation>
+      
+      <!-- Int8 implementations -->
+      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_confidence_detection_i8" call="detectionfilter_confidence_detection_i8(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+        <Conditional value="input.type == System.Int8 &amp;&amp; detection_axis_input == 0" />
+      </Implementation>
+      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_detection_confidence_i8" call="detectionfilter_detection_confidence_i8(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+        <Conditional value="input.type == System.Int8 &amp;&amp; detection_axis_input == 1" />
+      </Implementation>
+    </Implementations>
+	  
+  </Unit>
+</Imaginet>

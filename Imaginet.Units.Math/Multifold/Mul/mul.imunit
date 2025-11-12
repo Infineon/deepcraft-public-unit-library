@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Mul">
 		<DisplayName>Multiplication</DisplayName>
-		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+		<DisplayPath>/Math/Multi-Tensor Operations</DisplayPath>
 
 		<Description>
 			Multiply arguments with broadcasting.

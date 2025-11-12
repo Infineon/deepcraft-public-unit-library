@@ -2,7 +2,7 @@
 <Imaginet>
 	<Unit name="Imaginet.Units.Signal.Hann">
 		<DisplayName>Hann smoothing</DisplayName>
-		<DisplayPath>/Signal/Spectral</DisplayPath>
+		<DisplayPath>/Signal Processing/Spectral Utilities</DisplayPath>
 
 		<Description>
 			It is also known as the raised cosine window, Hann filter, von Hann window, etc.

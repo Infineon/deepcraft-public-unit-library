@@ -6,8 +6,10 @@
 
 		<Description>
 			Given an interval, values outside the interval are clipped to the interval edges.
+			
 			Returns min &lt;= input &lt;= max
-
+			
+			
 			<Header>Python implementation</Header>
 			<Inline fragment="clip.py:clip" language="Python" />
 		</Description>
@@ -25,7 +27,7 @@
 			<Expression name="max_i32" value="max.min(2147483647).round" />
 
 			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true"/>
-			<OutputSocket name="output" type="input.type" shape="input.shape" />
+			<OutputSocket name="output" type="input.type" shape="input.shape" description="Output buffer. It will have the same shape as the input."/>
 			<Expression name="count" value="input.shape.flat" />
 			<Expression name="min_quantized" value="min.quantize(input.type, input.shift)" />
 			<Expression name="max_quantized" value="max.quantize(input.type, input.shift)" />

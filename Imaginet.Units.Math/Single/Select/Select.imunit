@@ -2,8 +2,8 @@
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Math.Select">
     <DisplayName>Select</DisplayName>
-	<DisplayPath>/Math/Axial</DisplayPath>
-    <Description>Select N elements from given axis</Description>
+	<DisplayPath>/Math/Slicing and Shaping</DisplayPath>
+    <Description>Select N elements from given axis.</Description>
 
 	<Parameters>
       <InputSocket name="input" pipe="data" />

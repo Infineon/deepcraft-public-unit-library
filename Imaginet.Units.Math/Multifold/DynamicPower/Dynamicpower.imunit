@@ -2,12 +2,12 @@
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Math.DynamicPower">
     <DisplayName>Dynamic Power</DisplayName>
-    <DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+    <DisplayPath>/Math/Multi-Tensor Operations</DisplayPath>
     <Description>This function computes element-wise powers of an input tensor using a streamable exponent value.</Description>
     <Parameters>
       <InputSocket name="input" pipe="data" />
-	  <InputSocket name="exponent" pipe="data" />
-      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
+	  <InputSocket name="exponent" pipe="data" description="The exponent to power the input by."/>
+      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" description="Output buffer. It will have the same shape as the input."/>
       <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
     </Parameters>
 

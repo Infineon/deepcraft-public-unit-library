@@ -3,7 +3,7 @@
 
 	<Unit name="Imaginet.Units.Math.DotT">
 		<DisplayName>Dot Product Transpose</DisplayName>
-		<DisplayPath>/Math/Multi Tensor Operand</DisplayPath>
+		<DisplayPath>/Math/Multi-Tensor Operations</DisplayPath>
 
 		<Description>
 			Computes dot product transposed to increase memory locality.
@@ -14,8 +14,8 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="a" />
-			<InputSocket name="b" />
+			<InputSocket name="a" description="First operand"/>
+			<InputSocket name="b" description="Second operand"/>
 			<Expression name="d0" value="a.shape.size(0)" />
 			<Expression name="d1" value="a.shape.size(1)" />
 			<Expression name="d2" value="b.shape.size(1)" />
