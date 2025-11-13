@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+    <Unit name="3a446d95-00e4-4fd0-8360-0b682ff709d7">
+    <DisplayName>Rotate 3D Vector</DisplayName>
+	
+    <DisplayPath>/Library/Sensor Packages/Magnetometer</DisplayPath>
+	
+    <Description>This is a unit that rotates a 3D vector by the defined number of degrees around the axis of the selected index. This unit works for any 3D vectors, not just magenetometer data.</Description>
+	
+    <Parameters>
+        <InputSocket name="input" pipe="data" />
+	    <Int32Option name="rotation_deg" text="Rotation (Degrees)" description="The amount of degrees that the vector will be rotated by" default="0"/>
+	    <Int32Option name="index" min="0" max="2" ui="textbox" text="Index" description="Index along which axis the rotate operation is performed."/>
+		<Handle name="rotation_matrix" size="36"/>
+        <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
+        <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+    </Parameters>
+	
+    <Contracts>
+        <Assert test="input.shape.count &lt;= 1" error="Rotate 3D Vector requires a vector input." />
+        <Assert test="index &lt; input.shape.size(0)" error="Index must be less than the vector length." />
+		<Assert test="index &gt; -1 " error="Index must not be negative." />
+	    <Assert test="input.shape.size(0) == 3" error="Rotate 3D Vector only supports vectors of length 3." />
+    </Contracts>
+	
+	<Init returnStatus="true">
+    	<Implementation language="C" fragment="rotate3DVector.h:rotate_init_f32" call="rotate_init_f32(rotation_matrix, rotation_deg, index)">
+    		<Conditional value="input.type == System.Float32" />
+    	</Implementation>
+	</Init>
+	
+    <Implementations>
+        <Implementation language="C" fragment="rotate3DVector.h:rotate_f32" call="rotate_f32(input, rotation_matrix, output)">
+            <Conditional value="input.type == System.Float32" />
+        </Implementation>
+    </Implementations>
+	
+    </Unit>
+</Imaginet>
