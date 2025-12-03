@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+ 	<Unit name="dba0141e-5e11-4370-96e3-8e88f7168777">
+    <DisplayName>Rotate IMU</DisplayName>
+	
+    <DisplayPath>/Signal Processing/Sensor Packages/IMU</DisplayPath>
+	
+    <Description>This is a unit that rotates every column by the defined number of degrees around the selected index of that column. This is meant to handle IMU data of input shape [2,3]. Both the gyroscope and acceleromter will be rotated identically.</Description>
+	
+    <Parameters>
+    	<InputSocket name="input" pipe="data" />
+        <Int32Option name="rotation_deg" text="Rotation (Degrees)" description="The amount of degrees that the vectors will be rotated by" default="0"/>
+        <Int32Option name="index" min="0" max="2" ui="textbox" text="Index" description="Index of the column along which the rotate operation is performed."/>
+	    <Handle name="rotation_matrix" size="36"/>
+        <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
+	    <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+    </Parameters>
+	
+    <Contracts>
+        <Assert test="input.shape.size(0) == 3" error="Rotate IMU requires a [2,3] matrix." />
+		<Assert test="input.shape.size(1) == 2" error="Rotate IMU requires a [2,3] matrix." />
+        <Assert test="index &lt; 3" error="Index must be 0, 1, or 2." />
+	    <Assert test="index &gt; -1 " error="Index must be 0, 1, or 2." />
+    </Contracts>
+	
+	<Init returnStatus="true">
+    	<Implementation language="C" fragment="rotateimu.h:rotate_imu_init_f32" call="rotate_imu_init_f32(rotation_matrix, rotation_deg, index)">
+    		<Conditional value="input.type == System.Float32" />
+    	</Implementation>
+	</Init>
+	
+    <Implementations>
+        <Implementation language="C" fragment="rotateimu.h:rotate_imu_f32" call="rotate_imu_f32(input, rotation_matrix, output)">	 
+        	<Conditional value="input.type == System.Float32" />
+        </Implementation>
+    </Implementations>
+	
+    </Unit>
+</Imaginet>
