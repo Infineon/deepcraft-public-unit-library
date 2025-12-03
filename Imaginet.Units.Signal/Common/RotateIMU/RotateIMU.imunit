@@ -3,7 +3,7 @@
  	<Unit name="dba0141e-5e11-4370-96e3-8e88f7168777">
     <DisplayName>Rotate IMU</DisplayName>
 	
-    <DisplayPath>/Library/Sensor Packages/IMU</DisplayPath>
+    <DisplayPath>/Signal Processing/Sensor Packages/IMU</DisplayPath>
 	
     <Description>This is a unit that rotates every column by the defined number of degrees around the selected index of that column. This is meant to handle IMU data of input shape [2,3]. Both the gyroscope and acceleromter will be rotated identically.</Description>
 	
