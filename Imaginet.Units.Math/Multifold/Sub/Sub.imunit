@@ -30,7 +30,14 @@
 				<Conditional value="a.type == System.Float32" />
 				<Conditional value="b.type == System.Float32" />
 			</Implementation>
-			<Implementation language="Python" fragment="sub.py:sub" call="sub(a, b, output)" />
+			<Implementation language="C" fragment="sub.h:sub_i8" call="sub_i8(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int8" />
+				<Conditional value="b.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="sub.h:sub_i32" call="sub_i32(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int32" />
+				<Conditional value="b.type == System.Int32" />
+			</Implementation>
 		</Implementations>
 
 	</Unit>

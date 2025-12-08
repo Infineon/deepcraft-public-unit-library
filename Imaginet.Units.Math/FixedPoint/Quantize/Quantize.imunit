@@ -33,11 +33,11 @@
 			<Expression name="count" value="input.shape.flat()" />
 
 			<!-- todo: show only if output_type is one of q7,q15,q31-->
-			<Int32Option name="shift" text="Shift" default="0" description="Only valid whe type is Shifted Fixed Point"/>
+			<Int32Option name="shift" text="Shift" default="0" description="Only valid when type is Shifted Fixed Point"/>
 
 			<!-- todo: show only if output_type is one of d8,d16,d32
-			<DoubleOption name="scale" text="Scale" default="1" description="Only valid whe type is Scaled Fixed Point"/>
-			<Int32Option name="offset" text="Offset" default="0" description="Only valid whe type is Scaled Fixed Point"/>
+			<DoubleOption name="scale" text="Scale" default="1" description="Only valid when type is Scaled Fixed Point"/>
+			<Int32Option name="offset" text="Offset" default="0" description="Only valid when type is Scaled Fixed Point"/>
 			-->
 			<Expression name="scale" value="1"/>
 			<Expression name="offset" value="0"/>

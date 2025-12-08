@@ -111,8 +111,8 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
 
     for (int i = 0; i < num_candidates; ++i) {
         if (suppressed[i]) continue;
-        float* box_i = candidate_boxes[i];
-        int class_i = candidate_classes[i];  // Get class of current candidate
+        float* box_i = candidates[i].box;
+        int class_i = candidates[i].class_id;  // Get class of current candidate
 
         // Convert box to (x1, y1, x2, y2) format
         float ix = box_i[0];  // center x
@@ -123,9 +123,9 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
         float x2_i = ix + iw / 2, y2_i = iy + ih / 2;
 
         for (int j = i + 1; j < num_candidates; ++j) {
-            if (suppressed[j] || candidate_classes[j] != class_i) continue;
+            if (suppressed[j] || candidates[j].class_id != class_i) continue;
 
-            float* box_j = candidate_boxes[j];
+            float* box_j = candidates[j].box;
             float jx = box_j[0];  // center x
             float jy = box_j[1];  // center y
             float jw = box_j[2];  // width
@@ -153,7 +153,7 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
     int output_count = include_detected_flag ? confidence_count + 1 : confidence_count;
     for (int i = 0; i < num_candidates && output_idx < max_detections; ++i) {
         if (!suppressed[i]) {
-            int input_idx = candidate_indices[i];
+            int input_idx = candidates[i].index;
             
             // For [Confidence, Detection] layout: Format {x, y, w, h, class}
             for (int j = 0; j < confidence_count; ++j) {
