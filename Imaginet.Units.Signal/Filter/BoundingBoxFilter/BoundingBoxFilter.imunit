@@ -15,19 +15,21 @@
       <DoubleOption name="threshold" text="Threshold" description="The required confidence for the detection to pass the filter." default="0.7"/>
       <DoubleOption name="iou_threshold" text="IOU Threshold" description="Sets the overlap threshold for removing duplicate detections. Lower values remove more overlapping boxes, higher values keep more overlapping boxes." default="0.5"/>
       <BoolOption name="include_detected_flag" text="Include Detected Flag" description="If enabled, adds an additional value to each detection indicating whether it contains a detection (1) or is just padding (0)." default="false" />
-            
 
-      <Expression name="detection_axis_input" value="1" />
-      <Expression name="confidence_axis_input" value="0" />
 
-      <Expression name="detection_axis_output" value="confidence_axis_input" />
-      <Expression name="confidence_axis_output" value="detection_axis_input" />
+	  <Expression name="detection_axis_input" value="input.shape.size(0) &gt;= input.shape.size(1) ? 0 : 1" />
+	  <Expression name="confidence_axis_input" value="1 - detection_axis_input" />
 
-      <Expression name="detection_count" value="input.shape.size(detection_axis_input)" description="Number of elements in the detection axis." />
+	  <Expression name="detection_axis_output" value="0" />
+	  <Expression name="confidence_axis_output" value="1" />
+		
+	  <Expression name="object_score" value="(detection_axis_output != detection_axis_input) ? 1 : 0" />
+	  <Expression name="detection_count" value="input.shape.size(detection_axis_input)" description="Number of elements in the detection axis." />
       <Expression name="confidence_count" value="input.shape.size(confidence_axis_input)" description="Number of elements in the confidence axis." />
-      <Expression name="output_confidence_count" value="confidence_count - 1 + (include_detected_flag ? 1 : 0)" description="Output confidence count - adds 1 if detected flag is enabled" />
+	
+      <Expression name="output_confidence_count" value="confidence_count - object_score + (include_detected_flag ? 1 : 0)" description="Output confidence count - adds 1 if detected flag is enabled" />
 
-      <Expression name="class_offset" value="5" description="Offset for classes" />
+      <Expression name="class_offset" value="(detection_axis_output != detection_axis_input) ? 5: 4" description="Offset for classes" />
       <Expression name="num_values_boundingbox" value="4" description="Number of values in bounding box" /> 
       <Expression name="num_values_classes" value="confidence_count - class_offset" description="Number of values in classes" /> 
 
@@ -36,7 +38,13 @@
       <Expression name="detection_flag_label" value="&quot;detection_flag&quot;" description="Detection flag label" />
 
       <Expression name="output_shape" value="input.shape.replace(detection_axis_output, max_detections).replace(confidence_axis_output, output_confidence_count)" description="Output shape" />
-      <Expression name="output_shape_with_labels" value="output_shape.withLabels(confidence_axis_output,(include_detected_flag?labels_boundingbox+&quot;,&quot;+labels_classes+&quot;,&quot;+detection_flag_label:labels_boundingbox+&quot;,&quot;+labels_classes))" description="Output shape with labels" /> 
+	  <Expression name="output_labels" value="
+				  (include_detected_flag?
+				  labels_boundingbox+&quot;,&quot;+labels_classes+&quot;,&quot;+detection_flag_label:
+				  labels_boundingbox+&quot;,&quot;+labels_classes)"	
+				  description="Output labels" />
+
+	  <Expression name="output_shape_with_labels" value="output_shape.withLabels(confidence_axis_output,output_labels)" description="Output shape with labels" /> 
       <OutputSocket name="output" pipe="data" type="input.type" shape="output_shape_with_labels" />
     </Parameters>
 

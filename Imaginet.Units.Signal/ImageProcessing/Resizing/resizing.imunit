@@ -68,6 +68,18 @@
 							call="resize_letterbox_f32(input, input_height, input_width, step_height, step_width, target_height, target_width, channels, output)">
 				<Conditional value="input.type == System.Float32 &amp;&amp; interpolation_mode == 2" />
 			</Implementation>
+			<Implementation language="C" fragment="resizing.h:resize_nearest_uint8"
+							call="resize_nearest_uint8(input, input_height, input_width, step_height, step_width, target_height, target_width, channels, output)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; interpolation_mode == 0" />
+			</Implementation>
+			<Implementation language="C" fragment="resizing.h:resize_bilinear_uint8"
+							call="resize_bilinear_uint8(input, input_height, input_width, step_height, step_width, target_height, target_width, channels, output)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; interpolation_mode == 1" />
+			</Implementation>
+			<Implementation language="C" fragment="resizing.h:resize_letterbox_uint8"
+							call="resize_letterbox_uint8(input, input_height, input_width, step_height, step_width, target_height, target_width, channels, output)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; interpolation_mode == 2" />
+			</Implementation>
 		</Implementations>
 	</Unit>
 </Imaginet>
