@@ -1,4 +1,4 @@
-![Banner](github_banner1290x540.png)
+![Banner](banner.png)
 
 # DEEPCRAFT™ Studio Public Unit Library
 
@@ -39,5 +39,6 @@ To submit a unit:
 ## 📜 License
 
 This project is licensed under the **MIT License**.
+
 
 
