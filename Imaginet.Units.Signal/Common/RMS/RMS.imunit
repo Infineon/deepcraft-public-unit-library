@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="f2323133-49f0-4ba9-9d09-c936d3f89ddd">
+    <DisplayName>RMS</DisplayName>
+    <DisplayPath>/Signal Processing/Statistics</DisplayPath>
+    <Description>Calculates the Root Mean Square (RMS) value of a signal to measure its effective amplitude. Optionally converts the result to decibels (dB) for logarithmic amplitude representation. 
+    Ideal for analyzing signal strength and ensuring consistent signal levels.</Description>
+    <Parameters>
+      <InputSocket name="input" pipe="data" />
+      <OutputSocket name="output" pipe="data" type="input.type" shape="System.Shape(1)" />
+      <Expression name="count" value="input.shape.flat" description="Number of elements in input" />
+      <BoolOption name="to_dB" text="Convert to dB" description="If enabled, converts amplitude RMS in dB." default="true" />
+    </Parameters>
+    <Implementations>
+      <Implementation language="C" fragment="rms.h:rms" call="rms_f32(input, output, count, to_dB)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>
