@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Math.RMS">
+    <DisplayName>Root Mean Square</DisplayName>
+    <DisplayPath>/Math/Statistics</DisplayPath>
+    <Description>
+		<Header>Description</Header>
+		Calculate the root mean square (RMS) value of a signal.
+		
+		Computes the square root of the mean of squared values: sqrt(mean(x²)). RMS measures the effective 
+		amplitude of a signal. Optionally converts the result to decibels using 20*log10(RMS) for logarithmic 
+		representation. Applies a minimum threshold (1e-12) to avoid log(0) issues.
+		
+		Supports float32 data type only. Input must be 1D.
+		
+		<Header>Usage</Header>
+		Use RMS to measure signal strength or normalize audio/sensor data.
+	</Description>
+	  
+    <Parameters>
+      <InputSocket name="input" pipe="data" description="Input signal as a 1D tensor. Supports float32 data type only." />
+      <OutputSocket name="output" pipe="data" type="input.type" shape="System.Shape(1)" description="RMS value as a scalar (shape [1]). Returns amplitude value or decibel value depending on to_dB setting." />
+      <Expression name="count" value="input.shape.flat" description="Number of elements in input tensor." />
+      <BoolOption name="to_dB" text="Convert to dB" description="If true, converts RMS amplitude to decibels using 20*log10(RMS). If false, returns raw amplitude value." default="true" />
+    </Parameters>
+	  
+	<Implementations>
+      <Implementation language="C" fragment="rms.h:rms" call="rms_f32(input, output, count, to_dB)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  
+  </Unit>
+</Imaginet>
