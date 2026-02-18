@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Filter.ConsecutiveDetectionsFilter">
+    <DisplayName>Consecutive Detections Above Threshold</DisplayName>
+    <DisplayPath>/Signal Processing/Postprocessing</DisplayPath>
+    <Description>This function activates the detection output when a specific class confidence remains above a threshold for a required number of consecutive samples. It is designed to reduce false positives by ensuring that detections are consistent and not based on transient noise.When no class exceeds the threshold or the class with the highest confidence changes, the detection counter resets, and the output indicates a "no prediction" state (assigned to a default class index, typically index 0).
+The counter is reset on class change.</Description>
+    <Parameters>
+      <InputSocket name="input" pipe="data" />
+      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" />
+      <Int32Option name="default_class_index" text="Default Class Index" description="The default class index, usually representing no prediction" min="0" default="0"/>
+      <Int32Option name="min_consecutive_count" text="Minimum Consecutive Count" min="0" description="The minimum number of consecutive detection events required to confirm the detection as valid. " default="3"/>
+      <Int32Option name="num_classes" text="Number of classes" min="2" description="Number of classes the model is able to predict, including &quot;unlabeled&quot;" default="2"/>
+      <DoubleOption name="confidence_threshold" text="Threshold" description="The minimum confidence level (0 to 1) required for a detection to be considered valid." default="0.7"/>
+      <Handle name="detect_count" text="detect_count" type="System.Int8" description="number of detection in consecutive order" size="System.Int8.size()" />
+      <Handle name="last_detected_class" text="last_detected_class" type="System.Int8" description="class index of the most recent prediction" size="System.Int8.size()" />
+
+    </Parameters>
+    <Contracts>
+      <Assert test="confidence_threshold >= 0" error="Threshold needs to be in the range [0.0, 1.0]." />
+      <Assert test="min_consecutive_count > 0" error="Minimum Consecutive Count needs to be a positive integer." />
+    </Contracts>
+    <Implementations>
+      <Implementation language="C" fragment="consecutive_detection.h:consecutive_detection" call="consecutive_detection(input, output, confidence_threshold, detect_count, min_consecutive_count, last_detected_class, default_class_index, num_classes)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>
