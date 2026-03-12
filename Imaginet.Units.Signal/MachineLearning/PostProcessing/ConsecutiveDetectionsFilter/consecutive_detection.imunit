@@ -2,7 +2,7 @@
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Filter.ConsecutiveDetectionsFilter">
 
-    <DisplayName>Consecutive Detections Above Threshold</DisplayName>
+    <DisplayName>Consecutive Detections Filter</DisplayName>
     <DisplayPath>/Machine Learning/Postprocessing</DisplayPath>
     <Description>This function activates the detection output when a specific class confidence remains above a threshold for a required number of consecutive samples. It is designed to reduce false positives by ensuring that detections are consistent and not based on transient noise.When no class exceeds the threshold or the class with the highest confidence changes, the detection counter resets, and the output indicates a "no prediction" state (assigned to a default class index, typically index 0). The counter is reset on class change.</Description>
 

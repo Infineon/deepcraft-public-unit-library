@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.ArcTan">
+		<DisplayName>Arctan</DisplayName>
+		<DisplayPath>/Math/Trigonometry</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Calculate the arctangent element-wise, computing arctan(x) for every element in the tensor.
+			
+			This unit performs element-wise arctangent (inverse tangent) computation. The output is the angle in radians whose tangent equals the input value. Inputs can be any real number. The operation is applied independently to each element, and the tensor shape and dimensions are preserved.
+			
+			The unit supports float32, int8, and uint8.
+
+			<Header>Usage</Header>
+			Use the Arctan unit when you need to recover angles from tangent values or ratios, for example when converting from slope or y/x to angle.
+
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input tensor containing values. Supports float32, int8, and uint8."/>
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor containing arctangent values in radians. Has the same shape and data type as the input."/>
+		</Parameters>
+		
+		<Contracts>
+			<Assert 
+				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.UInt8"
+				error="The input tensor ({input.type}) must have type: Float32, Int8 or UInt8" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="arctan.h:arctan_f32" call="arctan_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32"/>
+			</Implementation>
+			<Implementation language="C" fragment="arctan.h:arctan_i8" call="arctan_i8(input, count, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="arctan.h:arctan_u8" call="arctan_u8(input, count, output)">
+				<Conditional value="input.type == System.UInt8" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

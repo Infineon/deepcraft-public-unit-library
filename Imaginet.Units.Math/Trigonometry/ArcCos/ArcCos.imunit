@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Arccos">
+		<DisplayName>Arccos</DisplayName>
+		<DisplayPath>/Math/Trigonometry</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Calculate the arccosine element-wise, computing arccos(x) for every element in the tensor.
+			
+			This unit performs element-wise arccosine (inverse cosine) computation. Each input value must lie in the range [-1, 1]; the output is the angle in radians whose cosine equals that value. The operation is applied independently to each element, and the tensor shape and dimensions are preserved.
+			
+			The unit supports float32, int8, and uint8.
+
+			<Header>Usage</Header>
+			Use the Arccos unit when you need to recover angles from cosine values, for example when converting from coordinates or undoing a cosine transform.
+
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input tensor containing values in [-1, 1]. Supports float32, int8, and uint8."/>
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor containing arccosine values in radians. Has the same shape and data type as the input."/>
+		</Parameters>
+		
+		<Contracts>
+			<Assert 
+				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.UInt8"
+				error="The input tensor ({input.type}) must have type: Float32, Int8 or UInt8" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="arccos.h:arccos_f32" call="arccos_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32"/>
+			</Implementation>
+			<Implementation language="C" fragment="arccos.h:arccos_i8" call="arccos_i8(input, count, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="arccos.h:arccos_u8" call="arccos_u8(input, count, output)">
+				<Conditional value="input.type == System.UInt8" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

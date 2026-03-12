@@ -51,6 +51,12 @@
 				shape="input.shape" />
 		</Parameters>
 
+		<Contracts>
+			<Assert
+				test="input.type != output.type"
+				error="Can not cast from {input.type} to {output.type}" />
+		</Contracts>
+
 		<Implementations>
 		
 		<!-- Float32 to other types - Clamp mode -->

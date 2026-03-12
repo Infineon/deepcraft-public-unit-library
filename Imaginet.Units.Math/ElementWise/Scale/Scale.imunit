@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Scale">
-		<DisplayName>Scale</DisplayName>
+		<DisplayName>Multiply</DisplayName>
 		<DisplayPath>/Math/Element Wise</DisplayPath>
 
 		<Description>
@@ -10,10 +10,10 @@
 			
 			This unit performs element-wise multiplication with a fixed scalar value, scaling all elements uniformly. The scaling factor can be any real number. The tensor shape and dimensions are preserved.
 			
-			Currently supports float32 data type only.
+			Supports float32, int8 and uint8.
 
 			<Header>Usage</Header>
-			Use the Scale unit when you need to amplify or attenuate signal values, normalize data, or apply a uniform gain factor across all elements.
+			Use the Multipy unit when you need to amplify or attenuate signal values, normalize data, or apply a uniform gain factor across all elements.
 
 			<Header>Python implementation</Header>
 			<Inline fragment="scale.py:scale" language="Python" />
@@ -28,14 +28,20 @@
 		
 		<Contracts>
 			<Assert 
-				test="input.type == System.Float32"
-				error="The input tensor ({input.type}) must have type: Float32" />
+				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.UInt8"
+				error="The input tensor ({input.type}) must have type: Float32, Int8 or UInt8" />
 		</Contracts>
 
 		<Implementations>
 			<Implementation language="C" fragment="scale.h:scale_f32" call="scale_f32(input, count, scale, output)">
 				<Conditional value="input.type == System.Float32" />
-			</Implementation>			
+			</Implementation>
+			<Implementation language="C" fragment="scale.h:scale_i8" call="scale_i8(input, count, scale, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="scale.h:scale_u8" call="scale_u8(input, count, scale, output)">
+				<Conditional value="input.type == System.UInt8" />
+			</Implementation>
 			<Implementation language="Python" fragment="scale.py:scale" call="scale(input, scale, output)" />
 		</Implementations>
 
