@@ -8,8 +8,8 @@
 // Shared logic for rendering numbers
 // =============================================================================
 #pragma IMAGINET_FRAGMENT_BEGIN "display_number_common"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "../BitmapFont/bitmap_font.h:bitmap_font_helpers"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "../BitmapFont/bitmap_font.h:bitmap_font_text_utils"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_helpers"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_text_utils"
 
 //============================================================================
 // CONSTANTS AND CONFIGURATION

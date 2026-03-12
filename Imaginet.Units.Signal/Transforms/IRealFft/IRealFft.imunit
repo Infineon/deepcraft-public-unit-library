@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+
+	<Unit name="Imaginet.Units.Signal.IRealFft">
+		<DisplayName>Inverse Real Discrete Fourier Transform</DisplayName>
+		<DisplayPath>/Signal Processing/Frequency Domain</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Compute the one-dimensional Inverse Fast Fourier Transform along a specified axis for a complex-valued half-spectrum, recovering a real-valued signal.
+
+			This unit is the inverse of the Real Discrete Fourier Transform unit. Input must be the complex half-spectrum produced by RealFft: a tensor whose rightmost dimension (axis 0) has size 2 storing [real, imaginary] pairs, and whose next axis (axis+1) has N/2+1 frequency bins exploiting Hermitian symmetry. The output is the reconstructed real-valued signal of length N along the transform axis. Transform axis size (N) must be a power of 2.
+
+			Supports float32 data type. Use the same axis value as the corresponding RealFft unit.
+
+			<Header>Usage</Header>
+			Use the Inverse Real Discrete Fourier Transform unit to reconstruct a real-valued signal from its frequency-domain representation, for example in overlap-add synthesis, spectral filtering, or any pipeline requiring a round-trip through RealFft.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" description="Input complex half-spectrum. Must be float32 with rightmost dimension (axis 0) of size 2 storing [real, imaginary] pairs and N/2+1 frequency bins along axis+1." />
+			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which to perform the inverse FFT, enumerated from right to left. Must match the axis used in the corresponding RealFft unit." />
+
+			<Expression name="n_bins" value="input.shape.size(axis+1)" description="Number of input frequency bins (N/2+1)." />
+			<Expression name="N" value="(n_bins - 1) * 2" description="Output signal length N = 2*(N/2+1-1)." />
+
+			<Expression name="d0" value="input.shape.step(axis+1) / 2" description="Stride along the transform axis in the output real signal." />
+			<Expression name="d1" value="N" description="Size of the output transform axis." />
+			<Expression name="d2" value="input.shape.slot(axis+1)" description="Number of transforms (slices orthogonal to the transform axis)." />
+
+			<OutputSocket name="output" type="input.type" shape="input.shape.remove(0).replace(axis, N)" shift="input.shift - d1.log(2).floor" description="Reconstructed real-valued signal of length N along the transform axis." />
+
+			<Expression name="temp_ip" value="System.Tensor(System.Int32, Math.int(Math.sqrt(d1) + 2), true)" description="Work area for bit reversal operations." />
+			<Expression name="temp_w" value="System.Tensor(input.type, Math.int(d1/2) + 2, true)" description="Cosine/sine lookup table." />
+			<Expression name="temp_a" value="System.Tensor(input.type, d1 * 2 + 2)" description="Temporary buffer for IFFT computation." />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32" error="Input array must be of type Float32." />
+			<Assert test="input.shape.size(0) == 2" error="Rightmost dimension (axis 0) must have size 2 (complex [real, imaginary] pairs)." />
+			<Assert test="axis+1 &lt; input.shape.count" error="axis+1 must be less than the number of input dimensions." />
+			<Assert test="N == Math.pow(2, Math.floor(Math.log(N, 2)))" error="Output signal length N must be a power of two." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="irfft_libfft_f32.h:irfft_libfft_f32" call="irfft_libfft_f32(input, output, d0, d1, d2, temp_ip, temp_w, temp_a)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

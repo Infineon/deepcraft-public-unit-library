@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Round">
+		<DisplayName>Round</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Apply a rounding operation to float32 tensor values element-wise, with the rounding behaviour determined by the selected mode.
+
+			This unit processes each floating-point value independently and converts it to an integer-valued float according to the chosen mode. The tensor shape and dimensions are preserved throughout the operation.
+
+			Four rounding modes are available: Round to nearest integer (ties to even, using rint), Floor (round towards negative infinity), Ceil (round towards positive infinity), and Truncate (round towards zero). The unit supports float32 data types only.
+
+			<Header>Usage</Header>
+			Use the Round unit when you need to discretize continuous values, such as post-processing model outputs or snapping predictions to whole numbers before passing them to downstream integer-based operations.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input tensor to be rounded. Supports float32 data type only."/>
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<Int32Option name="mode" text="Mode" description="Select what mode of rounding you want." default="0" >
+				<OneOf>
+					<Item text="Round to nearest integer">0</Item>
+					<Item text="Floor">1</Item>
+					<Item text="Ceil">2</Item>
+					<Item text="Truncate">3</Item>
+				</OneOf>
+			</Int32Option>
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor containing rounded values. Has the same shape and data type as the input."/>
+		</Parameters>
+		
+		<Contracts>
+			<Assert 
+				test="input.type == System.Float32"
+				error="The input tensor ({input.type}) must have type: Float32" />
+		</Contracts>
+
+		<Implementations>
+			<!-- Round to nearest integer -->
+			<Implementation language="C" fragment="rint.h:rint_f32" call="rint_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 0"/>
+			</Implementation>
+		
+			<!-- Floor -->
+			<Implementation language="C" fragment="floor.h:floor_f32" call="floor_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 1"/>
+			</Implementation>
+
+			<!-- Ceil -->
+			<Implementation language="C" fragment="ceil.h:ceil_f32" call="ceil_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 2"/>
+			</Implementation>
+
+			<!-- Truncate -->
+			<Implementation language="C" fragment="truncate.h:truncate_f32" call="truncate_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 3"/>
+			</Implementation>
+		</Implementations>
+	</Unit>
+</Imaginet>

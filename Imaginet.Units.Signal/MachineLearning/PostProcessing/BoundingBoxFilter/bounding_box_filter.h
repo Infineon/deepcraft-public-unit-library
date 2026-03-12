@@ -3,8 +3,7 @@
 #include <math.h>
 #pragma IMAGINET_INCLUDES_END
 
-#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_confidence_detection_f32"
-
+#pragma IMAGINET_FRAGMENT_BEGIN "candidate_detection_t"
 // Candidate detection data structure
 typedef struct {
     int index;          // Original detection index
@@ -12,13 +11,17 @@ typedef struct {
     int class_id;       // Best class index
     float box[4];       // Bounding box coordinates [x, y, w, h]
 } candidate_detection_t;
+#pragma IMAGINET_FRAGMENT_END
+
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "candidate_detection_t"
+#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_legacy_f32"
 
 // Optimized for [Confidence, Detection] layout (axis_order = 0)
 static inline float get_confidence_cd(const float* restrict input, int detection_count, int confidence, int detection) {
     return input[confidence * detection_count + detection];
 }
 
-static inline void detectionfilter_confidence_detection_f32(const float* restrict input, float* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold, int include_detected_flag)
+static inline void detectionfilter_legacy_f32(const float* restrict input, float* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold)
 {
     // For [Confidence, Detection] layout: always format { x, y, w, h, class } (no object confidence)
     int class_offset = 4;
@@ -47,7 +50,7 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
 
     // Exit if no candidates
     if (num_candidates == 0) {
-        int output_count = include_detected_flag ? confidence_count + 1 : confidence_count;
+        int output_count = confidence_count;
         for (int i = 0; i < max_detections * output_count; ++i)
             output[i] = 0.0f;
         return;
@@ -83,7 +86,7 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
 
     // Exit if no candidates
     if (num_candidates == 0) {
-        int output_count = include_detected_flag ? confidence_count + 1 : confidence_count;
+        int output_count = confidence_count;
         for (int i = 0; i < max_detections * output_count; ++i)
             output[i] = 0.0f;
         return;
@@ -150,7 +153,7 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
     }
 
     int output_idx = 0;
-    int output_count = include_detected_flag ? confidence_count + 1 : confidence_count;
+    int output_count = confidence_count;
     for (int i = 0; i < num_candidates && output_idx < max_detections; ++i) {
         if (!suppressed[i]) {
             int input_idx = candidates[i].index;
@@ -160,10 +163,6 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
                 output[j * max_detections + output_idx] = get_confidence_cd(input, detection_count, j, input_idx);
             }
             
-            // Add detected flag if enabled
-            if (include_detected_flag) {
-                output[confidence_count * max_detections + output_idx] = 1.0f;
-            }
             output_idx++;
         }
     }
@@ -177,22 +176,14 @@ static inline void detectionfilter_confidence_detection_f32(const float* restric
 
 #pragma IMAGINET_FRAGMENT_END
 
-#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_detection_confidence_f32"
-
-// Candidate detection data structure
-typedef struct {
-    int index;          // Original detection index
-    float score;        // Confidence score
-    int class_id;       // Best class index
-    float box[4];       // Bounding box coordinates [x, y, w, h]
-} candidate_detection_t;
+#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_new_f32"
 
 // Optimized for [Detection, Confidence] layout (axis_order = 1)
 static inline float get_confidence_dc(const float* restrict input, int confidence_count, int confidence, int detection) {
     return input[detection * confidence_count + confidence];
 }
 
-static inline void detectionfilter_detection_confidence_f32(const float* restrict input, float* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold, int include_detected_flag)
+static inline void detectionfilter_new_f32(const float* restrict input, float* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold)
 {
     // For [Detection, Confidence] layout: always format { x, y, w, h, oc, class } (with object confidence)
     int class_offset = 5;
@@ -226,7 +217,7 @@ static inline void detectionfilter_detection_confidence_f32(const float* restric
     // Exit if no candidates
     if (num_candidates == 0) {
         int output_confidence_count = confidence_count - 1;
-        int output_count = include_detected_flag ? output_confidence_count + 1 : output_confidence_count;
+        int output_count = output_confidence_count;
         for (int i = 0; i < max_detections * output_count; ++i)
             output[i] = 0.0f;
         return;
@@ -266,7 +257,7 @@ static inline void detectionfilter_detection_confidence_f32(const float* restric
     // Exit if no candidates
     if (num_candidates == 0) {
         int output_confidence_count = confidence_count - 1;
-        int output_count = include_detected_flag ? output_confidence_count + 1 : output_confidence_count;
+        int output_count = output_confidence_count;
         for (int i = 0; i < max_detections * output_count; ++i)
             output[i] = 0.0f;
         return;
@@ -349,7 +340,7 @@ static inline void detectionfilter_detection_confidence_f32(const float* restric
 
     int output_idx = 0;
     int output_confidence_count = confidence_count - 1;  // Remove object confidence dimension
-    int output_count = include_detected_flag ? output_confidence_count + 1 : output_confidence_count;
+    int output_count = output_confidence_count;
     for (int i = 0; i < num_candidates && output_idx < max_detections; ++i) {
         if (!suppressed[i]) {
             int input_idx = candidate_indices[i];
@@ -369,10 +360,6 @@ static inline void detectionfilter_detection_confidence_f32(const float* restric
                 output[(j - 1) * max_detections + output_idx] = obj_conf * class_conf;  // j-1 to shift indices after removing oc
             }
             
-            // Add detected flag if enabled
-            if (include_detected_flag) {
-                output[(output_confidence_count) * max_detections + output_idx] = 1.0f;
-            }
             output_idx++;
         }
     }
@@ -386,23 +373,15 @@ static inline void detectionfilter_detection_confidence_f32(const float* restric
 
 #pragma IMAGINET_FRAGMENT_END
 
-#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_confidence_detection_i8"
+#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_legacy_i8"
 
-// Candidate detection data structure
-typedef struct {
-    int index;          // Original detection index
-    float score;        // Confidence score
-    int class_id;       // Best class index
-    float box[4];       // Bounding box coordinates [x, y, w, h]
-} candidate_detection_t;
-
-// Helper function to convert int8 to float for confidence_detection layout
+// Helper function to convert int8 to float for legacy layout
 static inline float get_confidence_cd_i8(const int8_t* restrict input, int detection_count, int confidence, int detection) {
     return ((float)input[confidence * detection_count + detection] + 128.0f) / 255.0f;
 }
 
 // Optimized for [Confidence, Detection] layout (axis_order = 0) - Int8 version
-static inline void detectionfilter_confidence_detection_i8(const int8_t* restrict input, int8_t* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold, int include_detected_flag)
+static inline void detectionfilter_legacy_i8(const int8_t* restrict input, int8_t* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold)
 {
     // For [Confidence, Detection] layout: always format { x, y, w, h, class } (no object confidence)
     int class_offset = 4;
@@ -431,7 +410,7 @@ static inline void detectionfilter_confidence_detection_i8(const int8_t* restric
 
     // Exit if no candidates
     if (num_candidates == 0) {
-        int output_count = include_detected_flag ? confidence_count + 1 : confidence_count;
+        int output_count = confidence_count;
         for (int i = 0; i < max_detections * output_count; ++i)
             output[i] = -128;  // Initialize with -128, converts to 0.0 when read
         return;
@@ -470,7 +449,7 @@ static inline void detectionfilter_confidence_detection_i8(const int8_t* restric
 
     // Exit if no candidates
     if (num_candidates == 0) {
-        int output_count = include_detected_flag ? confidence_count + 1 : confidence_count;
+        int output_count = confidence_count;
         for (int i = 0; i < max_detections * output_count; ++i)
             output[i] = -128;  // Initialize with -128, converts to 0.0 when read
         return;
@@ -554,7 +533,7 @@ static inline void detectionfilter_confidence_detection_i8(const int8_t* restric
     }
 
     int output_idx = 0;
-    int output_count = include_detected_flag ? confidence_count + 1 : confidence_count;
+    int output_count = confidence_count;
     for (int i = 0; i < num_candidates && output_idx < max_detections; ++i) {
         if (!suppressed[i]) {
             int input_idx = candidate_indices[i];
@@ -570,10 +549,6 @@ static inline void detectionfilter_confidence_detection_i8(const int8_t* restric
                 output[j * max_detections + output_idx] = int8_val;
             }
             
-            // Add detected flag if enabled
-            if (include_detected_flag) {
-                output[confidence_count * max_detections + output_idx] = 1;  // Detected = 1
-            }
             output_idx++;
         }
     }
@@ -581,34 +556,22 @@ static inline void detectionfilter_confidence_detection_i8(const int8_t* restric
     // Fill remaining slots with zeros
     for (; output_idx < max_detections; ++output_idx) {
         for (int j = 0; j < output_count; ++j) {
-            if (include_detected_flag && j == confidence_count) {
-                output[j * max_detections + output_idx] = 0;  // Detected flag = 0 (not detected)
-            } else {
-                output[j * max_detections + output_idx] = -128;  // Initialize with -128, converts to 0.0 when read
-            }
+            output[j * max_detections + output_idx] = -128;  // Initialize with -128, converts to 0.0 when read
         }
     }
 }
 
 #pragma IMAGINET_FRAGMENT_END
 
-#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_detection_confidence_i8"
+#pragma IMAGINET_FRAGMENT_BEGIN "detectionfilter_new_i8"
 
-// Candidate detection data structure
-typedef struct {
-    int index;          // Original detection index
-    float score;        // Confidence score
-    int class_id;       // Best class index
-    float box[4];       // Bounding box coordinates [x, y, w, h]
-} candidate_detection_t;
-
-// Helper function to convert int8 to float for detection_confidence layout
+// Helper function to convert int8 to float for new layout
 static inline float get_confidence_dc_i8(const int8_t* restrict input, int confidence_count, int confidence, int detection) {
     return ((float)input[detection * confidence_count + confidence] + 128.0f) / 255.0f;
 }
 
 // Optimized for [Detection, Confidence] layout (axis_order = 1) - Int8 version
-static inline void detectionfilter_detection_confidence_i8(const int8_t* restrict input, int8_t* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold, int include_detected_flag)
+static inline void detectionfilter_new_i8(const int8_t* restrict input, int8_t* restrict output, int detection_count, int confidence_count, int max_detections, float threshold, float iou_threshold)
 {
     // For [Detection, Confidence] layout: always format { x, y, w, h, oc, class } (with object confidence)
     int class_offset = 5;
@@ -616,7 +579,7 @@ static inline void detectionfilter_detection_confidence_i8(const int8_t* restric
     
     // Calculate output count early to avoid redeclaration
     int output_confidence_count = confidence_count - 1;  // Remove object confidence dimension
-    int output_count = include_detected_flag ? output_confidence_count + 1 : output_confidence_count;
+    int output_count = output_confidence_count;
 
     // First pass: Find indices of detections that pass threshold (memory optimization)
     int keep_indices[detection_count];
@@ -795,10 +758,6 @@ static inline void detectionfilter_detection_confidence_i8(const int8_t* restric
                 output[(j - 1) * max_detections + output_idx] = int8_val;  // j-1 to shift indices after removing oc
             }
             
-            // Add detected flag if enabled
-            if (include_detected_flag) {
-                output[(output_confidence_count) * max_detections + output_idx] = 1;  // Detected = 1
-            }
             output_idx++;
         }
     }
@@ -806,11 +765,7 @@ static inline void detectionfilter_detection_confidence_i8(const int8_t* restric
     // Fill remaining slots with zeros
     for (; output_idx < max_detections; ++output_idx) {
         for (int j = 0; j < output_count; ++j) {
-            if (include_detected_flag && j == output_confidence_count) {
-                output[j * max_detections + output_idx] = 0;  // Detected flag = 0 (not detected)
-            } else {
-                output[j * max_detections + output_idx] = -128;  // Initialize with -128, converts to 0.0 when read
-            }
+            output[j * max_detections + output_idx] = -128;  // Initialize with -128, converts to 0.0 when read
         }
     }
 }

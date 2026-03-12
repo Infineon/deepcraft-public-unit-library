@@ -5,8 +5,8 @@
 #pragma IMAGINET_INCLUDES_END
 
 #pragma IMAGINET_FRAGMENT_BEGIN "display_bounding_box_f32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "../BitmapFont/bitmap_font.h:bitmap_font_helpers"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "../BitmapFont/bitmap_font.h:bitmap_font_text_utils"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_helpers"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_text_utils"
 
 // Compile-time constants for readability
 #define DET_ATTRIBS 4                 // center_x, center_y, width, height

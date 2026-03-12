@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.Rad2Deg">
+		<DisplayName>Rad2Deg</DisplayName>
+		<DisplayPath>/Math/Trigonometry</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Convert angle values from radians to degrees element-wise, computing (x × 180 / π) for every element in the tensor.
+			
+			This unit performs element-wise conversion from radians to degrees. Each input value in radians is multiplied by 180/π to obtain the corresponding angle in degrees. The operation is applied independently to each element, and the tensor shape and dimensions are preserved.
+			
+			The unit supports float32, int8, and uint8.
+
+			<Header>Usage</Header>
+			Use the Rad2Deg unit when you need to convert angle data from radians to degrees, for example after inverse trigonometric units (Arcsin, Arccos, Arctan) or when presenting angles in a human-readable form.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input tensor containing angle values in radians. Supports float32, int8, and uint8."/>
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor containing angle values in degrees. Has the same shape and data type as the input."/>
+		</Parameters>
+		
+		<Contracts>
+			<Assert 
+				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.UInt8"
+				error="The input tensor ({input.type}) must have type: Float32, Int8 or UInt8" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="rad2deg.h:rad2deg_f32" call="rad2deg_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32"/>
+			</Implementation>
+			<Implementation language="C" fragment="rad2deg.h:rad2deg_i8" call="rad2deg_i8(input, count, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="rad2deg.h:rad2deg_u8" call="rad2deg_u8(input, count, output)">
+				<Conditional value="input.type == System.UInt8" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>

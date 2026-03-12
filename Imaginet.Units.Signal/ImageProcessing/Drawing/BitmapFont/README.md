@@ -44,6 +44,8 @@ Provides utility functions for text formatting:
 ### In Other Units
 To use the BitmapFont in your unit, add the following fragment dependencies to your C header file:
 
+From a unit in the same `Drawing` folder (e.g. DrawText), use a relative path like `../BitmapFont/`:
+
 ```c
 #pragma IMAGINET_FRAGMENT_BEGIN "your_fragment_name"
 #pragma IMAGINET_FRAGMENT_DEPENDENCY "../BitmapFont/bitmap_font.h:bitmap_font_helpers"
@@ -53,13 +55,20 @@ To use the BitmapFont in your unit, add the following fragment dependencies to y
 render_text(image, width, height, channels, x, y, "Hello", 1, 1.0f, 1.0f, 1.0f);
 ```
 
+From a unit under `ImageProcessing/Visualization` (e.g. DisplayBoundingBox, DisplayNumber), use `../../Drawing/BitmapFont/`:
+
+```c
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_helpers"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_text_utils"
+```
+
 ### Example: DisplayBoundingBox
 The `DisplayBoundingBox` unit uses BitmapFont to render class names and confidence scores:
 
 ```c
 #pragma IMAGINET_FRAGMENT_BEGIN "display_bounding_box_f32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "../BitmapFont/bitmap_font.h:bitmap_font_helpers"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "../BitmapFont/bitmap_font.h:bitmap_font_text_utils"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_helpers"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../Drawing/BitmapFont/bitmap_font.h:bitmap_font_text_utils"
 
 // ... later in code ...
 int font_size = (image_height < 240) ? 0 : (image_height < 720) ? 1 : 2;
