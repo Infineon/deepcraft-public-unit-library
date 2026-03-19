@@ -21,7 +21,7 @@
       <InputSocket name="input" pipe="data" description="Input tensor containing detection results with shape [detection_count, confidence_count] or [confidence_count, detection_count]. Each detection includes bounding box coordinates (x, y, width, height) and class confidence scores. Supports float32 and int8 data types." />
       <Int32Option name="max_detections" text="Max detections" description="Maximum number of detections to output after NMS filtering. Determines the output tensor size. Typical values: 5-100 depending on application." default="5" />
       <Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor." />
-      <DoubleOption name="threshold" text="Threshold" description="Minimum confidence score (0.0 to 1.0) for a detection to be considered. Detections below this threshold are discarded before NMS. Higher values reduce false positives but may miss weaker detections." default="0.7"/>
+      <DoubleOption name="threshold" text="Threshold" description="Minimum confidence score (0.0 to 1.0) for a detection to be considered. Detections below this threshold are discarded before NMS. Higher values reduce false positives but may miss weaker detections." default="0.5"/>
       <DoubleOption name="iou_threshold" text="IOU Threshold" description="IoU (Intersection over Union) threshold (0.0 to 1.0) for suppressing overlapping boxes. Lower values (e.g., 0.3) aggressively remove overlaps, higher values (e.g., 0.7) tolerate more overlap. Typical range: 0.3-0.5." default="0.5"/>
 
 
