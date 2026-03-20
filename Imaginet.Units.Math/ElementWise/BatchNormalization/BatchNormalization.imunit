@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.BatchNormalization">
+		<DisplayName>Batch Normalization</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Normalize all elements in a batch tensor to [0, 1] using the global min and max computed across the entire batch: output = (x - min(batch)) / (max(batch) - min(batch)).
+
+			Unlike the Normalization unit, this unit computes the min and max at runtime from the batch tensor itself rather than using fixed design-time constants. A single min and max is derived from all elements across all samples, so every sample is scaled relative to the same global range. If the entire batch is constant (min equals max), the range is clamped to 1 to avoid division by zero. The tensor shape and dimensions are preserved.
+
+			The input must be at least 2D with shape [num_samples, sample_size]. Supports float32 data type.
+
+			<Header>Usage</Header>
+			Use the Batch Normalization unit when you need to rescale a collection of samples to [0, 1] relative to the observed range of the batch, without prior knowledge of the data range.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input batch tensor to be normalized. Must be at least 2D with shape [num_samples, sample_size]. Supports float32 data type only." />
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the batch tensor (computed from flattened shape)." />
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output batch tensor normalized to [0, 1] using the global min and max of the batch. Has the same shape and data type as the input." />
+		</Parameters>
+
+		<Contracts>
+			<Assert
+				test="input.type == System.Float32"
+				error="The input tensor ({input.type}) must have type: Float32" />
+			<Assert
+				test="input.shape.count >= 2"
+				error="The input tensor must be at least 2D. Got {input.shape.count}D." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="batch_normalization.h:batch_normalization_f32" call="batch_normalization_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>
