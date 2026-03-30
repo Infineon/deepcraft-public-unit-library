@@ -15,6 +15,15 @@
 		<Parameters>
 			<InputSocket name="input" text="Input" description="Input tensor to be divided. Supports float32 data type only."/>
 			<DoubleOption name="desired_sample_rate" text="Desired sample rate" description="The signal to match sample rate to."/>
+
+			<Int32Option name="sampling_mode" ui="textbox"	text="Resampling Mode" description="" default="0">
+				<OneOf>
+					<Item text="Linear">0</Item>
+					<Item text="Repeat(Only supports upsampling)">1</Item>
+				</OneOf>
+			</Int32Option>
+			
+			<Handle name="previous_input" size="input.size" description="Internal state handle containing circular buffer, pointers, and metadata."/>
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
 			<OutputSocket name="output" type="input.type" rate="desired_sample_rate" shape="input.shape" text="Output" description="Output tensor containing divided values. Has the same shape and data type as the input."/>
 		</Parameters>
@@ -26,7 +35,13 @@
 		</Contracts>
 
 		<Implementations>
-			<Implementation language="C" fragment="divide.h:divide_f32" call="divide_f32(input, count, output)">
+			<!-- Linear -->
+			<Implementation language="C" fragment="linear.h:linear_f32" call="linear_f32(input, count, output, previous_input)">
+				<Conditional value="input.type == System.Float32"/>
+			</Implementation>
+
+			<!-- Repeat -->
+			<Implementation language="C" fragment="repeat.h:repeat_f32" call="repeat_f32(input, count, output, previous_input)">
 				<Conditional value="input.type == System.Float32"/>
 			</Implementation>
 		</Implementations>
