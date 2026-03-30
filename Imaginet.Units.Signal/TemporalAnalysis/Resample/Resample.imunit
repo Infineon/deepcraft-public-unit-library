@@ -23,8 +23,8 @@
 				</OneOf>
 			</Int32Option>
 			
-			<Handle name="previous_input" size="input.size" description="Internal state handle containing circular buffer, pointers, and metadata."/>
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<Handle name="previous_input" size="count" description="Internal state handle containing circular buffer, pointers, and metadata."/>
 			<OutputSocket name="output" type="input.type" rate="desired_sample_rate" shape="input.shape" text="Output" description="Output tensor containing divided values. Has the same shape and data type as the input."/>
 		</Parameters>
 		
@@ -37,12 +37,12 @@
 		<Implementations>
 			<!-- Linear -->
 			<Implementation language="C" fragment="linear.h:linear_f32" call="linear_f32(input, count, output, previous_input)">
-				<Conditional value="input.type == System.Float32"/>
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 0"/>
 			</Implementation>
 
 			<!-- Repeat -->
 			<Implementation language="C" fragment="repeat.h:repeat_f32" call="repeat_f32(input, count, output, previous_input)">
-				<Conditional value="input.type == System.Float32"/>
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 1"/>
 			</Implementation>
 		</Implementations>
 
