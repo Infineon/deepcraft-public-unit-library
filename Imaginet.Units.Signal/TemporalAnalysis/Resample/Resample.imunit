@@ -34,31 +34,35 @@
 			<Assert 
 				test="input.type == System.Float32"
 				error="The input tensor ({input.type}) must have type: Float32" />
-		</Contracts>
-
+	</Contracts>
 
 		<Init returnStatus="true">
 			<!-- Linear -->
 			<Implementation language="C" fragment="linear.h:linear_init_f32" call="linear_init_f32(count, state_ptr)">
-				<Conditional value="input.type == System.Float32" />
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0" />
 			</Implementation>
 
 			<!-- Nearest -->
-			<Implementation language="C" fragment="nearest.h:nearest_init_f32" call="nearest_init_f32(count, state_ptr)">
-				<Conditional value="input.type == System.Float32" />
+			<Implementation language="C" fragment="nearest_state.h:nearest_init_f32" call="nearest_init_f32(count, state_ptr)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1" />
 			</Implementation>
 		</Init>
 		
 		<Implementations>
 			<!-- Linear -->
 			<Implementation language="C" fragment="linear.h:linear_f32" call="linear_f32(input, count, output, state_ptr, output_samples_per_input)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 0"/>
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0"/>
 			</Implementation>
 
-			<!-- Nearest -->
-			<Implementation language="C" fragment="nearest.h:nearest_f32" call="nearest_f32(input, count, output, state_ptr, output_samples_per_input)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 1"/>
-			</Implementation>
+		<!-- Nearest upsample -->
+		<Implementation language="C" fragment="nearest_upsample.h:nearest_upsample_f32" call="nearest_upsample_f32(input, output, count, state_ptr, output_samples_per_input)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input >= 1"/>
+		</Implementation>
+
+		<!-- Nearest downsample -->
+		<Implementation language="C" fragment="nearest_downsample.h:nearest_downsample_f32" call="nearest_downsample_f32(input, output, count, state_ptr, output_samples_per_input)">
+			<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input &lt; 1"/>
+		</Implementation>
 		</Implementations>
 
 	</Unit>
