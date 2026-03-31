@@ -14,18 +14,20 @@
 
 		<Parameters>
 			<InputSocket name="input" text="Input" description="Input tensor to be divided. Supports float32 data type only."/>
-			<DoubleOption name="desired_sample_rate" text="Desired sample rate" description="The signal to match sample rate to."/>
-
+			<DoubleOption name="target_sample_rate" text="Desired sample rate" description="The signal to match sample rate to."/>
+			<Expression name="incoming_sample_rate" value="input.rate" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<Expression name="output_samples_per_input" value="target_sample_rate / input.rate" description="." />
+			
 			<Int32Option name="sampling_mode" ui="textbox"	text="Resampling Mode" description="" default="0">
 				<OneOf>
 					<Item text="Linear">0</Item>
-					<Item text="Repeat(Only supports upsampling)">1</Item>
+					<Item text="Nearest">1</Item>
 				</OneOf>
 			</Int32Option>
 			
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
-			<Handle name="previous_input" size="count" description="Internal state handle containing circular buffer, pointers, and metadata."/>
-			<OutputSocket name="output" type="input.type" rate="desired_sample_rate" shape="input.shape" text="Output" description="Output tensor containing divided values. Has the same shape and data type as the input."/>
+			<Handle name="state_ptr" size="4 + count*4" description="Internal state handle containing circular buffer, pointers, and metadata."/>
+			<OutputSocket name="output" type="input.type" rate="target_sample_rate" shape="input.shape" text="Output" description="Output tensor containing divided values. Has the same shape and data type as the input."/>
 		</Parameters>
 		
 		<Contracts>
@@ -34,14 +36,27 @@
 				error="The input tensor ({input.type}) must have type: Float32" />
 		</Contracts>
 
+
+		<Init returnStatus="true">
+			<!-- Linear -->
+			<Implementation language="C" fragment="linear.h:linear_init_f32" call="linear_init_f32(count, state_ptr)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+
+			<!-- Nearest -->
+			<Implementation language="C" fragment="nearest.h:nearest_init_f32" call="nearest_init_f32(count, state_ptr)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Init>
+		
 		<Implementations>
 			<!-- Linear -->
-			<Implementation language="C" fragment="linear.h:linear_f32" call="linear_f32(input, count, output, previous_input)">
+			<Implementation language="C" fragment="linear.h:linear_f32" call="linear_f32(input, count, output, state_ptr, output_samples_per_input)">
 				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 0"/>
 			</Implementation>
 
-			<!-- Repeat -->
-			<Implementation language="C" fragment="repeat.h:repeat_f32" call="repeat_f32(input, count, output, previous_input)">
+			<!-- Nearest -->
+			<Implementation language="C" fragment="nearest.h:nearest_f32" call="nearest_f32(input, count, output, state_ptr, output_samples_per_input)">
 				<Conditional value="input.type == System.Float32 &amp;&amp; mode == 1"/>
 			</Implementation>
 		</Implementations>
