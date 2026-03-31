@@ -18,18 +18,15 @@ static inline void linear_downsample_f32(const float* restrict input, float* res
 		}
 		else
 		{
-			for (int i = 0; i < count; ++i)
-				output[i] = input[i];
+			memcpy(output, input, count * sizeof(float));
 		}
 	}
 	else
 	{
-		for (int i = 0; i < count; ++i)
-			output[i] = previous_value[i];
+		memcpy(output, previous_value, count * sizeof(float));
 	}
 
-	for (int i = 0; i < count; ++i)
-		previous_value[i] = input[i];
+	memcpy(previous_value, input, count * sizeof(float));
 
 	state->current_inference++;
 	if (state->current_inference >= input_samples_per_output)
