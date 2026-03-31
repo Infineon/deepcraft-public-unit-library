@@ -26,7 +26,7 @@
 			</Int32Option>
 			
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
-			<Handle name="state_ptr" size="4 + count*4" description="Internal state handle containing circular buffer, pointers, and metadata."/>
+			<Handle name="state_ptr" size="8 + count*4" description="Internal state handle containing circular buffer, pointers, and metadata."/>
 			<OutputSocket name="output" type="input.type" rate="target_sample_rate" shape="input.shape" text="Output" description="Output tensor containing divided values. Has the same shape and data type as the input."/>
 		</Parameters>
 		
