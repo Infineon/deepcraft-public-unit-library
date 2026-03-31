@@ -8,14 +8,13 @@ static inline void nearest_upsample_f32(const float* restrict input, float* rest
 
 	int use_previous = state->initialized && (state->current_inference < output_samples_per_input / 2.0f);
 
-	for (int i = 0; i < count; ++i)
-		output[i] = use_previous ? previous_value[i] : input[i];
+	const float* src = use_previous ? previous_value : input;
+	memcpy(output, src, count * sizeof(float));
 
 	state->current_inference++;
 	if (state->current_inference >= (int)output_samples_per_input)
 	{
-		for (int i = 0; i < count; ++i)
-			previous_value[i] = input[i];
+		memcpy(previous_value, input, count * sizeof(float));
 		state->current_inference = 0;
 		state->initialized = 1;
 	}

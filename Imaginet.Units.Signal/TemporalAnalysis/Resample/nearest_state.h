@@ -1,5 +1,6 @@
 #pragma IMAGINET_INCLUDES_BEGIN
 #include <stdint.h>
+#include <string.h>
 #pragma IMAGINET_INCLUDES_END
 
 #pragma IMAGINET_FRAGMENT_BEGIN "nearest_state_f32"

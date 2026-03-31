@@ -9,19 +9,9 @@ static inline void nearest_downsample_f32(const float* restrict input, float* re
 	int input_samples_per_output = (int)(1.0f / output_samples_per_input + 0.5f);
 	int emit = (state->current_inference == input_samples_per_output / 2);
 
-	if (emit)
-	{
-		for (int i = 0; i < count; ++i)
-			output[i] = input[i];
-	}
-	else
-	{
-		for (int i = 0; i < count; ++i)
-			output[i] = previous_value[i];
-	}
-
-	for (int i = 0; i < count; ++i)
-		previous_value[i] = input[i];
+	const float* out_src = emit ? input : previous_value;
+	memcpy(output, out_src, count * sizeof(float));
+	memcpy(previous_value, input, count * sizeof(float));
 
 	state->current_inference++;
 	if (state->current_inference >= input_samples_per_output)
