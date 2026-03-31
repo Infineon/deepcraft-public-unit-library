@@ -1,7 +1,3 @@
-// Upsample: one input produces N outputs (output_samples_per_input >= 1)
-// Counter cycles 0..N-1. Outputs in the first half of the cycle use the
-// previous input; outputs in the second half use the current input.
-
 #pragma IMAGINET_FRAGMENT_BEGIN "nearest_upsample_f32"
 #pragma IMAGINET_FRAGMENT_DEPENDENCY "nearest_state.h:nearest_state_f32"
 

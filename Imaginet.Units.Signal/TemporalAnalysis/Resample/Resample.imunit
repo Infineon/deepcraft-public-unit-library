@@ -38,7 +38,7 @@
 
 		<Init returnStatus="true">
 			<!-- Linear -->
-			<Implementation language="C" fragment="linear.h:linear_init_f32" call="linear_init_f32(count, state_ptr)">
+			<Implementation language="C" fragment="linear_state.h:linear_init_f32" call="linear_init_f32(count, state_ptr)">
 				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0" />
 			</Implementation>
 
@@ -49,9 +49,14 @@
 		</Init>
 		
 		<Implementations>
-			<!-- Linear -->
-			<Implementation language="C" fragment="linear.h:linear_f32" call="linear_f32(input, count, output, state_ptr, output_samples_per_input)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0"/>
+			<!-- Linear upsample -->
+			<Implementation language="C" fragment="linear_upsample.h:linear_upsample_f32" call="linear_upsample_f32(input, output, count, state_ptr, output_samples_per_input)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0 &amp;&amp; output_samples_per_input >= 1"/>
+			</Implementation>
+
+			<!-- Linear downsample -->
+			<Implementation language="C" fragment="linear_downsample.h:linear_downsample_f32" call="linear_downsample_f32(input, output, count, state_ptr, output_samples_per_input)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0 &amp;&amp; output_samples_per_input &lt; 1"/>
 			</Implementation>
 
 		<!-- Nearest upsample -->

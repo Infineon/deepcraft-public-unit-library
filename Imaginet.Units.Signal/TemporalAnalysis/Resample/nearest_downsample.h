@@ -1,8 +1,3 @@
-// Downsample: N inputs produce one output (output_samples_per_input < 1)
-// Counter cycles 0..M-1 where M = round(1 / output_samples_per_input).
-// The output is written on the call nearest to the midpoint of the cycle,
-// mirroring the same nearest-neighbor boundary as the upsample case.
-
 #pragma IMAGINET_FRAGMENT_BEGIN "nearest_downsample_f32"
 #pragma IMAGINET_FRAGMENT_DEPENDENCY "nearest_state.h:nearest_state_f32"
 
