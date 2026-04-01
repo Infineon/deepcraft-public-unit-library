@@ -6,35 +6,55 @@
 
 		<Description>
 			<Header>Description</Header>
-				resample
+			Convert a signal from one sample rate to another using nearest-neighbor or linear interpolation.
+
+			This unit resamples an incoming signal to a target sample rate by maintaining a small state buffer containing the most recently seen sample. For upsampling, each input sample is held or interpolated across the required number of output steps. For downsampling, one output sample is emitted per group of input samples, either by selecting the center sample (nearest) or averaging adjacent samples (linear). The resampling ratio is computed at compile time from the configured sample rates.
+
+			Supports float32 data type only.
 
 			<Header>Usage</Header>
-				resample
+			Use the Resample unit to align signals that are acquired at different sample rates before combining them, or to reduce the sample rate of a signal prior to feature extraction.
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" text="Input" description="Input tensor to be divided. Supports float32 data type only."/>
-			<DoubleOption name="target_sample_rate" text="Desired sample rate" description="The signal to match sample rate to."/>
-			<Expression name="incoming_sample_rate" value="input.rate" description="Total number of elements in the input tensor (computed from flattened shape)." />
-			<Expression name="output_samples_per_input" value="target_sample_rate / input.rate" description="." />
-			
-			<Int32Option name="sampling_mode" ui="textbox"	text="Resampling Mode" description="" default="0">
+			<InputSocket
+			  name="input"
+			  text="Input"
+			  description="Input signal to resample. Can be any shape. Supports float32 data type only." />
+
+			<DoubleOption
+			  name="target_sample_rate"
+			  text="Target Sample Rate"
+			  description="Desired output sample rate in Hz. Values greater than the input rate produce upsampled output; values less than the input rate produce downsampled output." />
+
+			<Int32Option name="sampling_mode" ui="textbox" text="Interpolation Mode" description="Algorithm used to compute output samples. Linear interpolates between adjacent input samples for a smoother result. Nearest selects the closest input sample." default="0">
 				<OneOf>
 					<Item text="Linear">0</Item>
 					<Item text="Nearest">1</Item>
 				</OneOf>
 			</Int32Option>
-			
-			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
-			<Handle name="state_ptr" size="8 + count*4" description="Internal state handle containing circular buffer, pointers, and metadata."/>
-			<OutputSocket name="output" type="input.type" rate="target_sample_rate" shape="input.shape" text="Output" description="Output tensor containing divided values. Has the same shape and data type as the input."/>
+
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in each input chunk (computed from flattened shape)." />
+			<Expression name="incoming_sample_rate" value="input.rate" description="Sample rate (Hz) of the input signal, automatically extracted from input tensor metadata." />
+			<Expression name="output_samples_per_input" value="target_sample_rate / input.rate" description="Number of output samples produced per input sample (upsample ratio). Greater than 1 for upsampling." />
+			<Expression name="input_samples_per_output" value="round(input.rate / target_sample_rate)" description="Number of input samples consumed per output sample (downsample ratio, rounded to nearest integer)." />
+
+			<Handle name="state_ptr" size="4 + count*4" description="Internal state buffer holding the cycle counter and the most recent input sample (count * 4 bytes)." />
+
+			<OutputSocket
+			  name="output"
+			  type="input.type"
+			  rate="target_sample_rate"
+			  shape="input.shape"
+			  text="Output"
+			  description="Resampled output signal at the target sample rate. Has the same shape and data type as the input." />
 		</Parameters>
 		
 		<Contracts>
-			<Assert 
-				test="input.type == System.Float32"
-				error="The input tensor ({input.type}) must have type: Float32" />
-	</Contracts>
+			<Assert
+			  test="input.type == System.Float32"
+			  error="Resample requires float32 input, but got {input.type}." />
+		</Contracts>
 
 		<Init returnStatus="true">
 			<!-- Linear -->
@@ -55,19 +75,19 @@
 			</Implementation>
 
 			<!-- Linear downsample -->
-			<Implementation language="C" fragment="linear_downsample.h:linear_downsample_f32" call="linear_downsample_f32(input, output, count, state_ptr, output_samples_per_input)">
+			<Implementation language="C" fragment="linear_downsample.h:linear_downsample_f32" call="linear_downsample_f32(input, output, count, state_ptr, input_samples_per_output)">
 				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0 &amp;&amp; output_samples_per_input &lt; 1"/>
 			</Implementation>
 
-		<!-- Nearest upsample -->
-		<Implementation language="C" fragment="nearest_upsample.h:nearest_upsample_f32" call="nearest_upsample_f32(input, output, count, state_ptr, output_samples_per_input)">
-			<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input >= 1"/>
-		</Implementation>
+			<!-- Nearest upsample -->
+			<Implementation language="C" fragment="nearest_upsample.h:nearest_upsample_f32" call="nearest_upsample_f32(input, output, count, state_ptr, output_samples_per_input)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input >= 1"/>
+			</Implementation>
 
-		<!-- Nearest downsample -->
-		<Implementation language="C" fragment="nearest_downsample.h:nearest_downsample_f32" call="nearest_downsample_f32(input, output, count, state_ptr, output_samples_per_input)">
-			<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input &lt; 1"/>
-		</Implementation>
+			<!-- Nearest downsample -->
+			<Implementation language="C" fragment="nearest_downsample.h:nearest_downsample_f32" call="nearest_downsample_f32(input, output, count, state_ptr, input_samples_per_output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input &lt; 1"/>
+			</Implementation>
 		</Implementations>
 
 	</Unit>

@@ -5,8 +5,7 @@
 
 #pragma IMAGINET_FRAGMENT_BEGIN "linear_state_f32"
 typedef struct {
-    int initialized;       // To handle first inference
-    int current_inference; // Modulo cycle counter
+    int current_inference; // -1 = uninitialized; >= 0 = modulo cycle counter
 } linear_state_f32;
 #pragma IMAGINET_FRAGMENT_END
 
@@ -17,8 +16,7 @@ typedef struct {
 static inline int linear_init_f32(int count, void* state_ptr)
 {
 	linear_state_f32* state = (linear_state_f32*)state_ptr;
-	state->initialized = 0;
-	state->current_inference = 0;
+	state->current_inference = -1;
 	return 0;
 }
 
