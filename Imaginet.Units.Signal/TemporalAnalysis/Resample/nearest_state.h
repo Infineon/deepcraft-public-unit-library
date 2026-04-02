@@ -21,3 +21,23 @@ static inline int nearest_init_f32(int count, void* state_ptr)
 }
 
 #pragma IMAGINET_FRAGMENT_END
+
+
+#pragma IMAGINET_FRAGMENT_BEGIN "nearest_state_i8"
+typedef struct {
+    int current_inference; // -1 = uninitialized; >= 0 = modulo cycle counter
+} nearest_state_i8;
+#pragma IMAGINET_FRAGMENT_END
+
+
+#pragma IMAGINET_FRAGMENT_BEGIN "nearest_init_i8"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "nearest_state_i8"
+
+static inline int nearest_init_i8(int count, void* state_ptr)
+{
+	nearest_state_i8* state = (nearest_state_i8*)state_ptr;
+	state->current_inference = -1;
+	return 0;
+}
+
+#pragma IMAGINET_FRAGMENT_END
