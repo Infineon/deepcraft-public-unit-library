@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.Div">
 		<DisplayName>Division</DisplayName>
@@ -10,7 +10,7 @@
 			
 			This unit divides corresponding elements from the first tensor by elements from the second tensor. When the input shapes differ, broadcasting rules are applied to automatically expand dimensions, allowing tensors of different shapes to be divided. The output shape matches the first operand's shape.
 			
-			Broadcasting enables operations like dividing a matrix by a scalar, dividing each row of a matrix by a vector, or performing division on tensors with compatible but non-identical dimensions. Currently supports float32 data type.
+			Broadcasting enables operations like dividing a matrix by a scalar, dividing each row of a matrix by a vector, or performing division on tensors with compatible but non-identical dimensions. Supports float32 and int8 data types.
 
 			<Header>Usage</Header>
 			Use the Division unit when you need to perform element-wise division between two tensors, such as normalizing features by scaling factors or computing ratios.
@@ -20,8 +20,8 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="a" description="First input tensor (dividend). Supports float32 data type. Determines the output shape." />
-			<InputSocket name="b" description="Second input tensor (divisor). Supports float32 data type. Will be broadcast to match the first operand if shapes differ." />
+			<InputSocket name="a" description="First input tensor (dividend). Supports float32 and int8 data types. Determines the output shape." />
+			<InputSocket name="b" description="Second input tensor (divisor). Supports float32 and int8 data types. Will be broadcast to match the first operand if shapes differ." />
 			<OutputSocket name="output" type="a.type" shape="a.shape" text="Output" description="Output tensor containing element-wise division results. Has the same shape and data type as the first operand." />
 
 			<Expression name="bcast" value="a.shape.broadcast(b.shape)" description="Broadcasting configuration computed from the two input shapes." />
@@ -37,6 +37,10 @@
 			<Implementation language="C" fragment="div.h:div_f32" call="div_f32(a, b, left, group1, middle, group2, right, output)">
 				<Conditional value="a.type == System.Float32" />
 				<Conditional value="b.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="div.h:div_i8" call="div_i8(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int8" />
+				<Conditional value="b.type == System.Int8" />
 			</Implementation>
 			<Implementation language="Python" fragment="div.py:div" call="div(a, b, output)" />
 		</Implementations>
