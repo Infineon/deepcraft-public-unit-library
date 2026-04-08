@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Math.Select">
     <DisplayName>Select</DisplayName>
@@ -9,14 +9,14 @@
 			
 			This unit selects a range of elements along the chosen axis, starting at a specified index and taking a specified number of elements. The output has the same shape as the input except along the selected axis, where the size equals the count parameter.
 			
-			Currently supports float32 data type.
+			Supports float32 and int8 data types.
 
 			<Header>Usage</Header>
 			Use the Select unit when you need to extract a slice of data along a dimension, such as selecting a time window from temporal data or extracting specific channels from multi-channel input.
 		</Description>
 
 	<Parameters>
-      <InputSocket name="input" pipe="data" description="Input tensor to select elements from. Supports float32 data type only." />
+      <InputSocket name="input" pipe="data" description="Input tensor to select elements from. Supports float32 and int8 data types." />
            
 	  <Int32Option
 		name="axis"
@@ -55,6 +55,9 @@
     <Implementations>
       <Implementation language="C" fragment="select.h:select_f32" call="select_f32(input, d0, d1, count, d2, index, output)">
         <Conditional value="input.type == System.Float32" />
+      </Implementation>
+      <Implementation language="C" fragment="select.h:select_i8" call="select_i8(input, d0, d1, count, d2, index, output)">
+        <Conditional value="input.type == System.Int8" />
       </Implementation>
     </Implementations>
   </Unit>
