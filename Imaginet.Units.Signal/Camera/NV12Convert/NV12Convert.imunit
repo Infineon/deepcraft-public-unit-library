@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Signal.NV12Convert">
+		<DisplayName>NV12 to Image</DisplayName>
+		<DisplayPath>/Signal Processing/Sensor Packages/Camera</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Convert a raw NV12 (YCbCr 4:2:0) camera buffer to a 3-channel image tensor.
+
+			NV12 is a planar YCbCr 4:2:0 format commonly produced by cameras and hardware video decoders. It stores a full-resolution Y (luma) plane followed by a half-height interleaved CbCr (chroma) plane. The total flat buffer size is H * W * 3/2 bytes.
+
+			This unit performs per-pixel color conversion and chroma upsampling (nearest-neighbor) to produce a [H, W, 3] uint8 output. The output channel order is selectable: RGB, BGR, or YUV interleaved.
+
+			RGB and BGR conversions use the BT.601 YCbCr-to-RGB matrix:
+			  R = Y + 1.402 * (Cr - 128)
+			  G = Y - 0.344136 * (Cb - 128) - 0.714136 * (Cr - 128)
+			  B = Y + 1.772 * (Cb - 128)
+
+			<Header>Usage</Header>
+			Connect the raw NV12 buffer from a camera or video source as a flat 1D uint8 tensor and set the Image Width and Image Height options to match the camera resolution. The output is a standard [H, W, 3] uint8 image ready for display or further processing.
+
+			<Header>Input requirements</Header>
+			Image height must be even. Image width must be even to align the interleaved CbCr plane correctly. The flat buffer size must equal height * width * 3 / 2.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" description="Raw NV12 buffer as a flat 1D uint8 tensor of size H * W * 3/2. The first H * W bytes are the Y (luma) plane; the remaining H/2 * W bytes are the interleaved CbCr (chroma) plane." />
+
+			<Int32Option
+			  name="height"
+			  min="2"
+			  ui="textbox"
+			  text="Image Height"
+			  description="Height of the image in pixels. Must be even." />
+
+			<Int32Option
+			  name="width"
+			  min="2"
+			  ui="textbox"
+			  text="Image Width"
+			  description="Width of the image in pixels. Must be even." />
+
+			<Int32Option
+			  name="output_format"
+			  ui="textbox"
+			  text="Output Format"
+			  description="Channel order for the 3-channel output image."
+			  default="0">
+				<OneOf>
+					<Item text="RGB">0</Item>
+					<Item text="BGR">1</Item>
+					<Item text="YUV Interleaved">2</Item>
+				</OneOf>
+			</Int32Option>
+
+			<OutputSocket name="output" type="System.UInt8" shape="System.Shape(height, width, 3)"
+						  description="Decoded image tensor with shape [H, W, 3] uint8. Channel order is determined by the Output Format option." />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.shape.count == 1" error="Input must be a flat 1D tensor." />
+			<Assert test="height % 2 == 0" error="Image height must be even (NV12 chroma subsampling requirement)." />
+			<Assert test="width % 2 == 0" error="Image width must be even (NV12 chroma subsampling requirement)." />
+			<Assert test="input.shape.size(0) == height * width * 3 / 2" error="Input buffer size must equal height * width * 3 / 2." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C"
+							fragment="nv12_convert.h:nv12_to_rgb_uint8"
+							call="nv12_to_rgb_uint8(input, height, width, output)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output_format == 0" />
+			</Implementation>
+			<Implementation language="C"
+							fragment="nv12_convert.h:nv12_to_bgr_uint8"
+							call="nv12_to_bgr_uint8(input, height, width, output)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output_format == 1" />
+			</Implementation>
+			<Implementation language="C"
+							fragment="nv12_convert.h:nv12_to_yuv_uint8"
+							call="nv12_to_yuv_uint8(input, height, width, output)">
+				<Conditional value="input.type == System.UInt8 &amp;&amp; output_format == 2" />
+			</Implementation>
+		</Implementations>
+	</Unit>
+</Imaginet>
