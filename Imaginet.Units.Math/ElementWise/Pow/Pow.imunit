@@ -11,7 +11,7 @@
 			
 			This unit performs element-wise exponentiation with a fixed exponent value. The operation raises each input value to the power of the specified exponent, preserving the tensor shape and dimensions. Common use cases include squaring (exponent=2) or computing square roots (exponent=0.5).
 			
-			Currently supports float32 data type only. The exponent must be a positive number.
+			Supports float32, int8, int16, and int32 data types. For integer types, the result is computed in float and saturated back to the type's range. The exponent must be a positive number.
 
 			<Header>Usage</Header>
 			Use the Power unit when you need to apply exponential transformations, such as computing the square of values for energy calculations or applying polynomial transformations to features.
@@ -23,7 +23,7 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" description="Input tensor to be raised to a power. Supports float32 data type only."/>
+			<InputSocket name="input" description="Input tensor to be raised to a power. Supports float32, int8, int16, and int32 data types."/>
 			<DoubleOption name="exponent" default="10" ui="textbox" text="Exponent" description="The power to which each element will be raised. Must be a positive number. Common values: 2 (square), 0.5 (square root), 3 (cube)." />
 			<OutputSocket name="output" type="input.type" shape="input.shape" description="Output tensor containing the computed power values. Has the same shape and data type as the input."/>
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)."/>
@@ -32,14 +32,23 @@
 		<Contracts>
 			<Assert test="exponent &gt; 0" error="Exponent must be a positive number." />
 			<Assert 
-				test="input.type == System.Float32"
-			    error="The input tensor ({input.type}) must have type: Float32" />
+				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.Int16 || input.type == System.Int32"
+			    error="The input tensor ({input.type}) must have type: Float32, Int8, Int16, or Int32" />
 		</Contracts>
 
 		<Implementations>
 			<Implementation language="Python" fragment="pow.py:pow" call="pow(input, output, exponent)" />
 			<Implementation language="C" fragment="pow.h:pow_f32" call="pow_f32(input, count, exponent, output)">
 				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="pow.h:pow_i8" call="pow_i8(input, count, exponent, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="pow.h:pow_i16" call="pow_i16(input, count, exponent, output)">
+				<Conditional value="input.type == System.Int16" />
+			</Implementation>
+			<Implementation language="C" fragment="pow.h:pow_i32" call="pow_i32(input, count, exponent, output)">
+				<Conditional value="input.type == System.Int32" />
 			</Implementation>
 		</Implementations>
 
