@@ -9,13 +9,13 @@
 			
 			This unit computes the median by sorting all elements and selecting the central value. For tensors with an odd number of elements, the median is the middle value. For tensors with an even number of elements, the median is the average of the two middle values. The sorting is performed using insertion sort.
 			
-			Currently supports float32 data type and requires the input to be 1-dimensional.
+			Currently supports float32, int8, int16, and int32 data types. Requires the input to be 1-dimensional. For integer types with an even element count, the average of the two middle values is computed using integer division (truncates toward zero).
 
 			<Header>Usage</Header>
 			Use the Median unit when you need a robust measure of central tendency that is less sensitive to outliers than the mean.
 		</Description>
     <Parameters>
-      <InputSocket name="input" pipe="data" description="Input 1D tensor to compute median from. Supports float32 data type only." />
+      <InputSocket name="input" pipe="data" description="Input 1D tensor to compute median from. Supports float32, int8, int16, and int32 data types." />
       <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(0, 1)" description="Output tensor containing the median value. Has shape [1] regardless of input length."/>
       <Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
     </Parameters>
@@ -27,6 +27,15 @@
     <Implementations>
       <Implementation language="C" fragment="median.h:median_f32" call="median_f32(input, output, count)">
         <Conditional value="input.type == System.Float32" />
+      </Implementation>
+      <Implementation language="C" fragment="median.h:median_i8" call="median_i8(input, output, count)">
+        <Conditional value="input.type == System.Int8" />
+      </Implementation>
+      <Implementation language="C" fragment="median.h:median_i16" call="median_i16(input, output, count)">
+        <Conditional value="input.type == System.Int16" />
+      </Implementation>
+      <Implementation language="C" fragment="median.h:median_i32" call="median_i32(input, output, count)">
+        <Conditional value="input.type == System.Int32" />
       </Implementation>
     </Implementations>
   </Unit>

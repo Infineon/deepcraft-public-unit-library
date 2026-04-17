@@ -1,8 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Math.DynamicPower">
     <DisplayName>Dynamic Power</DisplayName>
     <DisplayPath>/Math/Multi-Tensor Operations</DisplayPath>
+    <Tags>
+      <HideInLibrary/>
+    </Tags>
     <Description>
 			<Header>Description</Header>
 			Raise each element to a power specified by a runtime tensor value, computing x^exponent element-wise with a dynamic exponent.

@@ -10,7 +10,7 @@
 			
 			This unit performs a reduction operation that calculates the average (mean) of all values along the chosen axis. For each slice along the specified axis, it sums all elements and divides by the count. The output shape is the same as the input shape with the selected axis removed.
 			
-			Currently supports float32 data type.
+			Currently supports float32, int8, int16, and int32 data types. For integer types, accumulation is performed in a wider type to reduce intermediate overflow.
 
 			<Header>Usage</Header>
 			Use the Average unit when you need to compute mean values across a dimension, such as averaging temporal data or pooling features.
@@ -20,7 +20,7 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" description="Input tensor to compute averages from. Supports float32 data type only." />
+			<InputSocket name="input" description="Input tensor to compute averages from. Supports float32, int8, int16, and int32 data types." />
 			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which to compute averages. Axes are enumerated from right to left." />
 			<OutputSocket name="output" type="input.type" shape="input.shape.remove(axis)" description="Output tensor containing average values. Has the same shape as input with the selected axis removed."/>
 			<Expression name="d0" value="input.shape.step(axis)" description="Step size for iterating along the reduction axis." />
@@ -35,6 +35,15 @@
 		<Implementations>
 			<Implementation language="C" fragment="average.h:average_f32" call="average_f32(input, d0, d1, d2, output)">
 				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="average.h:average_i8" call="average_i8(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="average.h:average_i16" call="average_i16(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Int16" />
+			</Implementation>
+			<Implementation language="C" fragment="average.h:average_i32" call="average_i32(input, d0, d1, d2, output)">
+				<Conditional value="input.type == System.Int32" />
 			</Implementation>
 			<Implementation language="Python" fragment="average.py:average" call="average(input, axis, output)" />
 		</Implementations>

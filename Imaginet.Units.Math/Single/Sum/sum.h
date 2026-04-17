@@ -31,3 +31,72 @@ static inline void sum_f32(const float* restrict input, const int step, const in
 	}
 }
 #pragma IMAGINET_FRAGMENT_END
+
+#pragma IMAGINET_FRAGMENT_BEGIN "sum_i8"
+static inline int8_t __sum_i8(const int8_t* restrict input, int step, int count)
+{
+	int32_t sum = 0;
+	for (int j = 0; j < count; j++) {
+		sum += input[j * step];
+	}
+	return (int8_t)sum;
+}
+
+static inline void sum_i8(const int8_t* restrict input, const int step, const int size, const int slot, int8_t* restrict output)
+{
+	const int full_step = step * size;
+	for (int j = 0; j < slot; j++) {
+		const int j3 = j * full_step;
+		const int j0 = j * step;
+		for (int i = 0; i < step; i++) {
+			output[i + j0] = __sum_i8(input + i + j3, step, size);
+		}
+	}
+}
+#pragma IMAGINET_FRAGMENT_END
+
+#pragma IMAGINET_FRAGMENT_BEGIN "sum_i16"
+static inline int16_t __sum_i16(const int16_t* restrict input, int step, int count)
+{
+	int32_t sum = 0;
+	for (int j = 0; j < count; j++) {
+		sum += input[j * step];
+	}
+	return (int16_t)sum;
+}
+
+static inline void sum_i16(const int16_t* restrict input, const int step, const int size, const int slot, int16_t* restrict output)
+{
+	const int full_step = step * size;
+	for (int j = 0; j < slot; j++) {
+		const int j3 = j * full_step;
+		const int j0 = j * step;
+		for (int i = 0; i < step; i++) {
+			output[i + j0] = __sum_i16(input + i + j3, step, size);
+		}
+	}
+}
+#pragma IMAGINET_FRAGMENT_END
+
+#pragma IMAGINET_FRAGMENT_BEGIN "sum_i32"
+static inline int32_t __sum_i32(const int32_t* restrict input, int step, int count)
+{
+	int64_t sum = 0;
+	for (int j = 0; j < count; j++) {
+		sum += input[j * step];
+	}
+	return (int32_t)sum;
+}
+
+static inline void sum_i32(const int32_t* restrict input, const int step, const int size, const int slot, int32_t* restrict output)
+{
+	const int full_step = step * size;
+	for (int j = 0; j < slot; j++) {
+		const int j3 = j * full_step;
+		const int j0 = j * step;
+		for (int i = 0; i < step; i++) {
+			output[i + j0] = __sum_i32(input + i + j3, step, size);
+		}
+	}
+}
+#pragma IMAGINET_FRAGMENT_END

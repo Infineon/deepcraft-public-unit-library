@@ -46,6 +46,36 @@
 				<Conditional value="step == 1" />
 			</Implementation>
 
+			<Implementation language="C" fragment="max.h:max_sparse_i8" call="max_sparse_i8(input, step, size, slot, output)">
+				<Conditional value="input.type == System.Int8" />
+				<Conditional value="step != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="max.h:max_i8" call="max_i8(input, size, slot, output)">
+				<Conditional value="input.type == System.Int8" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="max.h:max_sparse_i16" call="max_sparse_i16(input, step, size, slot, output)">
+				<Conditional value="input.type == System.Int16" />
+				<Conditional value="step != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="max.h:max_i16" call="max_i16(input, size, slot, output)">
+				<Conditional value="input.type == System.Int16" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="max.h:max_sparse_i32" call="max_sparse_i32(input, step, size, slot, output)">
+				<Conditional value="input.type == System.Int32" />
+				<Conditional value="step != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="max.h:max_i32" call="max_i32(input, size, slot, output)">
+				<Conditional value="input.type == System.Int32" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
 			<!-- CMSIS Float32-->
 			
 			<Implementation language="C" fragment="max_cmsis.h:max_cmsis_sparse_f32" call="max_cmsis_sparse_f32(input, step, size, slot, output)">

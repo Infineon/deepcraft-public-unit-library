@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Imaginet>
 	<Unit name="Imaginet.Units.Math.SubFromConstant">
 		<DisplayName>Subtract From Constant (A-x)</DisplayName>
@@ -10,7 +10,7 @@
 			
 			This unit performs element-wise reverse subtraction, where a constant value A has each input element subtracted from it. Note that this is different from subtracting a constant from the input; the order matters in subtraction. The constant can be positive or negative. The tensor shape and dimensions are preserved.
 			
-			Currently supports float32 data type only.
+			Supports float32, int8, int16, and int32 data types.
 
 			<Header>Usage</Header>
 			Use the Subtract From Constant unit when you need to invert values around a reference point or compute complementary values.
@@ -20,16 +20,17 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" description="Input tensor to be subtracted from the constant. Supports float32 data type only." />
+			<InputSocket name="input" description="Input tensor to be subtracted from the constant. Supports float32, int8, int16, and int32 data types." />
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
 			<DoubleOption name="A" text="Constant" description="The constant value from which each input element will be subtracted. Can be positive or negative." />
+			<Expression name="A_round" value="A.round()" description="The constant A rounded to the nearest integer for integer type operations." />
 			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor containing the result of (A - x) for each element. Has the same shape and data type as the input."/>
 		</Parameters>
 
 		<Contracts>
 			<Assert 
-				test="input.type == System.Float32"
-				error="The input tensor ({input.type}) must have type: Float32" />
+				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.Int16 || input.type == System.Int32"
+				error="The input tensor ({input.type}) must have type: Float32, Int8, Int16, or Int32" />
 		</Contracts>
 
 		
@@ -37,6 +38,19 @@
 			<Implementation language="C" fragment="subir.h:subir_f32" call="subir_f32(input, count, A, output)">
 				<Conditional value="input.type == System.Float32" />
 			</Implementation>
+
+			<Implementation language="C" fragment="subir.h:subir_i8" call="subir_i8(input, count, A_round, output)">
+				<Conditional value="input.type == System.Int8" />
+			</Implementation>
+
+			<Implementation language="C" fragment="subir.h:subir_i16" call="subir_i16(input, count, A_round, output)">
+				<Conditional value="input.type == System.Int16" />
+			</Implementation>
+
+			<Implementation language="C" fragment="subir.h:subir_i32" call="subir_i32(input, count, A_round, output)">
+				<Conditional value="input.type == System.Int32" />
+			</Implementation>
+
 			<Implementation language="Python" fragment="subir.py:subir" call="subir(input, A, output)" />
 		</Implementations>
 
