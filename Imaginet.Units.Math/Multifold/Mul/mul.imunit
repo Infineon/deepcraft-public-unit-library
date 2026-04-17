@@ -10,7 +10,7 @@
 			
 			This unit multiplies corresponding elements from two input tensors together. When the input shapes differ, broadcasting rules are applied to automatically expand dimensions, allowing tensors of different shapes to be multiplied together. The output shape matches the first operand's shape.
 			
-			Broadcasting enables operations like scaling a matrix by a scalar, multiplying each row of a matrix by a vector, or combining tensors with compatible but non-identical dimensions. Currently supports float32 data type.
+			Broadcasting enables operations like scaling a matrix by a scalar, multiplying each row of a matrix by a vector, or combining tensors with compatible but non-identical dimensions. Supports float32, int8, int16, and int32 data types.
 
 			<Header>Usage</Header>
 			Use the Multiplication unit when you need to perform element-wise scaling or weighting of tensor values.
@@ -20,8 +20,8 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="a" description="First input tensor. Supports float32 data type. Determines the output shape." />
-			<InputSocket name="b" description="Second input tensor. Supports float32 data type. Will be broadcast to match the first operand if shapes differ." />
+			<InputSocket name="a" description="First input tensor. Supports float32, int8, int16, and int32 data types. Determines the output shape." />
+			<InputSocket name="b" description="Second input tensor. Supports float32, int8, int16, and int32 data types. Will be broadcast to match the first operand if shapes differ." />
 			<OutputSocket name="output" type="a.type" shape="a.shape" text="Output" description="Output tensor containing element-wise product. Has the same shape and data type as the first operand."/>
 
 			<Expression name="bcast" value="a.shape.broadcast(b.shape)" description="Broadcasting configuration computed from the two input shapes." />
@@ -38,6 +38,18 @@
 			<Implementation language="C" fragment="mul.h:mul_f32" call="mul_f32(a, b, left, group1, middle, group2, right, output)">
 				<Conditional value="a.type == System.Float32" />
 				<Conditional value="b.type == System.Float32" />
+			</Implementation>
+			<Implementation language="C" fragment="mul.h:mul_i8" call="mul_i8(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int8" />
+				<Conditional value="b.type == System.Int8" />
+			</Implementation>
+			<Implementation language="C" fragment="mul.h:mul_i16" call="mul_i16(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int16" />
+				<Conditional value="b.type == System.Int16" />
+			</Implementation>
+			<Implementation language="C" fragment="mul.h:mul_i32" call="mul_i32(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int32" />
+				<Conditional value="b.type == System.Int32" />
 			</Implementation>
 			<Implementation language="Python" fragment="mul.py:mul" call="mul(a, b, output)"/>
 		</Implementations>
