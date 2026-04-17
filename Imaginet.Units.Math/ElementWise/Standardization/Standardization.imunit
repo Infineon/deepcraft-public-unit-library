@@ -8,39 +8,56 @@
 			<Header>Description</Header>
 			Standardize each element of the input tensor using Z-score normalization: output = (x - mean) / std.
 
-			This unit applies element-wise standardization, shifting the distribution by subtracting the mean and scaling it by the standard deviation. When applied with the true mean and standard deviation of the dataset, the result has zero mean and unit variance. The tensor shape and dimensions are preserved.
+			Two modes are available:
 
-			Supports float32, int8, and uint8 data types.
+			Static mode (Batch Mode disabled): The mean and standard deviation are provided as fixed design-time constants. Use this when the data distribution is known in advance, for example from training statistics. Supports float32, int8, and uint8 data types.
+
+			Batch mode (Batch Mode enabled): The mean and standard deviation are computed at runtime from all elements in the input tensor. Every sample is shifted and scaled relative to the same global statistics. If the entire batch is constant (standard deviation is zero), the denominator is clamped to 1 to avoid division by zero. Requires float32 input and at least 2D shape [num_samples, sample_size].
 
 			<Header>Usage</Header>
 			Use the Standardization unit when you need to normalize data to zero mean and unit variance, typically as a preprocessing step before feeding data to a model.
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" text="Input" description="Input tensor to be standardized. Supports float32, int8, and uint8 data types."/>
+			<InputSocket name="input" text="Input" description="Input tensor to be standardized. Static mode supports float32, int8, and uint8. Batch mode supports float32 only and requires at least 2D shape."/>
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
-			<DoubleOption name="mean" text="Mean" default="0" description="Mean value to subtract from each element. Typically the mean of the training dataset." />
-			<DoubleOption name="std" text="Standard Deviation" default="1" description="Standard deviation to divide by after mean subtraction. Typically the standard deviation of the training dataset." />
+			<BoolOption name="batch_mode" text="Batch Mode" default="false" description="When enabled, mean and standard deviation are computed at runtime from the input tensor. Requires float32 input and at least 2D shape. When disabled, fixed mean and std constants are used." />
+			<DoubleOption name="mean" text="Mean" default="0" description="Mean value to subtract from each element. Typically the mean of the training dataset. Used only in static mode." />
+			<DoubleOption name="std" text="Standard Deviation" default="1" description="Standard deviation to divide by after mean subtraction. Typically the standard deviation of the training dataset. Used only in static mode." />
 			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor containing standardized values. Has the same shape and data type as the input."/>
 		</Parameters>
-		
+
 		<Contracts>
-			<Assert 
+			<Assert
 				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.UInt8"
 				error="The input tensor ({input.type}) must have type: Float32, Int8 or UInt8" />
+			<Assert
+				test="!batch_mode || input.type == System.Float32"
+				error="Batch Mode requires float32 input. Got {input.type}." />
+			<Assert
+				test="!batch_mode || input.shape.count >= 2"
+				error="Batch Mode requires the input tensor to be at least 2D. Got {input.shape.count}D." />
 		</Contracts>
 
 		<Implementations>
-			<!-- Standardization -->
 			<Implementation language="C" fragment="standardization.h:standardization_f32" call="standardization_f32(input, count, output, mean, std)">
+				<Conditional value="!batch_mode"/>
 				<Conditional value="input.type == System.Float32"/>
 			</Implementation>
 			<Implementation language="C" fragment="standardization.h:standardization_i8" call="standardization_i8(input, count, output, mean, std)">
+				<Conditional value="!batch_mode"/>
 				<Conditional value="input.type == System.Int8" />
 			</Implementation>
 			<Implementation language="C" fragment="standardization.h:standardization_u8" call="standardization_u8(input, count, output, mean, std)">
+				<Conditional value="!batch_mode"/>
 				<Conditional value="input.type == System.UInt8" />
 			</Implementation>
+			<Implementation language="C" fragment="standardization.h:batch_standardization_f32" call="batch_standardization_f32(input, count, output)">
+				<Conditional value="batch_mode"/>
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
 		</Implementations>
+
 	</Unit>
+
 </Imaginet>

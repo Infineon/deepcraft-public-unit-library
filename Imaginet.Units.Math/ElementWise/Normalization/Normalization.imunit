@@ -8,38 +8,53 @@
 			<Header>Description</Header>
 			Normalize each element of the input tensor to the range [0, 1] using min-max normalization: output = (x - min) / (max - min).
 
-			This unit applies element-wise linear rescaling, mapping values from a known input range [min, max] to the normalized interval [0, 1]. Values equal to min map to 0, values equal to max map to 1, and intermediate values are scaled proportionally. The tensor shape and dimensions are preserved.
+			Two modes are available:
 
-			Supports float32, int8, and uint8 data types.
+			Static mode (Batch Mode disabled): The min and max values are provided as fixed design-time constants. Use this when the data range is known in advance, for example from training statistics. Supports float32, int8, and uint8 data types.
+
+			Batch mode (Batch Mode enabled): The min and max are computed at runtime from all elements in the input tensor. Every sample is scaled relative to the same global range. If the entire batch is constant (min equals max), the range is clamped to 1 to avoid division by zero. Requires float32 input and at least 2D shape [num_samples, sample_size].
 
 			<Header>Usage</Header>
 			Use the Normalization unit when you need to rescale sensor data or model inputs to a fixed range before further processing.
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" text="Input" description="Input tensor to be normalized. Supports float32, int8, and uint8 data types."/>
+			<InputSocket name="input" text="Input" description="Input tensor to be normalized. Static mode supports float32, int8, and uint8. Batch mode supports float32 only and requires at least 2D shape."/>
 			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
-			<DoubleOption name="min" text="Min" default="0" description="Minimum value of the expected input range. Maps to 0 in the output." />
-			<DoubleOption name="max" text="Max" default="1" description="Maximum value of the expected input range. Maps to 1 in the output." />
+			<BoolOption name="batch_mode" text="Batch Mode" default="false" description="When enabled, min and max are computed at runtime from the input tensor. Requires float32 input and at least 2D shape. When disabled, fixed min and max constants are used." />
+			<DoubleOption name="min" text="Min" default="0" description="Minimum value of the expected input range. Maps to 0 in the output. Used only in static mode." />
+			<DoubleOption name="max" text="Max" default="1" description="Maximum value of the expected input range. Maps to 1 in the output. Used only in static mode." />
 			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor containing normalized values in the range [0, 1]. Has the same shape and data type as the input."/>
 		</Parameters>
-		
+
 		<Contracts>
-			<Assert 
+			<Assert
 				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.UInt8"
 				error="The input tensor ({input.type}) must have type: Float32, Int8 or UInt8" />
+			<Assert
+				test="!batch_mode || input.type == System.Float32"
+				error="Batch Mode requires float32 input. Got {input.type}." />
+			<Assert
+				test="!batch_mode || input.shape.count >= 2"
+				error="Batch Mode requires the input tensor to be at least 2D. Got {input.shape.count}D." />
 		</Contracts>
 
 		<Implementations>
-			<!-- Normalization -->
 			<Implementation language="C" fragment="normalization.h:normalization_f32" call="normalization_f32(input, count, output, min, max)">
+				<Conditional value="!batch_mode"/>
 				<Conditional value="input.type == System.Float32"/>
 			</Implementation>
 			<Implementation language="C" fragment="normalization.h:normalization_i8" call="normalization_i8(input, count, output, min, max)">
+				<Conditional value="!batch_mode"/>
 				<Conditional value="input.type == System.Int8" />
 			</Implementation>
 			<Implementation language="C" fragment="normalization.h:normalization_u8" call="normalization_u8(input, count, output, min, max)">
+				<Conditional value="!batch_mode"/>
 				<Conditional value="input.type == System.UInt8" />
+			</Implementation>
+			<Implementation language="C" fragment="normalization.h:batch_normalization_f32" call="batch_normalization_f32(input, count, output)">
+				<Conditional value="batch_mode"/>
+				<Conditional value="input.type == System.Float32" />
 			</Implementation>
 		</Implementations>
 
