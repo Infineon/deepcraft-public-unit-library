@@ -10,7 +10,7 @@
 			
 			This unit adds corresponding elements from two input tensors together. When the input shapes differ, broadcasting rules are applied to automatically expand dimensions, allowing tensors of different shapes to be added together. The output shape matches the first operand's shape.
 			
-			Broadcasting enables operations like adding a scalar to a matrix, adding a vector to each row of a matrix, or combining tensors with compatible but non-identical dimensions. Currently supports float32 data type.
+			Broadcasting enables operations like adding a scalar to a matrix, adding a vector to each row of a matrix, or combining tensors with compatible but non-identical dimensions. Supports float32, int8, int16, and int32 data types.
 
 			<Header>Usage</Header>
 			Use the Addition unit when you need to combine two tensors element-wise, such as adding bias terms to features or merging outputs from parallel processing paths.
@@ -20,8 +20,8 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="a" description="First input tensor. Supports float32 data type. Determines the output shape." />
-			<InputSocket name="b" description="Second input tensor. Supports float32 data type. Will be broadcast to match the first operand if shapes differ." />
+			<InputSocket name="a" description="First input tensor. Supports float32, int8, int16, and int32 data types. Determines the output shape." />
+			<InputSocket name="b" description="Second input tensor. Supports float32, int8, int16, and int32 data types. Will be broadcast to match the first operand if shapes differ." />
 			<OutputSocket name="output" type="a.type" shape="a.shape" text="Output" description="Output tensor containing element-wise sum. Has the same shape and data type as the first operand." />
 
 			<Expression name="bcast" value="a.shape.broadcast(b.shape)" conditional="b != null"  description="Broadcasting configuration computed from the two input shapes."/>
@@ -42,6 +42,30 @@
 				  call="add_f32(a, b, left, group1, middle, group2, right, output)">
 				<Conditional value="a.type == System.Float32" />
 				<Conditional value="b.type == System.Float32" />
+			</Implementation>
+
+			<Implementation
+				  language="C"
+				  fragment="add.h:add_i8"
+				  call="add_i8(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int8" />
+				<Conditional value="b.type == System.Int8" />
+			</Implementation>
+
+			<Implementation
+				  language="C"
+				  fragment="add.h:add_i16"
+				  call="add_i16(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int16" />
+				<Conditional value="b.type == System.Int16" />
+			</Implementation>
+
+			<Implementation
+				  language="C"
+				  fragment="add.h:add_i32"
+				  call="add_i32(a, b, left, group1, middle, group2, right, output)">
+				<Conditional value="a.type == System.Int32" />
+				<Conditional value="b.type == System.Int32" />
 			</Implementation>
 
 			<Implementation
