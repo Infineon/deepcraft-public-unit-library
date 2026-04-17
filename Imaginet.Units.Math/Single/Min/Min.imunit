@@ -10,7 +10,7 @@
 			
 			This unit finds the minimum value along the chosen axis. For each slice along the specified axis, it identifies and returns the smallest value. The output shape is the same as the input shape with the selected axis removed.
 			
-			Supports float32 and fixed-point formats (Q7, Q15, Q31). Optional CMSIS optimizations are available for improved performance on ARM-based embedded systems.
+			Supports float32, int8, int16, int32, and fixed-point formats (Q7, Q15, Q31). Optional CMSIS optimizations are available for improved performance on ARM-based embedded systems.
 
 			<Header>Usage</Header>
 			Use the Min unit when you need to find the lowest values across a dimension, such as identifying minimum thresholds or detecting valleys in data.
@@ -20,7 +20,7 @@
 		</Description>
 
 		<Parameters>
-			<InputSocket name="input" description="Input tensor to find minimum values from. Supports float32 and fixed-point types (Q7, Q15, Q31)." />
+			<InputSocket name="input" description="Input tensor to find minimum values from. Supports float32, int8, int16, int32, and fixed-point types (Q7, Q15, Q31)." />
 			<Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which to find minimum values. Axes are enumerated from right to left." />
 			<OutputSocket name="output" shape="input.shape.remove(axis)" type="input.type" description="Output tensor containing minimum values. Has the same shape as input with the selected axis removed."/>
 			<BoolOption name="global_use_cmsis" text="Use CMSIS" default="false" global="true" description="Enable CMSIS-optimized implementations for ARM Cortex processors. Improves performance on embedded systems."/>
@@ -43,6 +43,36 @@
 			<Implementation language="C" fragment="min.h:min_f32" call="min_f32(input, size, slot, output)">
 				<Conditional value="!global_use_cmsis"/>
 				<Conditional value="input.type == System.Float32" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="min.h:min_sparse_i8" call="min_sparse_i8(input, step, size, slot, output)">
+				<Conditional value="input.type == System.Int8" />
+				<Conditional value="step != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="min.h:min_i8" call="min_i8(input, size, slot, output)">
+				<Conditional value="input.type == System.Int8" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="min.h:min_sparse_i16" call="min_sparse_i16(input, step, size, slot, output)">
+				<Conditional value="input.type == System.Int16" />
+				<Conditional value="step != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="min.h:min_i16" call="min_i16(input, size, slot, output)">
+				<Conditional value="input.type == System.Int16" />
+				<Conditional value="step == 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="min.h:min_sparse_i32" call="min_sparse_i32(input, step, size, slot, output)">
+				<Conditional value="input.type == System.Int32" />
+				<Conditional value="step != 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="min.h:min_i32" call="min_i32(input, size, slot, output)">
+				<Conditional value="input.type == System.Int32" />
 				<Conditional value="step == 1" />
 			</Implementation>
 
