@@ -24,6 +24,10 @@
 			Image height must be even. Image width must be even to align the interleaved CbCr plane correctly. The flat buffer size must equal height * width * 3 / 2.
 		</Description>
 
+		<Tags>
+			<Experimental/>
+		</Tags>
+
 		<Parameters>
 			<InputSocket name="input" description="Raw NV12 buffer as a flat 1D uint8 tensor of size H * W * 3/2. The first H * W bytes are the Y (luma) plane; the remaining H/2 * W bytes are the interleaved CbCr (chroma) plane." />
 
