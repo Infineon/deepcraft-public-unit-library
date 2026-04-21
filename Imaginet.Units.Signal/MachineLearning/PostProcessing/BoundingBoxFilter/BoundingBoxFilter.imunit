@@ -1,95 +1,100 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Imaginet version="2.0.0.0">
-  <Unit name="Imaginet.Units.Signal.DetectionFilter">
-    <DisplayName>Bounding Box Filter</DisplayName>
-    <DisplayPath>/Image Processing/Object Detection</DisplayPath>
-    <Description>
-		<Header>Description</Header>
-		Filter redundant overlapping bounding boxes from object detection results using Non-Maximum Suppression (NMS).
-		
-		This unit eliminates duplicate detections by first filtering boxes with low confidence scores, then iteratively selecting the highest-scoring box and suppressing overlapping boxes based on IoU (Intersection over Union) threshold. The process continues until max_detections is reached or no boxes remain.
-		
-		Input shape must be [detection_count, confidence_count] or [confidence_count, detection_count], containing bounding box coordinates (x, y, width, height) and class scores. Output shape is [max_detections, output_confidence_count].
-		
-		Supports float32 and int8 data types.
+	<Unit name="Imaginet.Units.Signal.DetectionFilter">
+		<DisplayName>Bounding Box Filter</DisplayName>
+		<DisplayPath>/Image Processing/Object Detection</DisplayPath>
+		<Description>
+			<Header>Description</Header>
+			Filter redundant overlapping bounding boxes from object detection results using Non-Maximum Suppression (NMS).
 
-		<Header>Usage</Header>
-		Use the Bounding Box Filter as a post-processing step in object detection pipelines to eliminate duplicate detections and select the most confident predictions.
-	</Description>
-	  
-    <Parameters>
-      <InputSocket name="input" pipe="data" description="Input tensor containing detection results with shape [detection_count, confidence_count] or [confidence_count, detection_count]. Each detection includes bounding box coordinates (x, y, width, height) and class confidence scores. Supports float32 and int8 data types." />
-      <Int32Option name="max_detections" text="Max detections" description="Maximum number of detections to output after NMS filtering. Determines the output tensor size. Typical values: 5-100 depending on application." default="5" />
-      <Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor." />
-      <DoubleOption name="threshold" text="Threshold" description="Minimum confidence score (0.0 to 1.0) for a detection to be considered. Detections below this threshold are discarded before NMS. Higher values reduce false positives but may miss weaker detections." default="0.5"/>
-      <DoubleOption name="iou_threshold" text="IOU Threshold" description="IoU (Intersection over Union) threshold (0.0 to 1.0) for suppressing overlapping boxes. Lower values (e.g., 0.3) aggressively remove overlaps, higher values (e.g., 0.7) tolerate more overlap. Typical range: 0.3-0.5." default="0.5"/>
+			This unit eliminates duplicate detections by first filtering boxes with low confidence scores, then iteratively selecting the highest-scoring box and suppressing overlapping boxes based on IoU (Intersection over Union) threshold. The process continues until max_detections is reached or no boxes remain.
+
+			Input shape must be [detection_count, confidence_count] or [confidence_count, detection_count], containing bounding box coordinates (x, y, width, height) and class scores. Output shape is [max_detections, output_confidence_count] with optional detection flags.
+
+			Supports float32 and int8 data types.
+
+			<Header>Usage</Header>
+			Use the Bounding Box Filter as a post-processing step in object detection pipelines to eliminate duplicate detections and select the most confident predictions.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" description="Input tensor containing detection results with shape [detection_count, confidence_count] or [confidence_count, detection_count]. Each detection includes bounding box coordinates (x, y, width, height) and class confidence scores. Supports float32 and int8 data types." />
+			<Int32Option name="max_detections" text="Max detections" description="Maximum number of detections to output after NMS filtering. Determines the output tensor size. Typical values: 5-100 depending on application." default="5" />
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor." />
+			<DoubleOption name="threshold" text="Threshold" description="Minimum confidence score (0.0 to 1.0) for a detection to be considered. Detections below this threshold are discarded before NMS. Higher values reduce false positives but may miss weaker detections." default="0.7"/>
+			<DoubleOption name="iou_threshold" text="IOU Threshold" description="IoU (Intersection over Union) threshold (0.0 to 1.0) for suppressing overlapping boxes. Lower values (e.g., 0.3) aggressively remove overlaps, higher values (e.g., 0.7) tolerate more overlap. Typical range: 0.3-0.5." default="0.5"/>
+			<BoolOption name="include_detected_flag" text="Include Detected Flag" description="If enabled, adds a detection flag (1 for valid detection, 0 for padding) as the last value in each output detection. Useful for identifying valid detections versus padding entries." default="false" />
 
 
-	  <Expression name="detection_axis_input" value="input.shape.size(0) &gt;= input.shape.size(1) ? 0 : 1" description="Automatically determines which input axis contains detections (the larger dimension)." />
-	  <Expression name="confidence_axis_input" value="1 - detection_axis_input" description="Automatically determines which input axis contains confidence scores (the smaller dimension)." />
+			<Expression name="detection_axis_input" value="input.shape.size(0) &gt;= input.shape.size(1) ? 0 : 1" description="Automatically determines which input axis contains detections (the larger dimension)." />
+			<Expression name="confidence_axis_input" value="1 - detection_axis_input" description="Automatically determines which input axis contains confidence scores (the smaller dimension)." />
 
-	  <Expression name="detection_axis_output" value="0" />
-	  <Expression name="confidence_axis_output" value="1" />
-		
-	  <Expression name="object_score" value="(detection_axis_output != detection_axis_input) ? 1 : 0" />
-	  <Expression name="detection_count" value="input.shape.size(detection_axis_input)" description="Number of elements in the detection axis." />
-      <Expression name="confidence_count" value="input.shape.size(confidence_axis_input)" description="Number of elements in the confidence axis." />
-	
-      <Expression name="output_confidence_count" value="confidence_count - object_score" description="Number of values per detection in the output: bounding box coordinates (4) + class scores." />
+			<Expression name="detection_axis_output" value="0" />
+			<Expression name="confidence_axis_output" value="1" />
 
-      <Expression name="class_offset" value="(detection_axis_output != detection_axis_input) ? 5: 4" description="Offset for classes" />
-      <Expression name="num_values_boundingbox" value="4" description="Number of values in bounding box" /> 
-      <Expression name="num_values_classes" value="confidence_count - class_offset" description="Number of values in classes" /> 
+			<Expression name="object_score" value="(detection_axis_output != detection_axis_input) ? 1 : 0" />
+			<Expression name="detection_count" value="input.shape.size(detection_axis_input)" description="Number of elements in the detection axis." />
+			<Expression name="confidence_count" value="input.shape.size(confidence_axis_input)" description="Number of elements in the confidence axis." />
 
-      <Expression name="labels_boundingbox" value="input.shape.getLabels(confidence_axis_input, 0, num_values_boundingbox)" description="Labels for bounding box" />
-      <Expression name="labels_classes" value="input.shape.getLabels(confidence_axis_input, class_offset, num_values_classes)" description="Labels for classes" />
+			<Expression name="output_confidence_count" value="confidence_count - object_score + (include_detected_flag ? 1 : 0)" description="Number of values per detection in the output: bounding box coordinates (4) + class scores + optional detection flag." />
 
-      <Expression name="output_shape" value="input.shape.replace(detection_axis_output, max_detections).replace(confidence_axis_output, output_confidence_count)" description="Output shape" />
-	  <Expression name="output_labels" value="labels_boundingbox+&quot;,&quot;+labels_classes"	
-				  description="Output labels" />
+			<Expression name="class_offset" value="(detection_axis_output != detection_axis_input) ? 5: 4" description="Offset for classes" />
+			<Expression name="num_values_boundingbox" value="4" description="Number of values in bounding box" />
+			<Expression name="num_values_classes" value="confidence_count - class_offset" description="Number of values in classes" />
 
-	  <Expression name="output_shape_with_labels" value="output_shape.withLabels(confidence_axis_output,output_labels)" description="Output shape with labels" /> 
-      <OutputSocket name="output" pipe="data" type="input.type" shape="output_shape_with_labels" description="Filtered detections with shape [max_detections, output_confidence_count]. Each detection contains bounding box coordinates and class scores. Padded with zeros if fewer than max_detections pass NMS." />
-    </Parameters>
+			<Expression name="labels_boundingbox" value="input.shape.getLabels(confidence_axis_input, 0, num_values_boundingbox)" description="Labels for bounding box" />
+			<Expression name="labels_classes" value="input.shape.getLabels(confidence_axis_input, class_offset, num_values_classes)" description="Labels for classes" />
+			<Expression name="detection_flag_label" value="&quot;detection_flag&quot;" description="Detection flag label" />
 
-	<Contracts>
-		<Assert
-			test="max_detections>=1"
-			error="Max number of detections has to be more than 1." />
-		<Assert
-			test="threshold&lt;=1"
-			error="Threshold has to be less or equal to 1." />
-		<Assert
-			test="threshold>=0"
-			error="Threshold cant be negative." />
-		<Assert
-			test="iou_threshold&lt;=1"
-			error="IOU threshold has to be less or equal to 1." />
-		<Assert
-			test="iou_threshold>=0"
-			error="IOU threshold cant be negative." />
-		<Assert
-			test="input.type == System.Float32 || input.type == System.Int8"
-			error="Input must be Float32 or Int8." />
-	</Contracts>
-	  
-    <Implementations>
-      <!-- Float32 implementations -->
-      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_legacy_f32" call="detectionfilter_legacy_f32(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold)">
-        <Conditional value="input.type == System.Float32 &amp;&amp; detection_axis_input == 0" />
-      </Implementation>
-      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_new_f32" call="detectionfilter_new_f32(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold)">
-        <Conditional value="input.type == System.Float32 &amp;&amp; detection_axis_input == 1" />
-      </Implementation>
-      
-      <!-- Int8 implementations -->
-      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_legacy_i8" call="detectionfilter_legacy_i8(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold)">
-        <Conditional value="input.type == System.Int8 &amp;&amp; detection_axis_input == 0" />
-      </Implementation>
-      <Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_new_i8" call="detectionfilter_new_i8(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold)">
-        <Conditional value="input.type == System.Int8 &amp;&amp; detection_axis_input == 1" />
-      </Implementation>
-    </Implementations>
-	  
-  </Unit>
+			<Expression name="output_shape" value="input.shape.replace(detection_axis_output, max_detections).replace(confidence_axis_output, output_confidence_count)" description="Output shape" />
+			<Expression name="output_labels" value="
+				  (include_detected_flag?
+				  labels_boundingbox+&quot;,&quot;+labels_classes+&quot;,&quot;+detection_flag_label:
+				  labels_boundingbox+&quot;,&quot;+labels_classes)"
+						description="Output labels" />
+
+			<Expression name="output_shape_with_labels" value="output_shape.withLabels(confidence_axis_output,output_labels)" description="Output shape with labels" />
+			<OutputSocket name="output" pipe="data" type="input.type" shape="output_shape_with_labels" description="Filtered detections with shape [max_detections, output_confidence_count]. Each detection contains bounding box coordinates, class scores, and optionally a detection flag. Padded with zeros if fewer than max_detections pass NMS." />
+		</Parameters>
+
+		<Contracts>
+			<Assert
+				test="max_detections>=1"
+				error="Max number of detections has to be more than 1." />
+			<Assert
+				test="threshold&lt;=1"
+				error="Threshold has to be less or equal to 1." />
+			<Assert
+				test="threshold>=0"
+				error="Threshold cant be negative." />
+			<Assert
+				test="iou_threshold&lt;=1"
+				error="IOU threshold has to be less or equal to 1." />
+			<Assert
+				test="iou_threshold>=0"
+				error="IOU threshold cant be negative." />
+			<Assert
+				test="input.type == System.Float32 || input.type == System.Int8"
+				error="Input must be Float32 or Int8." />
+		</Contracts>
+
+		<Implementations>
+			<!-- Float32 implementations -->
+			<Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_confidence_detection_f32" call="detectionfilter_confidence_detection_f32(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; detection_axis_input == 0" />
+			</Implementation>
+			<Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_detection_confidence_f32" call="detectionfilter_detection_confidence_f32(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; detection_axis_input == 1" />
+			</Implementation>
+
+			<!-- Int8 implementations -->
+			<Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_confidence_detection_i8" call="detectionfilter_confidence_detection_i8(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+				<Conditional value="input.type == System.Int8 &amp;&amp; detection_axis_input == 0" />
+			</Implementation>
+			<Implementation language="C" fragment="bounding_box_filter.h:detectionfilter_detection_confidence_i8" call="detectionfilter_detection_confidence_i8(input, output, detection_count, confidence_count, max_detections, threshold, iou_threshold, include_detected_flag)">
+				<Conditional value="input.type == System.Int8 &amp;&amp; detection_axis_input == 1" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
 </Imaginet>
