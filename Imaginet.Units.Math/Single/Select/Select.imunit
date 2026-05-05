@@ -28,35 +28,36 @@
 
 	  <Int32Option
 		name="index"
-		min="0"
 		ui="textbox"
 		text="Index"
-		description="Starting position of the slice along the specified axis (zero-based index)." />
+		description="Starting position of the slice along the specified axis (zero-based index). Negative values count from the end of the axis (e.g. -1 refers to the last element)." />
 		
 	   <Int32Option
 		name="count"
 		min="0" 
 		ui="textbox" 
 		text="Count" 
-		description="Number of consecutive elements to extract along the specified axis. The sum of index and count must not exceed the axis size." />
+		description="Number of consecutive elements to extract along the specified axis. The sum of the resolved index and count must not exceed the axis size." />
 	   
 	  	<Expression name="d0" value="input.shape.step(axis)" description="Step size for iterating along the selection axis." />
 		<Expression name="d1" value="input.shape.size(axis)" description="Size of the input axis dimension being sliced." />
 		<Expression name="d2" value="input.shape.slot(axis)" description="Number of slots (iterations) in the selection operation." />
+		<Expression name="resolved_index" value="index &lt; 0 ? index + input.shape.size(axis) : index" description="Resolved non-negative index. For negative input indices, this is computed as index + axis size." />
 	  
 		 <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(axis, count)" description="Output tensor containing selected elements. Has the same shape as input except the selected axis has size equal to count." />
     </Parameters>
 	
 	<Contracts>
 		<Assert test="axis &lt; input.shape.count" error="Axis ({axis}) must be one of input dimensions (0...{input.shape.count-1})." />
-		<Assert test="(count + index) &lt;= input.shape.size(axis)" error="Count+Index ({count}+{index}) must be less than {input.shape.size(axis)}." />
+		<Assert test="index &gt;= -input.shape.size(axis)" error="Negative index ({index}) must not be smaller than -{input.shape.size(axis)} (the size of the selected axis)." />
+		<Assert test="(count + resolved_index) &lt;= input.shape.size(axis)" error="Count+Index ({count}+{resolved_index}) must be less than or equal to {input.shape.size(axis)}." />
 	</Contracts>
 
     <Implementations>
-      <Implementation language="C" fragment="select.h:select_f32" call="select_f32(input, d0, d1, count, d2, index, output)">
+      <Implementation language="C" fragment="select.h:select_f32" call="select_f32(input, d0, d1, count, d2, resolved_index, output)">
         <Conditional value="input.type == System.Float32" />
       </Implementation>
-      <Implementation language="C" fragment="select.h:select_i8" call="select_i8(input, d0, d1, count, d2, index, output)">
+      <Implementation language="C" fragment="select.h:select_i8" call="select_i8(input, d0, d1, count, d2, resolved_index, output)">
         <Conditional value="input.type == System.Int8" />
       </Implementation>
     </Implementations>
