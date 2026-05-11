@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Filter.HighShelf">
+		<DisplayName>High Shelf Filter</DisplayName>
+		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Boost or cut all frequencies above a corner frequency by a specified amount while leaving lower frequencies unchanged. The transition steepness is controlled by the Q factor.
+
+			Supports float32 only.
+
+			<Header>Usage</Header>
+			Use the High Shelf Filter for treble adjustment, high-frequency equalization, or data augmentation.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" description="Input signal to be filtered. Can be any shape. Supports float32 only." />
+			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" description="Filtered output signal. Has the same shape and data type as the input." />
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor." />
+			<Expression name="freq" value="input.rate" description="Sample rate (Hz) of the input signal." />
+			<DoubleOption name="frequency" text="Frequency (Hz)" default="5000" description="Corner frequency of the shelf." />
+			<DoubleOption name="Q" text="Q Factor" default="0.707" description="Quality factor controlling the transition steepness." />
+			<DoubleOption name="gain_db" text="Gain (dB)" default="0" description="Boost or cut in decibels for frequencies above the corner." />
+			<Handle name="state" text="Filter State" description="Internal state buffer (2 floats per channel)." size="count * 2 * 4" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32" error="The input tensor ({input.type}) must have type: Float32" />
+			<Assert test="frequency > 0" error="Frequency must be positive." />
+			<Assert test="Q > 0" error="Q factor must be positive." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="high_shelf.h:high_shelf_f32" call="high_shelf_f32(input, state, output, count, freq, frequency, Q, gain_db)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+</Imaginet>
