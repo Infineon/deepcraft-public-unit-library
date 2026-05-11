@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Compound unit="Imaginet.Units.Signal.DistanceAttenuation">
+		<DisplayName>Distance Attenuation</DisplayName>
+		<DisplayPath>/Machine Learning/Augmentation</DisplayPath>
+		<Description>
+			<Header>Description</Header>
+			Simulate the effect of distance on a sound source by applying gain attenuation, high-frequency air absorption, and propagation delay.
+
+			Uses the inverse-distance law for gain (-20*log10(distance/ref_distance) dB), an exponential air absorption model for high-frequency roll-off, and speed-of-sound propagation delay. At the reference distance the signal passes through unchanged.
+
+			Supports float32 only.
+
+			<Header>Usage</Header>
+			Use Distance Attenuation for spatial audio simulation, distance-based data augmentation, or acoustic environment modelling.
+		</Description>
+
+		<Nodes>
+			<!-- Input -->
+			<TensorInputNode id="input_node" x="-300" y="400" enabled="true" name="Input" param="input">
+				<Description>Audio input signal.</Description>
+			</TensorInputNode>
+
+			<!-- User parameters -->
+			<DoubleOptionNode id="opt_distance" x="-300" y="100" enabled="true" name="Distance (m)" param="distance_m">
+				<Description>Distance to the sound source in metres.</Description>
+				<DefaultValue>1</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>10000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_ref_distance" x="-300" y="200" enabled="true" name="Reference Distance (m)" param="ref_distance_m">
+				<Description>Reference distance where gain is 0 dB (unity).</Description>
+				<DefaultValue>1</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>10000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_speed" x="-300" y="600" enabled="true" name="Speed of Sound (m/s)" param="speed_of_sound">
+				<Description>Speed of sound in m/s. Default 343 m/s (dry air at 20 C).</Description>
+				<DefaultValue>343</DefaultValue>
+				<MinValue>1</MinValue>
+				<MaxValue>100000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_base_cutoff" x="-300" y="700" enabled="true" name="Base Cutoff (Hz)" param="base_cutoff">
+				<Description>Low-pass cutoff frequency at zero distance. High frequencies are progressively attenuated beyond this as distance increases.</Description>
+				<DefaultValue>20000</DefaultValue>
+				<MinValue>1</MinValue>
+				<MaxValue>100000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_absorption" x="-300" y="800" enabled="true" name="Absorption Rate" param="absorption_rate">
+				<Description>Air absorption coefficient. Higher values cause faster high-frequency roll-off with distance. Typical range 0.001-0.1.</Description>
+				<DefaultValue>0.01</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>1</MaxValue>
+			</DoubleOptionNode>
+
+			<!-- Validation -->
+			<AssertNode id="assert_node" x="0" y="100" enabled="true" name="Validation">
+				<Inputs>
+					<Input param="Distance" type="Real" />
+					<Input param="RefDistance" type="Real" />
+				</Inputs>
+				<Tests>
+					<Test assert="Distance &lt;= 0" error="Distance ({Distance} m) must be positive." />
+					<Test assert="RefDistance &lt;= 0" error="Reference distance ({RefDistance} m) must be positive." />
+					<Test assert="Distance &lt; RefDistance" error="Distance ({Distance} m) must be at or beyond reference distance ({RefDistance} m)." />
+				</Tests>
+			</AssertNode>
+
+			<!-- Computed expressions -->
+			<ExpressionNode id="expr_gain" x="200" y="100" enabled="true" name="Gain (dB)">
+				<Expression type="Real" output="Output">-20 * Math.log10(Distance / RefDistance)</Expression>
+				<Input param="Distance" type="Real" />
+				<Input param="RefDistance" type="Real" />
+			</ExpressionNode>
+
+			<ExpressionNode id="expr_delay" x="200" y="500" enabled="true" name="Delay (seconds)">
+				<Expression type="Real" output="Output">Distance / Speed</Expression>
+				<Input param="Distance" type="Real" />
+				<Input param="Speed" type="Real" />
+			</ExpressionNode>
+
+			<ExpressionNode id="expr_cutoff" x="200" y="300" enabled="true" name="Cutoff (Hz)">
+				<Expression type="Real" output="Output">BaseCutoff / Math.exp(AbsorptionRate * Distance)</Expression>
+				<Input param="Distance" type="Real" />
+				<Input param="BaseCutoff" type="Real" />
+				<Input param="AbsorptionRate" type="Real" />
+			</ExpressionNode>
+
+			<!-- Processing units -->
+			<UnitNode id="unit_gain" x="500" y="200" enabled="true" unit="Imaginet.Units.Math.Gain">
+				<DoubleArgument param="gain_db">0</DoubleArgument>
+			</UnitNode>
+
+			<UnitNode id="unit_lpf" x="500" y="400" enabled="true" unit="Imaginet.Units.Filter.LowPassFilter">
+				<DoubleArgument param="cutoff_freq">20000</DoubleArgument>
+			</UnitNode>
+
+			<UnitNode id="unit_delay" x="500" y="600" enabled="true" unit="Imaginet.Units.Signal.Delay">
+				<DoubleArgument param="delay_seconds">0.01</DoubleArgument>
+			</UnitNode>
+
+			<!-- Output -->
+			<TensorOutputNode id="output_node" param="output" x="800" y="400" enabled="true" name="Output">
+				<Description>Distance-attenuated output signal.</Description>
+			</TensorOutputNode>
+		</Nodes>
+
+		<Connections>
+			<!-- Input -> Gain -> LPF -> Delay -> Output -->
+			<Connection>
+				<Source node="input_node" param="value" />
+				<Target node="unit_gain" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="unit_gain" param="output" />
+				<Target node="unit_lpf" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="unit_lpf" param="output" />
+				<Target node="unit_delay" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="unit_delay" param="output" />
+				<Target node="output_node" param="value" />
+			</Connection>
+
+			<!-- Expression outputs -> unit params -->
+			<Connection>
+				<Source node="expr_gain" param="output" />
+				<Target node="unit_gain" param="gain_db" />
+			</Connection>
+			<Connection>
+				<Source node="expr_cutoff" param="output" />
+				<Target node="unit_lpf" param="cutoff_freq" />
+			</Connection>
+			<Connection>
+				<Source node="expr_delay" param="output" />
+				<Target node="unit_delay" param="delay_seconds" />
+			</Connection>
+
+			<!-- User params -> gain expression -->
+			<Connection>
+				<Source node="opt_distance" param="value" />
+				<Target node="expr_gain" param="Distance" />
+			</Connection>
+			<Connection>
+				<Source node="opt_ref_distance" param="value" />
+				<Target node="expr_gain" param="RefDistance" />
+			</Connection>
+
+			<!-- User params -> delay expression -->
+			<Connection>
+				<Source node="opt_distance" param="value" />
+				<Target node="expr_delay" param="Distance" />
+			</Connection>
+			<Connection>
+				<Source node="opt_speed" param="value" />
+				<Target node="expr_delay" param="Speed" />
+			</Connection>
+
+			<!-- User params -> cutoff expression -->
+			<Connection>
+				<Source node="opt_distance" param="value" />
+				<Target node="expr_cutoff" param="Distance" />
+			</Connection>
+			<Connection>
+				<Source node="opt_base_cutoff" param="value" />
+				<Target node="expr_cutoff" param="BaseCutoff" />
+			</Connection>
+			<Connection>
+				<Source node="opt_absorption" param="value" />
+				<Target node="expr_cutoff" param="AbsorptionRate" />
+			</Connection>
+
+			<!-- User params -> validation -->
+			<Connection>
+				<Source node="opt_distance" param="value" />
+				<Target node="assert_node" param="Distance" />
+			</Connection>
+			<Connection>
+				<Source node="opt_ref_distance" param="value" />
+				<Target node="assert_node" param="RefDistance" />
+			</Connection>
+		</Connections>
+	</Compound>
+</Imaginet>
