@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Compound unit="Imaginet.Units.Signal.AudioAugmentation">
+		<DisplayName>Audio Augmentation</DisplayName>
+		<DisplayPath>/Machine Learning/Augmentation</DisplayPath>
+		<Description>
+			<Header>Description</Header>
+			A premade audio augmentation pipeline that chains Gain, Soft Clip, Distance Attenuation, and Reverb in series. Each stage can be tuned independently or left at its default to act as a passthrough.
+
+			Default parameter values produce an unchanged signal (0 dB gain, distance equals reference, reverb wet level 0).
+
+			Supports float32 only.
+
+			<Header>Usage</Header>
+			Use Audio Augmentation as a single-node augmentation pipeline for training data. Adjust parameters to simulate volume changes, nonlinear distortion, spatial distance effects, and room acoustics.
+		</Description>
+
+		<Nodes>
+			<!-- Input -->
+			<TensorInputNode id="input_node" x="-400" y="400" enabled="true" name="Input" param="input">
+				<Description>Audio input signal. Supports float32 only.</Description>
+			</TensorInputNode>
+
+			<!-- Gain — amplify or attenuate the signal level. Bypass: set to 0 dB. -->
+			<DoubleOptionNode id="opt_gain_db" x="-400" y="100" enabled="true" name="Gain (dB)" param="gain_db">
+				<Description>Gain: Volume adjustment in decibels. Positive values amplify, negative attenuate. Set to 0 dB to bypass this stage.</Description>
+				<DefaultValue>0</DefaultValue>
+				<MinValue>-120</MinValue>
+				<MaxValue>120</MaxValue>
+			</DoubleOptionNode>
+
+			<!-- SoftClip — tanh saturation, always active, transparent for signals in [-1, 1] -->
+
+			<!-- Distance Attenuation — simulate spatial distance. Bypass: set distance equal to reference distance. -->
+			<DoubleOptionNode id="opt_distance" x="-400" y="200" enabled="true" name="Distance: Source (m)" param="distance_m">
+				<Description>Distance: Simulated distance to the sound source in metres. Larger values reduce volume, roll off high frequencies, and add propagation delay. Set equal to reference distance to bypass.</Description>
+				<DefaultValue>1</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>10000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_ref_distance" x="-400" y="250" enabled="true" name="Distance: Reference (m)" param="ref_distance_m">
+				<Description>Distance: Baseline distance where the signal is unaltered (0 dB gain, no filtering).</Description>
+				<DefaultValue>1</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>10000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_speed" x="-400" y="300" enabled="true" name="Distance: Speed of Sound (m/s)" param="speed_of_sound">
+				<Description>Distance: Speed of sound for propagation delay computation. Default 343 m/s (dry air at 20 C).</Description>
+				<DefaultValue>343</DefaultValue>
+				<MinValue>1</MinValue>
+				<MaxValue>100000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_base_cutoff" x="-400" y="350" enabled="true" name="Distance: Base Cutoff (Hz)" param="base_cutoff">
+				<Description>Distance: Low-pass cutoff at reference distance. Air absorption reduces this as distance increases, darkening the sound.</Description>
+				<DefaultValue>20000</DefaultValue>
+				<MinValue>1</MinValue>
+				<MaxValue>100000</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_absorption" x="-400" y="400" enabled="true" name="Distance: Absorption Rate" param="absorption_rate">
+				<Description>Distance: How quickly high frequencies roll off with distance. Typical range 0.001 to 0.1.</Description>
+				<DefaultValue>0.01</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>1</MaxValue>
+			</DoubleOptionNode>
+
+			<!-- Reverb — simulate room reflections. Bypass: set wet level to 0. -->
+			<DoubleOptionNode id="opt_room_size" x="-400" y="500" enabled="true" name="Reverb: Room Size" param="room_size">
+				<Description>Reverb: Controls tail length. 0 = small room (short decay), 1 = large hall (long decay).</Description>
+				<DefaultValue>0.5</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>1</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_damping" x="-400" y="550" enabled="true" name="Reverb: Damping" param="damping">
+				<Description>Reverb: High-frequency absorption in the reverb tail. 0 = bright, 1 = dark.</Description>
+				<DefaultValue>0.5</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>1</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_reverb_wet" x="-400" y="600" enabled="true" name="Reverb: Wet Level" param="reverb_wet">
+				<Description>Reverb: Amount of reverberated signal. Set to 0 to bypass the reverb stage entirely.</Description>
+				<DefaultValue>0</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>10</MaxValue>
+			</DoubleOptionNode>
+
+			<DoubleOptionNode id="opt_reverb_dry" x="-400" y="650" enabled="true" name="Reverb: Dry Level" param="reverb_dry">
+				<Description>Reverb: Amount of original signal passed through. Reduce to make reverb more prominent.</Description>
+				<DefaultValue>1</DefaultValue>
+				<MinValue>0</MinValue>
+				<MaxValue>10</MaxValue>
+			</DoubleOptionNode>
+
+			<!-- Processing units -->
+			<UnitNode id="unit_gain" x="100" y="200" enabled="true" unit="Imaginet.Units.Math.Gain">
+				<DoubleArgument param="gain_db">0</DoubleArgument>
+			</UnitNode>
+
+			<UnitNode id="unit_softclip" x="300" y="400" enabled="true" unit="Imaginet.Units.Math.SoftClip" />
+
+			<UnitNode id="unit_distance" x="500" y="400" enabled="true" unit="Imaginet.Units.Signal.DistanceAttenuation">
+				<DoubleArgument param="distance_m">1</DoubleArgument>
+				<DoubleArgument param="ref_distance_m">1</DoubleArgument>
+				<DoubleArgument param="speed_of_sound">343</DoubleArgument>
+				<DoubleArgument param="base_cutoff">20000</DoubleArgument>
+				<DoubleArgument param="absorption_rate">0.01</DoubleArgument>
+			</UnitNode>
+
+			<UnitNode id="unit_reverb" x="700" y="400" enabled="true" unit="Imaginet.Units.Signal.Reverb">
+				<DoubleArgument param="room_size">0.5</DoubleArgument>
+				<DoubleArgument param="damping">0.5</DoubleArgument>
+				<DoubleArgument param="wet">0</DoubleArgument>
+				<DoubleArgument param="dry">1</DoubleArgument>
+			</UnitNode>
+
+			<!-- Output -->
+			<TensorOutputNode id="output_node" param="output" x="900" y="400" enabled="true" name="Output">
+				<Description>Augmented output signal.</Description>
+			</TensorOutputNode>
+		</Nodes>
+
+		<Connections>
+			<!-- Signal chain: Input -> Gain -> SoftClip -> DistanceAttenuation -> Reverb -> Output -->
+			<Connection>
+				<Source node="input_node" param="value" />
+				<Target node="unit_gain" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="unit_gain" param="output" />
+				<Target node="unit_softclip" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="unit_softclip" param="output" />
+				<Target node="unit_distance" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="unit_distance" param="output" />
+				<Target node="unit_reverb" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="unit_reverb" param="output" />
+				<Target node="output_node" param="value" />
+			</Connection>
+
+			<!-- Gain parameter -->
+			<Connection>
+				<Source node="opt_gain_db" param="value" />
+				<Target node="unit_gain" param="gain_db" />
+			</Connection>
+
+			<!-- Distance parameters -->
+			<Connection>
+				<Source node="opt_distance" param="value" />
+				<Target node="unit_distance" param="distance_m" />
+			</Connection>
+			<Connection>
+				<Source node="opt_ref_distance" param="value" />
+				<Target node="unit_distance" param="ref_distance_m" />
+			</Connection>
+			<Connection>
+				<Source node="opt_speed" param="value" />
+				<Target node="unit_distance" param="speed_of_sound" />
+			</Connection>
+			<Connection>
+				<Source node="opt_base_cutoff" param="value" />
+				<Target node="unit_distance" param="base_cutoff" />
+			</Connection>
+			<Connection>
+				<Source node="opt_absorption" param="value" />
+				<Target node="unit_distance" param="absorption_rate" />
+			</Connection>
+
+			<!-- Reverb parameters -->
+			<Connection>
+				<Source node="opt_room_size" param="value" />
+				<Target node="unit_reverb" param="room_size" />
+			</Connection>
+			<Connection>
+				<Source node="opt_damping" param="value" />
+				<Target node="unit_reverb" param="damping" />
+			</Connection>
+			<Connection>
+				<Source node="opt_reverb_wet" param="value" />
+				<Target node="unit_reverb" param="wet" />
+			</Connection>
+			<Connection>
+				<Source node="opt_reverb_dry" param="value" />
+				<Target node="unit_reverb" param="dry" />
+			</Connection>
+		</Connections>
+	</Compound>
+</Imaginet>
