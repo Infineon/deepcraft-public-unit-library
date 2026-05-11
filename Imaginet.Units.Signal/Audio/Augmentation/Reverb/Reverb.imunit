@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Signal.Reverb">
+		<DisplayName>Reverb</DisplayName>
+		<DisplayPath>/Machine Learning/Augmentation</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Applies a Schroeder reverb to the input signal using four parallel comb filters with damped feedback followed by two series allpass filters. The output is a wet/dry mix of the original and reverberated signal.
+
+			Supports float32 only.
+
+			<Header>Usage</Header>
+			Use Reverb for room simulation, data augmentation, or adding spatial depth to audio signals.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" description="Input signal. Can be any shape. Supports float32 only." />
+			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" description="Reverberated output signal with wet/dry mix applied." />
+
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor." />
+			<Expression name="freq" value="input.rate" description="Sample rate (Hz) of the input signal." />
+
+			<DoubleOption name="room_size" text="Room Size" default="0.5" description="Controls reverb tail length by scaling delay line lengths and feedback. Range 0 to 1." />
+			<DoubleOption name="damping" text="Damping" default="0.5" description="High-frequency absorption in the feedback path. 0 = bright, 1 = dark." />
+			<DoubleOption name="wet" text="Wet Level" default="0.3" description="Level of the reverberated signal in the output mix." />
+			<DoubleOption name="dry" text="Dry Level" default="1.0" description="Level of the original signal in the output mix." />
+
+			<Expression name="feedback" value="room_size * 0.28 + 0.7" description="Comb filter feedback coefficient derived from room_size." />
+			<Expression name="damp1" value="damping" description="Damping coefficient for the one-pole low-pass filter in each comb." />
+
+			<Expression name="c0" value="Math.max(1, Math.round(1116 * freq / 44100))" description="Comb filter 0 delay length in samples." />
+			<Expression name="c1" value="Math.max(1, Math.round(1188 * freq / 44100))" description="Comb filter 1 delay length in samples." />
+			<Expression name="c2" value="Math.max(1, Math.round(1277 * freq / 44100))" description="Comb filter 2 delay length in samples." />
+			<Expression name="c3" value="Math.max(1, Math.round(1356 * freq / 44100))" description="Comb filter 3 delay length in samples." />
+			<Expression name="a0" value="Math.max(1, Math.round(556 * freq / 44100))" description="Allpass filter 0 delay length in samples." />
+			<Expression name="a1" value="Math.max(1, Math.round(441 * freq / 44100))" description="Allpass filter 1 delay length in samples." />
+
+			<Handle name="state" text="Reverb State" description="Internal state for comb and allpass delay lines." size="24 + count * (4 + c0 + c1 + c2 + c3 + a0 + a1) * 4" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32" error="The input tensor ({input.type}) must have type: Float32" />
+			<Assert test="room_size > 0" error="Room size must be greater than 0." />
+			<Assert test="room_size &lt;= 1" error="Room size must be at most 1." />
+			<Assert test="damping >= 0" error="Damping must be at least 0." />
+			<Assert test="damping &lt;= 1" error="Damping must be at most 1." />
+			<Assert test="wet >= 0" error="Wet level must be at least 0." />
+			<Assert test="dry >= 0" error="Dry level must be at least 0." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="reverb.h:reverb_f32" call="reverb_f32(input, state, output, count, c0, c1, c2, c3, a0, a1, feedback, damp1, wet, dry)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+</Imaginet>
