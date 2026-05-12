@@ -30,7 +30,7 @@
 			</DoubleOptionNode>
 
 			<DoubleOptionNode id="opt_ref_distance" x="-300" y="200" enabled="true" name="Reference Distance (m)" param="ref_distance_m">
-				<Description>Reference distance where gain is 0 dB (unity).</Description>
+				<Description>Reference distance where gain is 0 dB (unity). Set this to the distance at which the source audio was originally recorded. For example, if the microphone was 2 m from the speaker, use 2. Default is 1 m, which is the standard convention in most audio engines.</Description>
 				<DefaultValue>1</DefaultValue>
 				<MinValue>0</MinValue>
 				<MaxValue>10000</MaxValue>
