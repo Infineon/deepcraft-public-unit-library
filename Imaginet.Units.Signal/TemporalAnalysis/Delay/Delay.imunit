@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Signal.Delay">
+		<DisplayName>Delay</DisplayName>
+		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Delay the input signal by a fixed number of samples. The output at any point in time is a copy of the input from delay_seconds ago. The first outputs are zero (silence) until the delay line has filled.
+
+			The delay amount is specified in seconds and converted to an integer sample count using the input sample rate. The tensor shape and data type are preserved.
+
+			Supports float32 only.
+
+			<Header>Usage</Header>
+			Use Delay for echo effects, comb filters, time alignment, distance modelling, or as a building block for reverb and data augmentation pipelines.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" description="Input signal to be delayed. Can be any shape. Supports float32 only." />
+			<OutputSocket name="output" pipe="data" type="input.type" shape="input.shape" description="Delayed output signal. Has the same shape and data type as the input." />
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<Expression name="freq" value="input.rate" description="Sample rate (Hz) of the input signal." />
+			<DoubleOption name="delay_seconds" text="Delay (seconds)" default="0.01" description="Delay duration in seconds. Converted to an integer sample count using the input sample rate." />
+			<Expression name="delay_samples" value="Math.max(1, Math.round(delay_seconds * freq))" description="Delay in samples, minimum 1." />
+			<Handle name="state" text="Delay State" description="Internal ring buffer for the delay line." size="4 + delay_samples * count * 4" />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32" error="The input tensor ({input.type}) must have type: Float32" />
+			<Assert test="delay_seconds > 0" error="Delay must be positive." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="delay.h:delay_f32" call="delay_f32(input, state, output, count, delay_samples)">
+				<Conditional value="input.type == System.Float32" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+</Imaginet>

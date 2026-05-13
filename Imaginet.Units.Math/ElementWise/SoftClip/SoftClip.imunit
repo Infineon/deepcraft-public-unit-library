@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+	<Unit name="Imaginet.Units.Math.SoftClip">
+		<DisplayName>Soft Clip</DisplayName>
+		<DisplayPath>/Math/Element Wise</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Apply a smooth, bounded saturation curve to each element of the input tensor. Output is bounded to the range [-1, 1] without the hard knee of regular clipping.
+
+			Two shapes are available:
+			- tanh: output = tanh(x). Smoothest curve, asymptotic to ±1.
+			- cubic: output = 1.5*x - 0.5*x^3 for |x| ≤ 1, ±1 otherwise. Cheaper to compute (no transcendentals), slightly less smooth than tanh.
+
+			Inputs are assumed to be in the [-1, 1] audio convention. The amount of saturation is controlled by the upstream level — place a Gain unit before Soft Clip to drive the signal harder, and optionally another Gain after to attenuate. The tensor shape and data type are preserved.
+
+			Supports float32 only.
+
+			<Header>Usage</Header>
+			Use Soft Clip to add musical saturation, prevent harsh hard-clipping artifacts, or as a nonlinear distortion stage for data augmentation.
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" text="Input" description="Input tensor to be soft-clipped. Supports float32 only." />
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+			<StringOption name="mode" text="Shape" default="tanh" description="Saturation curve. tanh is smoother but uses a transcendental; cubic is cheaper to compute.">
+				<OneOf>
+					<Item text="Hyperbolic Tangent">tanh</Item>
+					<Item text="Cubic">cubic</Item>
+				</OneOf>
+			</StringOption>
+			<OutputSocket name="output" type="input.type" shape="input.shape" text="Output" description="Output tensor with the saturation curve applied. Has the same shape and data type as the input." />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="input.type == System.Float32" error="The input tensor ({input.type}) must have type: Float32" />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="softclip.h:softclip_tanh_f32" call="softclip_tanh_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == &quot;tanh&quot;" />
+			</Implementation>
+			<Implementation language="C" fragment="softclip.h:softclip_cubic_f32" call="softclip_cubic_f32(input, count, output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; mode == &quot;cubic&quot;" />
+			</Implementation>
+		</Implementations>
+
+	</Unit>
+
+</Imaginet>
