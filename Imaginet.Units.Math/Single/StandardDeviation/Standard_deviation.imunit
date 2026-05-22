@@ -2,7 +2,7 @@
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Math.StandardDeviation">
     <DisplayName>Standard Deviation</DisplayName>
-    <DisplayPath>/Math/Tensor Reductions</DisplayPath>
+    <DisplayPath>/Math/Statistics</DisplayPath>
     <Description>
 			<Header>Description</Header>
 			Calculate the standard deviation of values along a specified axis, measuring the amount of variation or dispersion from the mean.
