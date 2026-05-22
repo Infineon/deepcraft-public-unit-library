@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Full">
+    <DisplayName>Full</DisplayName>
+    <DisplayPath>/Math/Slicing and Shaping</DisplayPath>
+    <Description>
+		<Header>Description</Header>
+		Fills an output buffer with a variable input value. Mimics numpy.full(shape, fill_value): every element of the output tensor is set to fill_value. Output type is taken from fill_value.
+		
+		Supports float32, int8, and int16 data types.
+		
+		<Header>Usage</Header>
+		Use the Full node when you want to create an arbitrarily shaped tensor filled with the same value. For example, creating a [64] matrix of values to append to another matrix.
+	</Description>
+
+    <Parameters>
+      <ShapeOption name="shape" text="Shape" default="[1]" description="Shape of the output tensor." />
+
+      <InputSocket name="fill_value" pipe="data" ui="textbox" text="Fill value" description="Scalar value written to every output element. Output type matches this input." />
+
+      <Expression name="count" value="shape.flat" description="Total number of elements in the output (product of shape)." />
+
+      <OutputSocket name="output" pipe="data" type="fill_value.type" shape="shape" description="Buffer with the configured shape, filled with fill_value." />
+    </Parameters>
+
+    <Contracts>
+      <Assert test="shape.flat > 0" error="Shape must have at least one element." />
+      <Assert test="fill_value != null" error="Fill value must be provided." />
+      <Assert test="fill_value.shape.count == 0 || (fill_value.shape.count == 1 &amp;&amp; fill_value.shape.size(0) == 1)" error="Fill value must be a scalar (like numpy.full fill_value), not a matrix or tensor." />
+      <Assert test="fill_value.type == System.Float32 || fill_value.type == System.Int8 || fill_value.type == System.Int16" error="Fill value type ({fill_value.type}) must be float32, int8, or int16." />
+    </Contracts>
+
+    <Implementations>
+      <Implementation language="C" fragment="full.h:full_f32" call="full_f32(output, count, fill_value)">
+        <Conditional value="fill_value.type == System.Float32" />
+      </Implementation>
+      <Implementation language="C" fragment="full.h:full_i8" call="full_i8(output, count, fill_value)">
+        <Conditional value="fill_value.type == System.Int8" />
+      </Implementation>
+      <Implementation language="C" fragment="full.h:full_i16" call="full_i16(output, count, fill_value)">
+        <Conditional value="fill_value.type == System.Int16" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>
