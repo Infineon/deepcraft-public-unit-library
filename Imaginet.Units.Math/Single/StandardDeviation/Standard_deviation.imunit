@@ -2,31 +2,38 @@
 <Imaginet version="2.0.0.0">
   <Unit name="Imaginet.Units.Math.StandardDeviation">
     <DisplayName>Standard Deviation</DisplayName>
-    <DisplayPath>/Math/Statistics</DisplayPath>
+    <DisplayPath>/Math/Tensor Reductions</DisplayPath>
     <Description>
 			<Header>Description</Header>
-			Calculate the standard deviation of a 1D tensor, measuring the amount of variation or dispersion from the mean.
+			Calculate the standard deviation of values along a specified axis, measuring the amount of variation or dispersion from the mean.
 			
-			This unit computes the standard deviation by first calculating the mean, then computing the average of squared differences from the mean, and finally taking the square root. The formula is: std = sqrt(sum((x - mean)²) / n). This provides a measure of how spread out the values are.
+			This unit performs a reduction operation that computes the standard deviation along the chosen axis. For each slice along the specified axis, it first calculates the mean, then computes the average of squared differences from the mean, and finally takes the square root. The formula is: std = sqrt(sum((x - mean)^2) / n). The output shape is the same as the input shape with the selected axis removed.
 			
-			Currently supports float32 data type and requires the input to be 1-dimensional.
+			Supports float32, int8, and int16 data types.
 
 			<Header>Usage</Header>
-			Use the Standard Deviation unit when you need to measure data variability or detect consistency in sensor readings.
+			Use the Standard Deviation unit when you need to measure data variability across a dimension, such as detecting consistency in sensor readings over time or feature spread across channels.
 		</Description>
     <Parameters>
-      <InputSocket name="input" pipe="data" description="Input 1D tensor to compute standard deviation from. Supports float32 data type only." />
-      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.replace(0, 1)" description="Output tensor containing the standard deviation value. Has shape [1] regardless of input length."/>
-      <Expression name="count" value="input.shape.flat" description="Total number of elements in the input tensor (computed from flattened shape)." />
+      <InputSocket name="input" pipe="data" description="Input tensor to compute standard deviation from. Supports float32, int8, and int16 data types." />
+      <Int32Option name="axis" min="0" max="9" ui="textbox" text="Axis" description="Axis along which to compute standard deviation. Axes are enumerated from right to left." />
+      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape.remove(axis)" description="Output tensor containing standard deviation values. Has the same shape as input with the selected axis removed." />
+      <Expression name="d0" value="input.shape.step(axis)" description="Step size for iterating along the reduction axis." />
+      <Expression name="d1" value="input.shape.size(axis)" description="Size of the axis dimension being reduced (number of elements per standard deviation)." />
+      <Expression name="d2" value="input.shape.slot(axis)" description="Number of slots (iterations) in the reduction operation." />
     </Parameters>
-	  <Contracts>
-		  <Assert
-			  test="output.shape.count == 1"
-			  error="Input tensor needs to be 1D." />
-	  </Contracts>
+    <Contracts>
+      <Assert test="axis &lt; input.shape.count" error="Axis ({axis}) must be one of input dimensions (0...{input.shape.count-1})." />
+    </Contracts>
     <Implementations>
-      <Implementation language="C" fragment="standard_deviation.h:standard_deviation_f32" call="standard_deviation_f32(input, output, count)">
+      <Implementation language="C" fragment="standard_deviation.h:standard_deviation_f32" call="standard_deviation_f32(input, d0, d1, d2, output)">
         <Conditional value="input.type == System.Float32" />
+      </Implementation>
+      <Implementation language="C" fragment="standard_deviation.h:standard_deviation_i8" call="standard_deviation_i8(input, d0, d1, d2, output)">
+        <Conditional value="input.type == System.Int8" />
+      </Implementation>
+      <Implementation language="C" fragment="standard_deviation.h:standard_deviation_i16" call="standard_deviation_i16(input, d0, d1, d2, output)">
+        <Conditional value="input.type == System.Int16" />
       </Implementation>
     </Implementations>
   </Unit>
