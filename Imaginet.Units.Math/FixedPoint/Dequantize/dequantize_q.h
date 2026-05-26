@@ -53,7 +53,6 @@ static inline void dequantize_q7_to_f32(const q7_t* restrict src, float* restric
 #pragma IMAGINET_CODEPACKAGE_DEPENDENCY "cmsis-dsp"
 static inline void dequantize_q31_to_i8(const q31_t* restrict src, int8_t* restrict dst, int count, int shift)
 {
-	int processed = 0;
 	while (count > 0U)
 	{
 		q31_t raw_src = *src++;
@@ -67,7 +66,6 @@ static inline void dequantize_q31_to_i8(const q31_t* restrict src, int8_t* restr
 		*dst++ = (int8_t)ival;
 		
 		count--;
-		processed++;
 	}
 }
 #pragma IMAGINET_FRAGMENT_END
@@ -76,8 +74,7 @@ static inline void dequantize_q31_to_i8(const q31_t* restrict src, int8_t* restr
 #pragma IMAGINET_CODEPACKAGE_DEPENDENCY "cmsis-dsp"
 static inline void dequantize_q15_to_i8(const q15_t* restrict src, int8_t* restrict dst, int count, int shift)
 {
-	
-	int processed = 0;
+
 	while (count > 0U)
 	{
 		q15_t raw_src = *src++;
@@ -91,7 +88,6 @@ static inline void dequantize_q15_to_i8(const q15_t* restrict src, int8_t* restr
 		*dst++ = (int8_t)ival;
 		
 		count--;
-		processed++;
 	}
 }
 #pragma IMAGINET_FRAGMENT_END
@@ -100,7 +96,6 @@ static inline void dequantize_q15_to_i8(const q15_t* restrict src, int8_t* restr
 #pragma IMAGINET_CODEPACKAGE_DEPENDENCY "cmsis-dsp"
 static inline void dequantize_q7_to_i8(const q7_t* restrict src, int8_t* restrict dst, int count, int shift)
 {
-	int processed = 0;
 	while (count > 0U)
 	{
 		q7_t raw_src = *src++;
@@ -114,7 +109,6 @@ static inline void dequantize_q7_to_i8(const q7_t* restrict src, int8_t* restric
 		*dst++ = (int8_t)ival;
 		
 		count--;
-		processed++;
 	} 
 }
 #pragma IMAGINET_FRAGMENT_END
