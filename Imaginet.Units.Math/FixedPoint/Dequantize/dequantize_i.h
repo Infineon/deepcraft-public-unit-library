@@ -39,7 +39,6 @@ static inline void dequantize_i8_to_f32(const int8_t* restrict src, float* restr
 #pragma IMAGINET_FRAGMENT_BEGIN "dequantize_i32_to_i8"
 static inline void dequantize_i32_to_i8(const int32_t* restrict src, int8_t* restrict dst, int count)
 {
-	int processed = 0;
 	while (count > 0U)
 	{
 		// Clamp to int8 range
@@ -49,7 +48,6 @@ static inline void dequantize_i32_to_i8(const int32_t* restrict src, int8_t* res
 		*dst++ = (int8_t)val;
 
 		count--;
-		processed++;
 	}
 }
 #pragma IMAGINET_FRAGMENT_END
@@ -57,7 +55,6 @@ static inline void dequantize_i32_to_i8(const int32_t* restrict src, int8_t* res
 #pragma IMAGINET_FRAGMENT_BEGIN "dequantize_i16_to_i8"
 static inline void dequantize_i16_to_i8(const int16_t* restrict src, int8_t* restrict dst, int count)
 {
-	int processed = 0;
 	while (count > 0U)
 	{
 		// Clamp to int8 range
@@ -67,7 +64,6 @@ static inline void dequantize_i16_to_i8(const int16_t* restrict src, int8_t* res
 		*dst++ = (int8_t)val;
 		
 		count--;
-		processed++;
 	}
 }
 #pragma IMAGINET_FRAGMENT_END
@@ -75,7 +71,6 @@ static inline void dequantize_i16_to_i8(const int16_t* restrict src, int8_t* res
 #pragma IMAGINET_FRAGMENT_BEGIN "dequantize_i8_to_i8"
 static inline void dequantize_i8_to_i8(const int8_t* restrict src, int8_t* restrict dst, int count)
 {
-	int processed = 0;
 	while (count > 0U)
 	{
 		int8_t val = *src++;
@@ -83,7 +78,6 @@ static inline void dequantize_i8_to_i8(const int8_t* restrict src, int8_t* restr
 		*dst++ = val;
 		
 		count--;
-		processed++;
 	}
 }
 #pragma IMAGINET_FRAGMENT_END
