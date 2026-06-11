@@ -1,9 +1,9 @@
-# pragma IMAGINET_INCLUDES_BEGIN
+#pragma IMAGINET_INCLUDES_BEGIN
 import numpy as np
 from scipy import signal
-# pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_INCLUDES_END
 
-# pragma IMAGINET_FRAGMENT_BEGIN "notch_filter"
+#pragma IMAGINET_FRAGMENT_BEGIN "notch_filter"
 
 
 def notch_filter(input, output, freq, frequency, Q):
@@ -12,4 +12,4 @@ def notch_filter(input, output, freq, frequency, Q):
     np.copyto(output, result)
 
 
-# pragma IMAGINET_FRAGMENT_END
+#pragma IMAGINET_FRAGMENT_END
