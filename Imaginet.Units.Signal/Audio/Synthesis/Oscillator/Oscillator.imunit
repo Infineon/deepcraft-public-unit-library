@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Unit name="Imaginet.Units.Signal.Oscillator">
+		<DisplayName>Oscillator</DisplayName>
+		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
+
+		<Description>
+			<Header>Description</Header>
+			Generate a continuous sine-wave signal. The unit requires an upstream connection on its input socket in order to be placed in a processing pipeline; the input data is passed through unchanged and has no effect on the generated waveform. On each invocation the unit fills an output buffer of length samples with the next segment of the waveform, maintaining phase continuity across calls.
+
+			The instantaneous value is: amplitude * sin(2π * frequency * t / sampleRate + phase)
+
+			where t is the running sample index. The initial phase offset is configurable and the accumulated phase is stored in persistent state so the waveform never resets between buffers.
+
+			Supports float32 only.
+
+			<Header>Usage</Header>
+			Use the Oscillator for audio data augmentation, as a carrier signal for AM and FM synthesis, or as a low-frequency modulation source (LFO).
+		</Description>
+
+		<Parameters>
+			<InputSocket name="input" pipe="data" description="Pipeline initiation input. Connect any upstream output to place the Oscillator in a processing chain. The input data is passed through and has no effect on the generated waveform." />
+			<DoubleOption name="frequency" text="Frequency (Hz)" default="440" description="Oscillator frequency in hertz." />
+			<DoubleOption name="sampleRate" text="Sample Rate (Hz)" default="16000" description="Output sample rate in samples per second." />
+			<DoubleOption name="amplitude" text="Amplitude" default="1.0" description="Peak amplitude of the output waveform." />
+			<DoubleOption name="phase" text="Initial Phase (rad)" default="0.0" description="Initial phase offset in radians." />
+			<Int32Option name="length" text="Buffer Length" default="256" min="1" ui="textbox" description="Number of output samples per invocation." />
+			<Handle name="state" text="Oscillator State" description="Persistent phase accumulator (1 float32) plus 1-byte initialisation flag = 8 bytes with alignment." size="8" />
+			<OutputSocket name="output" type="System.Float32" rate="sampleRate" shape="System.Shape(length)" description="Output buffer containing the generated sine-wave samples." />
+		</Parameters>
+
+		<Contracts>
+			<Assert test="frequency &gt; 0" error="Frequency must be positive." />
+			<Assert test="sampleRate &gt; 0" error="Sample rate must be positive." />
+			<Assert test="length &gt; 0" error="Buffer length must be positive." />
+		</Contracts>
+
+		<Implementations>
+			<Implementation language="C" fragment="oscillator.h:oscillator_f32" call="oscillator_f32(state, output, length, frequency, sampleRate, amplitude, phase)" />
+		</Implementations>
+
+	</Unit>
+</Imaginet>
