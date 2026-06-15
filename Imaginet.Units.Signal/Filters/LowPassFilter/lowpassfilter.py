@@ -1,7 +1,7 @@
 #pragma IMAGINET_INCLUDES_BEGIN
 import numpy as np
 from scipy import signal
-# pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_INCLUDES_END
 
 #pragma IMAGINET_FRAGMENT_BEGIN "lowpass_filter"
 
