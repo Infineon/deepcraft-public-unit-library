@@ -35,6 +35,7 @@
       <Implementation language="C" fragment="highpassfilter.h:highpass_filter_f32" call="highpass_filter_f32(input, state, output, cutoff_freq, count, freq)">
         <Conditional value="input.type == System.Float32" />
       </Implementation>
+      <Implementation language="Python" fragment="highpassfilter.py:highpass_filter" call="highpass_filter(input, output, cutoff_freq, freq)" />
     </Implementations>
 	  
   </Unit>

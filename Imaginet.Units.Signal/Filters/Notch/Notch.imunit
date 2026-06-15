@@ -34,6 +34,7 @@
 			<Implementation language="C" fragment="notch.h:notch_f32" call="notch_f32(input, state, output, count, freq, frequency, Q)">
 				<Conditional value="input.type == System.Float32" />
 			</Implementation>
+			<Implementation language="Python" fragment="notch.py:notch_filter" call="notch_filter(input, output, freq, frequency, Q)" />
 		</Implementations>
 
 	</Unit>
