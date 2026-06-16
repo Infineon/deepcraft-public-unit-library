@@ -144,3 +144,11 @@ To implement the logic:
 Test the unit's output. The unit appears to work as intended.
 
 **Your Graph Unit is now complete!**
+
+
+---
+
+## Next Steps: Contributing Your Unit
+
+Once your unit is working as intended, see [ContributingUnits.md](ContributingUnits.md) for the recommended workflow to develop, test, and submit it to the public unit library.
+
