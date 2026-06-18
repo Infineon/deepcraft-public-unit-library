@@ -22,8 +22,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_mti_init_f32"
 void ifx_mti_init_f32(ifx_mti_inst_f32* inst,
                       float32_t alpha,
                       uint32_t len,
@@ -43,8 +46,10 @@ void ifx_mti_init_f32(ifx_mti_inst_f32* inst,
         historical_data[i] = 0.0f;
     }
 }
+#pragma IMAGINET_FRAGMENT_END
 
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_mti_f32"
 void ifx_mti_f32(const ifx_mti_inst_f32* inst,
                  const float32_t* in_data,
                  float32_t* out_data)
@@ -67,3 +72,4 @@ void ifx_mti_f32(const ifx_mti_inst_f32* inst,
         inst->historical_data[j] += alpha * out_data[j];
     }
 }
+#pragma IMAGINET_FRAGMENT_END

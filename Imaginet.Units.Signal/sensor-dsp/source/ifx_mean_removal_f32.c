@@ -23,8 +23,11 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_mean_removal_f32"
 void ifx_mean_removal_f32(float32_t* v, uint32_t len)
 {
     assert(v != NULL);
@@ -33,3 +36,4 @@ void ifx_mean_removal_f32(float32_t* v, uint32_t len)
     arm_mean_f32(v, len, &mean);
     arm_offset_f32(v, -mean, v, len);
 }
+#pragma IMAGINET_FRAGMENT_END

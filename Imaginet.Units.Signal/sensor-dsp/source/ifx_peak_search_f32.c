@@ -23,7 +23,9 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
 /*
    ==============================================================================
@@ -68,6 +70,9 @@ static int32_t get_width(const float32_t* x, int32_t length, int32_t peak_index,
     LOCAL FUNCTIONS
    ==============================================================================
  */
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_peak_search_f32"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "get_prominence"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "get_width"
 int32_t ifx_peak_search_f32(const float32_t* x, int32_t length, int32_t* peak_indices,
                             int32_t max_peaks,
                             const ifx_peak_search_opts_f32_t* opts)
@@ -153,10 +158,12 @@ int32_t ifx_peak_search_f32(const float32_t* x, int32_t length, int32_t* peak_in
     }
     return (peak_count+1);
 }
+#pragma IMAGINET_FRAGMENT_END
 
 
 //--------------------------------------------------------------------------------
 
+#pragma IMAGINET_FRAGMENT_BEGIN "get_prominence"
 static float32_t get_prominence(const float32_t* x, int32_t length, int32_t peak_index)
 {
     float32_t peak_val = x[peak_index];
@@ -190,9 +197,11 @@ static float32_t get_prominence(const float32_t* x, int32_t length, int32_t peak
     // return prominence
     return (min_rhs > min_lhs) ? (peak_val-min_rhs) : (peak_val-min_lhs);
 }
+#pragma IMAGINET_FRAGMENT_END
 
 
 //---------------------------------------------------------------------------
+#pragma IMAGINET_FRAGMENT_BEGIN "get_width"
 static int32_t get_width(const float32_t* x, int32_t length, int32_t peak_index,
                          float32_t peak_prominence)
 {
@@ -219,3 +228,4 @@ static int32_t get_width(const float32_t* x, int32_t length, int32_t peak_index,
     }
     return width;
 }
+#pragma IMAGINET_FRAGMENT_END

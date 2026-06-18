@@ -23,8 +23,11 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_angle_dbf_f32"
 arm_status ifx_angle_dbf_f32(const arm_matrix_instance_f32* pInput,
                              const arm_matrix_instance_f32* pSteering,
                              arm_matrix_instance_f32* pOutput)
@@ -40,3 +43,4 @@ arm_status ifx_angle_dbf_f32(const arm_matrix_instance_f32* pInput,
 
     return arm_mat_cmplx_mult_f32(pSteering, pInput, pOutput);
 }
+#pragma IMAGINET_FRAGMENT_END

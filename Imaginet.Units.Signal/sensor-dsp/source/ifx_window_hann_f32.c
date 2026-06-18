@@ -23,8 +23,11 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_window_hann_f32"
 void ifx_window_hann_f32(float32_t* win, uint32_t len)
 {
     assert(win != NULL);
@@ -37,3 +40,4 @@ void ifx_window_hann_f32(float32_t* win, uint32_t len)
         win[n] = 0.5F - (0.5F * arm_cos_f32(2.0F * PI * (float32_t)n * M));
     }
 }
+#pragma IMAGINET_FRAGMENT_END

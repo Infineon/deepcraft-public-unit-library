@@ -23,7 +23,9 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
 /*******************************************************************************
 * Function Name: ifx_angle_monopulse_f32
@@ -35,6 +37,8 @@
 * vector of angles.
 *******************************************************************************/
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_angle_monopulse_f32"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "ifx_arcsin_f32"
 arm_status ifx_angle_monopulse_f32(const cfloat32_t* rx1,
                                    const cfloat32_t* rx2,
                                    uint32_t size,
@@ -81,3 +85,4 @@ arm_status ifx_angle_monopulse_f32(const cfloat32_t* rx1,
 
     return (status == 0U) ? ARM_MATH_SUCCESS : ARM_MATH_ARGUMENT_ERROR;
 }
+#pragma IMAGINET_FRAGMENT_END

@@ -23,8 +23,11 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_flip_f32"
 void ifx_flip_f32(float32_t* v, uint32_t len)
 {
     assert(v != NULL);
@@ -36,3 +39,4 @@ void ifx_flip_f32(float32_t* v, uint32_t len)
         v[len - i - 1U] = temp;
     }
 }
+#pragma IMAGINET_FRAGMENT_END

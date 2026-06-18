@@ -23,7 +23,9 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
 /** BLACKMANHARRIS_CONST_A0 */
 #define BLACKMANHARRIS_CONST_A0 (0.35875F)
@@ -34,6 +36,7 @@
 /** BLACKMANHARRIS_CONST_A3 */
 #define BLACKMANHARRIS_CONST_A3 (0.01168F)
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_window_blackmanharris_f32"
 void ifx_window_blackmanharris_f32(float32_t* win, uint32_t len)
 {
     assert(win != NULL);
@@ -49,3 +52,4 @@ void ifx_window_blackmanharris_f32(float32_t* win, uint32_t len)
                  (BLACKMANHARRIS_CONST_A3 * arm_cos_f32(6.0F * PI * (float32_t)n * M));
     }
 }
+#pragma IMAGINET_FRAGMENT_END
