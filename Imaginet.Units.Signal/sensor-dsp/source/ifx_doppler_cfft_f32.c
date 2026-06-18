@@ -23,8 +23,12 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_doppler_cfft_f32"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "ifx_cmplx_mean_removal_f32"
 int32_t ifx_doppler_cfft_f32(cfloat32_t* range,
                              cfloat32_t* doppler,
                              bool mean_removal,
@@ -81,3 +85,4 @@ int32_t ifx_doppler_cfft_f32(cfloat32_t* range,
 
     return IFX_SENSOR_DSP_STATUS_OK;
 }
+#pragma IMAGINET_FRAGMENT_END

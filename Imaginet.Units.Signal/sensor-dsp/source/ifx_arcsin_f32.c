@@ -23,8 +23,11 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_arcsin_f32"
 arm_status ifx_arcsin_f32(float32_t x, float32_t* result)
 {
     arm_status status = ARM_MATH_SUCCESS;
@@ -51,3 +54,4 @@ arm_status ifx_arcsin_f32(float32_t x, float32_t* result)
     }
     return status;
 }
+#pragma IMAGINET_FRAGMENT_END

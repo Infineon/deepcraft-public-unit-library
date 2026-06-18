@@ -23,8 +23,11 @@
 * limitations under the License.
 *******************************************************************************/
 
+#pragma IMAGINET_INCLUDES_BEGIN
 #include "ifx_sensor_dsp.h"
+#pragma IMAGINET_INCLUDES_END
 
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_gen_steering_matrix_f32"
 void ifx_gen_steering_matrix_f32(float32_t ang_est_range, uint32_t num_angles,
                                  float32_t antenna_spacing_mm, float32_t lambda_mm,
                                  uint32_t num_ant, const arm_matrix_instance_f32* pDst)
@@ -65,3 +68,4 @@ void ifx_gen_steering_matrix_f32(float32_t ang_est_range, uint32_t num_angles,
         }
     }
 }
+#pragma IMAGINET_FRAGMENT_END
