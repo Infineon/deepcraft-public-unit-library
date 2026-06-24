@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet>
+  <!-- Custom feature extractor: Voltage[300] -> Features[14] -->
+  <Function unit="Battery.SOH.Features14">
+    <DisplayName>SOH Features (14D)</DisplayName>
+    <DisplayPath>/Battery/SOH</DisplayPath>
+    <Description>
+      Extract 14 normalized SOH features from 5 minutes (300s) of battery voltage.
+      Output order:
+      [dV_0_30, dV_0_60, dV_0_90, dV_0_120,
+       se_0_30, se_0_60, se_0_90, se_0_120,
+       mean_all, min_all, max_all, var_all, skew_all, kurt_all]
+    </Description>
+
+    <Parameters>
+      <!-- Input voltage vector -->
+      <InputSocket name="v" pipe="data" />
+
+      <!-- Output feature vector (fixed 14) -->
+      <OutputSocket name="feat" shape="System.Shape(14)" type="System.ValueType.Float32" pipe="data" />
+    </Parameters>
+
+    <Contracts>
+      <!-- Expect exactly 300 samples (1D) -->
+      <Assert test="v.shape.count == 1" error="SOH Features expects a 1D voltage vector." />
+      <Assert test="v.shape.size(0) == 300" error="SOH Features expects exactly 300 samples (5 minutes @ 1 Hz)." />
+    </Contracts>
+
+    <Implementations>
+      <Implementation language="C"
+                      fragment="soh_features_imaginet.c:soh_features14_f32"
+                      call="soh_features14_f32(v, feat)">
+        <TensorType tensor="v" type="Float32" />
+        <TensorType tensor="feat" type="Float32" />
+      </Implementation>
+    </Implementations>
+  </Function>
+</Imaginet>
