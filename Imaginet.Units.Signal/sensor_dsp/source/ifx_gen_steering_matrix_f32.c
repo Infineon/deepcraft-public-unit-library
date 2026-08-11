@@ -23,9 +23,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
 #pragma IMAGINET_FRAGMENT_BEGIN "ifx_gen_steering_matrix_f32"
 void ifx_gen_steering_matrix_f32(float32_t ang_est_range, uint32_t num_angles,

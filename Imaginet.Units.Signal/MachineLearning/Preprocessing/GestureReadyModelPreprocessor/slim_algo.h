@@ -8,8 +8,8 @@
 
 #pragma IMAGINET_FRAGMENT_BEGIN "slim_algo_helpers"
 #pragma IMAGINET_FRAGMENT_DEPENDENCY "gesture_preproc_types.h:gesture_preproc_types"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "sensor_dsp_wrappers.h:ifx_range_fft_f32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "sensor_dsp_wrappers.h:ifx_doppler_cfft_f32"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../../sensor_dsp/source/ifx_range_fft_f32.c:ifx_range_fft_f32"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../../../sensor_dsp/source/ifx_doppler_cfft_f32.c:ifx_doppler_cfft_f32"
 #ifndef GESTURE_PREPROC_PI
 #define GESTURE_PREPROC_PI 3.14159265358979323846f
 #endif

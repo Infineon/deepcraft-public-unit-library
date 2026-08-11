@@ -8,26 +8,26 @@
       <Header>Description</Header>
       Preprocess raw radar frames into normalized feature vectors for the gesture recognition model.
 
-      This unit runs the slim radar detection pipeline (range FFT, static clutter suppression,
-      range and Doppler peak extraction, and phase-monopulse angle estimation), then applies
-      training-derived z-score normalization to produce the five model input features:
-      range bin, Doppler bin, azimuth, elevation, and peak value. Z-score normalization is
-      always applied and cannot be disabled.
+      Runs the slim radar detection pipeline (range FFT, static clutter suppression, range/Doppler
+      peak extraction, phase-monopulse angle estimation), then applies training-derived z-score
+      normalization to produce the 5 model input features: range bin, Doppler bin, azimuth,
+      elevation, peak value. Z-score normalization is always applied and cannot be disabled.
 
       <Header>Usage</Header>
-      Connect upstream of a GESTURES_MODEL inference node. Input must be a Float32
-      radar frame with n_channels x n_chirps x n_samples elements (default 3 x 32 x 64 = 6144).
+      Connect upstream of a GESTURES_MODEL inference node.
 
-      The element ordering of that flat frame is selected with "Input layout":
-      - Interleaved FIFO / Imagimob [chirps, samples, channels]: hardware order as read
-        directly from the BGT60 SPI FIFO (antennas interleaved per sample: RX0, RX1, RX2,
-        RX0, RX1, RX2, ...), which is the same flat element ordering as produced by
-        DEEPCRAFT Studio / Imagimob device streaming during data collection.
-      - Channel-major [channels, chirps, samples]: already de-interleaved data, one
-        contiguous block per antenna channel.
+      Input: a Float32 radar frame with n_channels x n_chirps x n_samples elements
+      (default 3 x 32 x 64 = 6144).
 
-      Enable "ADC normalization" when the input still contains raw 12-bit ADC counts
-      (0-4095); disable it if the samples are already normalized upstream.
+      "Input layout" selects the element ordering of that flat frame:
+      - Interleaved FIFO / Imagimob [chirps, samples, channels]: hardware order read directly
+        from the BGT60 SPI FIFO (antennas interleaved per sample: RX0, RX1, RX2, RX0, RX1, RX2, ...).
+        Same ordering as DEEPCRAFT Studio / Imagimob device streaming during data collection.
+      - Channel-major [channels, chirps, samples]: already de-interleaved, one contiguous
+        block per antenna channel.
+
+      "ADC normalization": enable if the input still holds raw 12-bit ADC counts (0-4095);
+      disable if samples are already normalized upstream.
     </Description>
 
     <Parameters>

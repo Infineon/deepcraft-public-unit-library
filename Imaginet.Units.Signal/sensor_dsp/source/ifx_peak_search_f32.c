@@ -23,9 +23,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
 /*
    ==============================================================================

@@ -64,10 +64,22 @@
 
 #include <assert.h>
 #include <complex.h>
+#include <float.h>
+#include <math.h>
 #include <stdbool.h>
 
 #include "arm_math.h"
 
+#pragma IMAGINET_INCLUDES_BEGIN
+#include <assert.h>
+#include <complex.h>
+#include <float.h>
+#include <math.h>
+#include <stdbool.h>
+#include "arm_math.h"
+#pragma IMAGINET_INCLUDES_END
+
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_sensor_dsp_types"
 /************************************** Macros *******************************************/
 /** Result code indicating successful operation. */
 #define IFX_SENSOR_DSP_STATUS_OK                      (0)
@@ -152,6 +164,7 @@ typedef struct
                          neighbouring peaks */
     int32_t width; /**< Required width of peaks in samples */
 } ifx_peak_search_opts_f32_t;
+#pragma IMAGINET_FRAGMENT_END
 
 /******************************* Function prototypes *************************************/
 
