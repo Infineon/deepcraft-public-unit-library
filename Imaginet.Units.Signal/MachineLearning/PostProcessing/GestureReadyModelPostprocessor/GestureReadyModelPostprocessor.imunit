@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.GestureReadyModelPostprocessor">
+    <DisplayName>Gesture Ready Model Postprocessor</DisplayName>
+    <DisplayPath>/Machine Learning/Postprocessing</DisplayPath>
+
+    <Description>
+      <Header>Description</Header>
+      Turn raw, per-frame GESTURES_MODEL class confidences into debounced, discrete gesture
+      events. Ported from the reference "inference_post_process" implementation used to
+      post-process the gesture model output on-device.
+
+      For each frame, the class with the highest confidence is found. A class other than
+      "None class index" is only reported once its accumulated confidence or its number of
+      consecutive detections crosses a threshold, and only once either the "none" class has
+      been seen recently or the newly detected class differs from the previously reported
+      one. This prevents a single sustained gesture from re-triggering every frame and
+      filters out short, low-confidence blips.
+
+      <Header>Usage</Header>
+      Connect downstream of a GESTURES_MODEL inference node. Input must be the Float32
+      per-class confidence vector produced by the model (one value per class, num_classes
+      elements). Output has the same shape and labels as the input: a one-hot Float32
+      vector with 1.0 at the confirmed class index and 0.0 elsewhere, so it is a drop-in
+      replacement for the raw model output. When no gesture is confirmed this frame, the
+      one-hot value is set on "None class index" instead.
+    </Description>
+
+    <Parameters>
+      <InputSocket name="input" pipe="data"
+                   description="Per-class confidence vector from the model output. Float32 tensor with num_classes elements." />
+
+      <Expression name="num_classes" value="input.shape.flat"
+                  description="Number of classes the model predicts, including the &quot;none&quot; class." />
+
+      <Int32Option name="none_class_index" text="None class index" default="0" min="0"
+                   description="Index of the class that means &quot;no gesture detected&quot;. This class is never reported as a detection and is used as the debounce/reset reference." />
+      <DoubleOption name="min_detect_confidence" text="Min detect confidence" default="0.2" min="0.0" max="1.0"
+                    description="Minimum confidence the best-scoring class must have this frame to count towards its detection counter, instead of towards the none-class counter." />
+      <DoubleOption name="confidence_threshold" text="Confidence threshold" default="0.9" min="0.0" max="1.0"
+                    description="A class is confirmed once its best confidence seen since its last reset exceeds this threshold." />
+      <Int32Option name="count_threshold" text="Count threshold" default="3" min="1"
+                    description="A class is also confirmed once it has been the best-scoring class for this many consecutive frames." />
+      <Int32Option name="reset_count" text="Reset count" default="4" min="1"
+                    description="Number of consecutive none/low-confidence frames after which all per-class counters and confidences are reset." />
+      <Int32Option name="none_count" text="None count" default="1" min="0"
+                    description="Minimum number of consecutive none/low-confidence frames required since the last confirmed detection before the same class can be confirmed again. Ignored if a different class is detected." />
+
+      <Handle name="prev_detected_gesture" text="Previous detected gesture" type="System.UInt8" size="1"
+              description="Class index most recently confirmed as a detection." />
+      <Handle name="gesture_count" text="Gesture count" type="System.UInt8" size="num_classes"
+              description="Consecutive-frame counter per class." />
+      <Handle name="gesture_confidence_detected" text="Gesture confidence detected" type="System.Float32" size="num_classes * 4"
+              description="Best confidence seen per class since its last reset." />
+
+      <OutputSocket name="output" pipe="data" type="input.type" shape="input.shape"
+                    description="One-hot vector, same shape and labels as the input: 1.0 at the confirmed gesture class index for this frame, 0.0 elsewhere. Set on &quot;None class index&quot; if no gesture is confirmed." />
+    </Parameters>
+
+    <Contracts>
+      <Assert test="input.type == System.Float32"
+              error="Input ({input.type}) must be Float32." />
+      <Assert test="none_class_index &lt; num_classes"
+              error="None class index ({none_class_index}) must be less than the number of classes ({num_classes})." />
+    </Contracts>
+
+    <Init returnStatus="true">
+      <Implementation language="C"
+                      fragment="gesture_ready_model_postprocessor.h:gesture_postproc_init"
+                      call="gesture_postproc_init(prev_detected_gesture, gesture_count, gesture_confidence_detected, num_classes, none_class_index)" />
+    </Init>
+
+    <Implementations>
+      <Implementation language="C"
+                      fragment="gesture_ready_model_postprocessor.h:gesture_postproc_f32"
+                      call="gesture_postproc_f32(input, output, num_classes, none_class_index, min_detect_confidence, confidence_threshold, count_threshold, reset_count, none_count, prev_detected_gesture, gesture_count, gesture_confidence_detected)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>

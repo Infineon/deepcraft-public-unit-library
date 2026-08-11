@@ -1,9 +1,9 @@
 /***************************************************************************//**
-* \file ifx_window_hamming_f32.c
+* \file ifx_arcsin_f32.c
 *
 * \brief
 * This file contains the implementation for the
-* ifx_window_hamming_f32 function
+* ifx_arcsin_f32 function
 *
 *******************************************************************************
 * \copyright
@@ -23,21 +23,33 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
-#pragma IMAGINET_FRAGMENT_BEGIN "ifx_window_hamming_f32"
-void ifx_window_hamming_f32(float32_t* win, uint32_t len)
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_arcsin_f32"
+arm_status ifx_arcsin_f32(float32_t x, float32_t* result)
 {
-    assert(win != NULL);
-    assert(len > 1);
-
-    const float32_t M = 1.0F / ((float32_t)len - 1.0F);
-
-    for (uint32_t n = 0; n < len; ++n)
+    arm_status status = ARM_MATH_SUCCESS;
+    if (x >= 1.0F)
     {
-        win[n] = 0.54F - (0.46F * arm_cos_f32(2.0F * PI * (float32_t)n * M));
+        *result = PI_2_F32;
     }
+    else if (x <= -1.0F)
+    {
+        *result = -PI_2_F32;
+    }
+    else
+    {
+        float32_t y = 0.0F;
+        status = arm_sqrt_f32(1.0F - (x * x), &y);
+        if (ARM_MATH_SUCCESS == status)
+        {
+            (void)arm_atan2_f32(x, y, result);
+        }
+        else
+        {
+            *result = 0.0F;
+        }
+    }
+    return status;
 }
 #pragma IMAGINET_FRAGMENT_END

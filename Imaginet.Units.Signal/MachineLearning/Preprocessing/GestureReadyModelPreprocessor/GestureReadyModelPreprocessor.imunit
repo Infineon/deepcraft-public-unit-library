@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.GestureReadyModelPreprocessor">
+    <DisplayName>Gesture Ready Model Preprocessor</DisplayName>
+    <DisplayPath>/Machine Learning/Preprocessing</DisplayPath>
+
+    <Description>
+      <Header>Description</Header>
+      Preprocess raw radar frames into normalized feature vectors for the gesture recognition model.
+
+      Runs the slim radar detection pipeline (range FFT, static clutter suppression, range/Doppler
+      peak extraction, phase-monopulse angle estimation), then applies training-derived z-score
+      normalization to produce the 5 model input features: range bin, Doppler bin, azimuth,
+      elevation, peak value. Z-score normalization is always applied and cannot be disabled.
+
+      <Header>Usage</Header>
+      Connect upstream of a GESTURES_MODEL inference node.
+
+      Input: a Float32 radar frame with n_channels x n_chirps x n_samples elements
+      (default 3 x 32 x 64 = 6144).
+
+      "Input layout" selects the element ordering of that flat frame:
+      - Interleaved FIFO / Imagimob [chirps, samples, channels]: hardware order read directly
+        from the BGT60 SPI FIFO (antennas interleaved per sample: RX0, RX1, RX2, RX0, RX1, RX2, ...).
+        Same ordering as DEEPCRAFT Studio / Imagimob device streaming during data collection.
+      - Channel-major [channels, chirps, samples]: already de-interleaved, one contiguous
+        block per antenna channel.
+
+      "ADC normalization": enable if the input still holds raw 12-bit ADC counts (0-4095);
+      disable if samples are already normalized upstream.
+    </Description>
+
+    <Parameters>
+      <InputSocket name="input" pipe="data"
+                   description="Raw radar frame. Float32 tensor with n_channels x n_chirps x n_samples elements (default 3 x 32 x 64). Element ordering is selected via the Input layout option." />
+
+      <Hidden  name="n_channels" text="Channels" value="3"
+                   description="Number of RX antenna channels." />
+      <Hidden name="n_chirps" text="Chirps" value="32"
+                   description="Number of chirps per frame." />
+      <Hidden name="n_samples" text="Samples" value="64"
+                   description="Number of ADC samples per chirp (range FFT size)." />
+      <Hidden name="n_range_bins" text="Range bins" value="32"
+                   description="Number of range bins after range FFT (samples / 2)." />
+      <Hidden name="min_range_bin" text="Min range bin" value="3"
+                   description="First range bin included in the range profile." />
+
+      <Int32Option name="input_layout" text="Input layout" default="0"
+                   description="Element ordering of the raw input frame.">
+        <OneOf>
+          <Item text="Interleaved FIFO / Imagimob [chirps,samples,channels]">0</Item>
+          <Item text="Channel-major [channels,chirps,samples]">1</Item>
+        </OneOf>
+      </Int32Option>
+      <BoolOption name="apply_adc_normalization" text="ADC normalization" default="true"
+                  description="Divide raw samples by 4095 (12-bit) before the range FFT. Enable for raw ADC-derived frames; disable if the input is already normalized." />
+
+      <Expression name="input_count" value="input.shape.flat" />
+      <Expression name="expected_count" value="n_channels * n_chirps * n_samples" />
+      <Expression name="output_count" value="5" />
+      <Expression name="len_hfr" value="n_channels * n_chirps * n_range_bins" />
+      <Expression name="len_img" value="n_chirps * n_range_bins" />
+      <Expression name="len_cch" value="n_channels * n_chirps" />
+      <Expression name="profile_len" value="n_range_bins - min_range_bin" />
+      <Expression name="sz_f" value="4" />
+      <Expression name="sz_c" value="8" />
+      <Expression name="state_header" value="96" />
+      <Expression name="buffer_bytes"
+                  value="sz_c * len_hfr + sz_f * len_hfr + sz_f * len_img + sz_c * len_cch * 2 + sz_f * len_cch + sz_f * n_chirps * 2 + sz_f * n_range_bins + sz_f * n_samples + sz_f * (profile_len + 8)" />
+      <Expression name="handle_bytes" value="state_header + buffer_bytes" />
+      <Expression name="input_scratch" value="System.Tensor(System.Float32, input_count)" />
+      <Expression name="output_labels" value="'range_bin,doppler_bin,azimuth,elevation,value'" />
+
+      <Handle name="handle" size="handle_bytes"
+              description="Persistent work buffers for the slim radar preprocessor." />
+
+      <OutputSocket name="output" pipe="data" type="System.Float32"
+                    shape="System.Shape(output_count).withLabels(0, output_labels)"
+                    description="Normalized 5-feature vector ready for GESTURES_MODEL input." />
+    </Parameters>
+
+    <Contracts>
+      <Assert test="input.type == System.Float32"
+              error="Input ({input.type}) must be Float32." />
+      <Assert test="input_count == expected_count"
+              error="Input size ({input_count}) must equal channels x chirps x samples ({expected_count})." />
+      <Assert test="n_samples % 2 == 0"
+              error="Samples per chirp must be even (power-of-two range FFT)." />
+      <Assert test="n_range_bins == n_samples / 2"
+              error="Range bins ({n_range_bins}) must equal samples / 2 ({n_samples / 2})." />
+      <Assert test="min_range_bin &lt; n_range_bins"
+              error="Min range bin ({min_range_bin}) must be less than range bins ({n_range_bins})." />
+      <Assert test="n_channels == 3"
+              error="Gesture preprocessor currently requires 3 RX channels (got {n_channels})." />
+      <Assert test="n_chirps == 32"
+              error="Gesture preprocessor window tables require 32 chirps (got {n_chirps})." />
+      <Assert test="n_samples == 64"
+              error="Gesture preprocessor window tables require 64 samples (got {n_samples})." />
+    </Contracts>
+
+    <Init returnStatus="true">
+      <Implementation language="C"
+                      fragment="gesture_ready_model_preprocessor.h:gesture_preproc_init_f32"
+                      call="gesture_preproc_init_f32(handle, n_channels, n_chirps, n_samples, n_range_bins, min_range_bin)" />
+    </Init>
+
+    <Implementations>
+      <Implementation language="C"
+                      fragment="gesture_ready_model_preprocessor.h:gesture_preproc_f32"
+                      call="gesture_preproc_f32(input, output, handle, min_range_bin, input_scratch, input_layout, apply_adc_normalization)">
+        <Conditional value="input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>

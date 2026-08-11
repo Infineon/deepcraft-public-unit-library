@@ -23,9 +23,7 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
 /*******************************************************************************
 * Function Name: ifx_angle_monopulse_f32
@@ -38,7 +36,7 @@
 *******************************************************************************/
 
 #pragma IMAGINET_FRAGMENT_BEGIN "ifx_angle_monopulse_f32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "ifx_arcsin_f32"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "ifx_arcsin_f32.c:ifx_arcsin_f32"
 arm_status ifx_angle_monopulse_f32(const cfloat32_t* rx1,
                                    const cfloat32_t* rx2,
                                    uint32_t size,

@@ -1,9 +1,9 @@
 /***************************************************************************//**
-* \file ifx_mean_removal_f32.c
+* \file ifx_window_hann_f32.c
 *
 * \brief
 * This file contains the implementation for the
-* ifx_mean_removal_f32 function
+* ifx_window_hann_f32 function
 *
 *******************************************************************************
 * \copyright
@@ -23,17 +23,19 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
-#pragma IMAGINET_FRAGMENT_BEGIN "ifx_mean_removal_f32"
-void ifx_mean_removal_f32(float32_t* v, uint32_t len)
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_window_hann_f32"
+void ifx_window_hann_f32(float32_t* win, uint32_t len)
 {
-    assert(v != NULL);
+    assert(win != NULL);
+    assert(len > 1);
 
-    float32_t mean;
-    arm_mean_f32(v, len, &mean);
-    arm_offset_f32(v, -mean, v, len);
+    const float32_t M = 1.0F / ((float32_t)len - 1.0F);
+
+    for (uint32_t n = 0; n < len; ++n)
+    {
+        win[n] = 0.5F - (0.5F * arm_cos_f32(2.0F * PI * (float32_t)n * M));
+    }
 }
 #pragma IMAGINET_FRAGMENT_END

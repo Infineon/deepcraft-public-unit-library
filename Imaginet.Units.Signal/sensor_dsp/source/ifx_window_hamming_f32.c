@@ -1,9 +1,9 @@
 /***************************************************************************//**
-* \file ifx_window_blackmanharris_f32.c
+* \file ifx_window_hamming_f32.c
 *
 * \brief
 * This file contains the implementation for the
-* ifx_window_blackmanharris_f32 function
+* ifx_window_hamming_f32 function
 *
 *******************************************************************************
 * \copyright
@@ -23,21 +23,10 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
-/** BLACKMANHARRIS_CONST_A0 */
-#define BLACKMANHARRIS_CONST_A0 (0.35875F)
-/** BLACKMANHARRIS_CONST_A1 */
-#define BLACKMANHARRIS_CONST_A1 (0.48829F)
-/** BLACKMANHARRIS_CONST_A2 */
-#define BLACKMANHARRIS_CONST_A2 (0.14128F)
-/** BLACKMANHARRIS_CONST_A3 */
-#define BLACKMANHARRIS_CONST_A3 (0.01168F)
-
-#pragma IMAGINET_FRAGMENT_BEGIN "ifx_window_blackmanharris_f32"
-void ifx_window_blackmanharris_f32(float32_t* win, uint32_t len)
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_window_hamming_f32"
+void ifx_window_hamming_f32(float32_t* win, uint32_t len)
 {
     assert(win != NULL);
     assert(len > 1);
@@ -46,10 +35,7 @@ void ifx_window_blackmanharris_f32(float32_t* win, uint32_t len)
 
     for (uint32_t n = 0; n < len; ++n)
     {
-        win[n] = BLACKMANHARRIS_CONST_A0 -
-                 (BLACKMANHARRIS_CONST_A1 * arm_cos_f32(2.0F * PI * (float32_t)n * M)) +
-                 (BLACKMANHARRIS_CONST_A2 * arm_cos_f32(4.0F * PI * (float32_t)n * M)) -
-                 (BLACKMANHARRIS_CONST_A3 * arm_cos_f32(6.0F * PI * (float32_t)n * M));
+        win[n] = 0.54F - (0.46F * arm_cos_f32(2.0F * PI * (float32_t)n * M));
     }
 }
 #pragma IMAGINET_FRAGMENT_END

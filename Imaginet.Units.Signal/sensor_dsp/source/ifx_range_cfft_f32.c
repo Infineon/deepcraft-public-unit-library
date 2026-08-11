@@ -1,9 +1,9 @@
 /***************************************************************************//**
-* \file ifx_range_fft_f32.c
+* \file ifx_range_cfft_f32.c
 *
 * \brief
 * This file contains the implementation for the
-* ifx_range_fft_f32 function
+* ifx_range_cfft_f32 function
 *
 *******************************************************************************
 * \copyright
@@ -23,26 +23,22 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
-#pragma IMAGINET_FRAGMENT_BEGIN "ifx_range_fft_f32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "ifx_mean_removal_f32"
-int32_t ifx_range_fft_f32(float32_t* frame,
-                          cfloat32_t* range,
-                          bool mean_removal,
-                          const float32_t* win,
-                          uint16_t num_samples_per_chirp,
-                          uint16_t num_chirps_per_frame)
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_range_cfft_f32"
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "ifx_cmplx_mean_removal_f32.c:ifx_cmplx_mean_removal_f32"
+int32_t ifx_range_cfft_f32(cfloat32_t* frame,
+                           bool mean_removal,
+                           const float32_t* win,
+                           uint16_t num_samples_per_chirp,
+                           uint16_t num_chirps_per_frame)
 {
     assert(frame != NULL);
-    assert(range != NULL);
 
-    static arm_rfft_fast_instance_f32 rfft = { 0 };
-    if (rfft.fftLenRFFT != num_samples_per_chirp)
+    static arm_cfft_instance_f32 cfft = { 0 };
+    if (cfft.fftLen != num_samples_per_chirp)
     {
-        if (arm_rfft_fast_init_f32(&rfft, num_samples_per_chirp) != ARM_MATH_SUCCESS)
+        if (arm_cfft_init_f32(&cfft, num_samples_per_chirp) != ARM_MATH_SUCCESS)
         {
             return IFX_SENSOR_DSP_ARGUMENT_ERROR;
         }
@@ -52,19 +48,18 @@ int32_t ifx_range_fft_f32(float32_t* frame,
     {
         if (mean_removal)
         {
-            ifx_mean_removal_f32(frame, num_samples_per_chirp);
+            ifx_cmplx_mean_removal_f32(frame, num_samples_per_chirp);
         }
 
         if (win != NULL)
         {
-            arm_mult_f32(frame, win, frame, num_samples_per_chirp);
+            arm_cmplx_mult_real_f32((float32_t*)frame, win, (float32_t*)frame,
+                                    num_samples_per_chirp);
         }
 
-        arm_rfft_fast_f32(&rfft, frame, (float32_t*)range, 0);
-        CIMAG_F32(range[0]) = 0.0f;
+        arm_cfft_f32(&cfft, (float32_t*)frame, 0, 1);
 
         frame += num_samples_per_chirp;
-        range += (num_samples_per_chirp / 2U);
     }
 
     return IFX_SENSOR_DSP_STATUS_OK;

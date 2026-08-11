@@ -1,9 +1,9 @@
 /***************************************************************************//**
-* \file ifx_shift_cfft_f32.c
+* \file ifx_mean_removal_f32.c
 *
 * \brief
 * This file contains the implementation for the
-* ifx_shift_cfft_f32 function
+* ifx_mean_removal_f32 function
 *
 *******************************************************************************
 * \copyright
@@ -23,20 +23,15 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
-#pragma IMAGINET_FRAGMENT_BEGIN "ifx_shift_cfft_f32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "ifx_rotate_f32"
-void ifx_shift_cfft_f32(cfloat32_t* v, uint32_t len, uint32_t dim)
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_mean_removal_f32"
+void ifx_mean_removal_f32(float32_t* v, uint32_t len)
 {
     assert(v != NULL);
 
-    for (uint32_t i = 0; i < dim; ++i)
-    {
-        ifx_rotate_f32((float32_t*)v, len * 2U, ((len % 2U) == 1U) ? (len + 1U) : len);
-        v += len;
-    }
+    float32_t mean;
+    arm_mean_f32(v, len, &mean);
+    arm_offset_f32(v, -mean, v, len);
 }
 #pragma IMAGINET_FRAGMENT_END

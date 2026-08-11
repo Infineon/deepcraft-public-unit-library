@@ -1,9 +1,9 @@
 /***************************************************************************//**
-* \file ifx_rotate_f32.c
+* \file ifx_angle_dbf_f32.c
 *
 * \brief
 * This file contains the implementation for the
-* ifx_rotate_f32 function
+* ifx_angle_dbf_f32 function
 *
 *******************************************************************************
 * \copyright
@@ -23,24 +23,22 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
-#pragma IMAGINET_FRAGMENT_BEGIN "ifx_rotate_f32"
-void ifx_rotate_f32(float32_t* v, uint32_t len, uint32_t k)
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_angle_dbf_f32"
+arm_status ifx_angle_dbf_f32(const arm_matrix_instance_f32* pInput,
+                             const arm_matrix_instance_f32* pSteering,
+                             arm_matrix_instance_f32* pOutput)
 {
-    assert(v != NULL);
+    // corresponds to number of antennas
+    assert(pSteering->numCols == pInput->numRows);
 
-    while (k > 0U)
-    {
-        const float32_t temp = v[0];
-        for (uint32_t j = 0; j < (len - 1U); ++j)
-        {
-            v[j] = v[j + 1U];
-        }
-        v[len - 1U] = temp;
-        --k;
-    }
+    // corresponds to number of samples
+    assert(pInput->numCols == pOutput->numCols);
+
+    // corresponds to number of angles
+    assert(pSteering->numRows == pOutput->numRows);
+
+    return arm_mat_cmplx_mult_f32(pSteering, pInput, pOutput);
 }
 #pragma IMAGINET_FRAGMENT_END

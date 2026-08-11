@@ -1,9 +1,9 @@
 /***************************************************************************//**
-* \file ifx_arcsin_f32.c
+* \file ifx_rotate_f32.c
 *
 * \brief
 * This file contains the implementation for the
-* ifx_arcsin_f32 function
+* ifx_rotate_f32 function
 *
 *******************************************************************************
 * \copyright
@@ -23,35 +23,22 @@
 * limitations under the License.
 *******************************************************************************/
 
-#pragma IMAGINET_INCLUDES_BEGIN
-#include "ifx_sensor_dsp.h"
-#pragma IMAGINET_INCLUDES_END
+#pragma IMAGINET_FRAGMENT_DEPENDENCY "../include/ifx_sensor_dsp.h:ifx_sensor_dsp_types"
 
-#pragma IMAGINET_FRAGMENT_BEGIN "ifx_arcsin_f32"
-arm_status ifx_arcsin_f32(float32_t x, float32_t* result)
+#pragma IMAGINET_FRAGMENT_BEGIN "ifx_rotate_f32"
+void ifx_rotate_f32(float32_t* v, uint32_t len, uint32_t k)
 {
-    arm_status status = ARM_MATH_SUCCESS;
-    if (x >= 1.0F)
+    assert(v != NULL);
+
+    while (k > 0U)
     {
-        *result = PI_2_F32;
-    }
-    else if (x <= -1.0F)
-    {
-        *result = -PI_2_F32;
-    }
-    else
-    {
-        float32_t y = 0.0F;
-        status = arm_sqrt_f32(1.0F - (x * x), &y);
-        if (ARM_MATH_SUCCESS == status)
+        const float32_t temp = v[0];
+        for (uint32_t j = 0; j < (len - 1U); ++j)
         {
-            (void)arm_atan2_f32(x, y, result);
+            v[j] = v[j + 1U];
         }
-        else
-        {
-            *result = 0.0F;
-        }
+        v[len - 1U] = temp;
+        --k;
     }
-    return status;
 }
 #pragma IMAGINET_FRAGMENT_END
