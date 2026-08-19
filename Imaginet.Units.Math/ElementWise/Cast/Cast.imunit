@@ -54,7 +54,7 @@
 		<Contracts>
 			<Assert
 				test="input.type != output.type"
-				error="Can not cast from {input.type} to {output.type}" />
+				error="Input is already {input.type}, so casting to {output.type} would have no effect. Choose a different Output Type, or remove this Cast unit." />
 		</Contracts>
 
 		<Implementations>

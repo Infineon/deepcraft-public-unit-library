@@ -24,10 +24,10 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="shape.flat > 0" error="Shape must have at least one element." />
-      <Assert test="fill_value != null" error="Fill value must be provided." />
-      <Assert test="fill_value.shape.count == 0 || (fill_value.shape.count == 1 &amp;&amp; fill_value.shape.size(0) == 1)" error="Fill value must be a scalar (like numpy.full fill_value), not a matrix or tensor." />
-      <Assert test="fill_value.type == System.Float32 || fill_value.type == System.Int8 || fill_value.type == System.Int16" error="Fill value type ({fill_value.type}) must be float32, int8, or int16." />
+      <Assert test="shape.flat > 0" error="Shape parameter must have at least one element, but it's empty. Set Shape to a non-empty shape, e.g. [1]." />
+      <Assert test="fill_value != null" error="Fill Value input isn't connected. Connect a scalar value to the Fill Value input." />
+      <Assert test="fill_value.shape.count == 0 || (fill_value.shape.count == 1 &amp;&amp; fill_value.shape.size(0) == 1)" error="Fill Value must be a scalar, not a matrix or tensor, but it's shape {fill_value.shape}. Connect a single-element value instead." />
+      <Assert test="fill_value.type == System.Float32 || fill_value.type == System.Int8 || fill_value.type == System.Int16" error="Fill Value must be Float32, Int8, or Int16, but it's {fill_value.type}. Add a Cast unit before this one to convert it." />
     </Contracts>
 
     <Implementations>

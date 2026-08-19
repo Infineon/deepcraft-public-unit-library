@@ -43,10 +43,10 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="base &gt; 1 || base == 0" error="The base must be bigger than 1" />
+			<Assert test="base &gt; 1 || base == 0" error="Logarithm base must be greater than 1, or 0 for natural log, but it's {base}. Enter a different value." />
 			<Assert 
 				test="input.type == System.Float32 || input.type == System.Q31 || input.type == System.Q15" 
-				error="The input tensor ({input.type}) must have type: Float32, Q31 or Q15" />
+				error="Input tensor must be Float32, Q31, or Q15, but it's {input.type}. Convert it first with a Cast, Quantize, or Dequantize unit, whichever matches the current type." />
 		</Contracts>
 
 		<Implementations>

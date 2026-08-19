@@ -41,9 +41,9 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.shape.count &gt;= 2" error="Requires an input ({input.shape}) with two or more dimensions since it reduces one dimension." />
-			<Assert test="axis &lt; input.shape.count" error="Axis ({axis}) must be one of input dimensions (0...{input.shape.count-1})." />
-			<Assert test="index &lt; d1" error="Index out of range. Max is {d1-1}" />
+			<Assert test="input.shape.count &gt;= 2" error="This unit needs an input with at least 2 dimensions, since it reduces one dimension, but the input has {input.shape.count}D. Add a Reshape unit before this one to add a dimension." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
+			<Assert test="index &lt; d1" error="Index {index} is out of range for axis {axis} (max is {d1-1}). Update the Index parameter." />
 		</Contracts>
 
 		<Implementations>

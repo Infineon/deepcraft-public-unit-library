@@ -25,7 +25,7 @@
     </Parameters>
 
 	<Contracts>
-		<Assert test="exponent.shape.flat==1" error="Tensor containing exponent must be shape [1]." />
+		<Assert test="exponent.shape.flat==1" error="Exponent input must contain exactly one value (shape [1]), but it's shape {exponent.shape}. Connect a single-value tensor instead." />
 	</Contracts>
 	
     <Implementations>

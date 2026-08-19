@@ -32,10 +32,10 @@
 		<Contracts>
 			<Assert 
 				test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.UInt8"
-				error="The input tensor ({input.type}) must have type: Float32, Int8 or UInt8" />
+				error="Input tensor must be Float32, Int8, or UInt8, but it's {input.type}. Add a Cast unit before this one to convert it." />
 			<Assert
 				test="divisor != 0"
-				error="The divisor can not be 0" />
+				error="Divisor is set to 0, which makes this operation undefined. Set the Divisor parameter to any nonzero number." />
 		</Contracts>
 
 		<Implementations>

@@ -64,7 +64,7 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.type == System.Float32" error="Input must be a float tensor." />
+			<Assert test="input.type == System.Float32" error="Input tensor must be Float32, but it's {input.type}. Add a Cast or Dequantize unit before this one to convert it." />
 		</Contracts>
 
 		<Implementations>

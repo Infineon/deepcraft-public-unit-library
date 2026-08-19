@@ -23,7 +23,7 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.shape.count == 2" error="Input must be 2D." />
+			<Assert test="input.shape.count == 2" error="Input must be 2D, but it has {input.shape.count} dimensions. Add a Reshape unit before this one to make it 2D." />
 		</Contracts>
 
 		<Implementations>

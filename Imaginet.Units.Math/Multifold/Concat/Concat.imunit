@@ -40,7 +40,7 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="i0.shape.remove(axis) == i1.shape.remove(axis)" error="All tensors must have the same shape except at given axis" />
+			<Assert test="i0.shape.remove(axis) == i1.shape.remove(axis)" error="Input 0 shape {i0.shape} and Input 1 shape {i1.shape} must match except along the concatenation axis ({axis}). Adjust the Axis parameter, or reshape one of the inputs so they match." />
 		</Contracts>
 			
 	
