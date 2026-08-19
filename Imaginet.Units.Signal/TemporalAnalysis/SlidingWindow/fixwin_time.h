@@ -178,7 +178,7 @@ static inline int fixwin_time_can_enqueue(void* restrict handle, int count)
 	if (size <= free) 
 		return IPWIN_RET_SUCCESS;
 
-	return IPWIN_RET_ERROR;
+	return IPWIN_RET_NODATA;
 }
 #pragma IMAGINET_FRAGMENT_END
 
