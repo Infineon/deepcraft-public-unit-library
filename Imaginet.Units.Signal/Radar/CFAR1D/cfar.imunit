@@ -60,10 +60,10 @@
     </Parameters>
 	
 	<Contracts>
-		<Assert test="bias >= 0" error="Bias needs to be positive." />
-		<Assert test="window_size >= 0" error="Reference Cells needs to be positive." />
-		<Assert test="gap_cells >= 0" error="Gap Cells needs to be positive." />
-		<Assert test="input.shape.count == 3" error="Unexpected input tensor format ({output.shape}). Expect tensor to have shape [Chirps, Samples, Antennas]" />
+		<Assert test="bias >= 0" error="Bias must be 0 or greater, but it's {bias}." />
+		<Assert test="window_size >= 0" error="Reference Cells must be 0 or greater, but it's {window_size}." />
+		<Assert test="gap_cells >= 0" error="Gap Cells must be 0 or greater, but it's {gap_cells}." />
+		<Assert test="input.shape.count == 3" error="Input must have shape [Chirps, Samples, Antennas], but it has shape {input.shape}." />
 	</Contracts>
 	
 	<Implementations>

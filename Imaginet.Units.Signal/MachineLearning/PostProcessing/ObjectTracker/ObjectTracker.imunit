@@ -50,14 +50,14 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="detections.shape.count == 2" error="Detections input must be 2D [confidence_count, max_detections]." />
-      <Assert test="confidence_count >= 4" error="Detection data must have at least 4 elements (x, y, w, h) per detection." />
-      <Assert test="tracking_threshold >= 0.0 &amp;&amp; tracking_threshold &lt;= 1.0" error="Tracking threshold must be between 0.0 and 1.0." />
-      <Assert test="max_tracks >= 1" error="Max tracks must be at least 1." />
-      <Assert test="max_tracks &lt;= 50" error="Max tracks cannot exceed 50." />
-      <Assert test="max_age >= 1" error="Max age must be at least 1." />
-      <Assert test="min_hits >= 1" error="Min hits must be at least 1." />
-      <Assert test="detections.type == System.Float32 || detections.type == System.Int8" error="Detections must be Float32 or Int8." />
+      <Assert test="detections.shape.count == 2" error="Detections input must be 2D [confidence_count, max_detections], but it has {detections.shape.count} dimensions." />
+      <Assert test="confidence_count >= 4" error="Detection data must have at least 4 elements (x, y, w, h) per detection, but it has {confidence_count}." />
+      <Assert test="tracking_threshold >= 0.0 &amp;&amp; tracking_threshold &lt;= 1.0" error="Tracking Threshold must be between 0.0 and 1.0, but it's {tracking_threshold}." />
+      <Assert test="max_tracks >= 1" error="Max Tracks must be at least 1, but it's {max_tracks}." />
+      <Assert test="max_tracks &lt;= 50" error="Max Tracks cannot exceed 50, but it's {max_tracks}." />
+      <Assert test="max_age >= 1" error="Max Age must be at least 1, but it's {max_age}." />
+      <Assert test="min_hits >= 1" error="Min Hits must be at least 1, but it's {min_hits}." />
+      <Assert test="detections.type == System.Float32 || detections.type == System.Int8" error="Detections must be Float32 or Int8, but it's {detections.type}. Add a Cast unit before this one to convert it." />
     </Contracts>
 
     <Init returnStatus="true">

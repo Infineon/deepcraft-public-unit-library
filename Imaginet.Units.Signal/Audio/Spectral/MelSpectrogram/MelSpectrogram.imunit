@@ -58,7 +58,7 @@ Math.pow(2,(NumFilters*6).log2.ceil + 1)
           <Input param="Input" type="Tensor" />
         </Inputs>
         <Tests>
-          <Test assert="Input.shape.flat !=1" error="Input must be 1D (mono audio). Multi-channel support will be added in future versions." />
+          <Test assert="Input.shape.flat !=1" error="Input must be single-channel (mono) audio. Multi-channel support isn't available yet — provide a mono signal." />
         </Tests>
       </AssertNode>
       <UnitNode id="node_7" x="580.8000000000279" y="547.6399999999878" enabled="true" unit="Imaginet.Units.Signal.MelFilterbank">

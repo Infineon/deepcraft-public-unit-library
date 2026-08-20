@@ -29,7 +29,7 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="cutoff_freq >= 0" error="Cutoff Frequency needs to be positive." />
+			<Assert test="cutoff_freq >= 0" error="Cutoff Frequency must be positive, but it's {cutoff_freq}. Enter a value of 0 or greater." />
 		</Contracts>
 
 		<Implementations>

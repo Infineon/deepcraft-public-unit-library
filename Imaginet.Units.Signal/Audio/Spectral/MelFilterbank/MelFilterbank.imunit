@@ -44,7 +44,7 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="f_low &lt; f_high" error="Low cut frequency ({f_low} Hz) must be less then high cut frequency ({f_high} Hz)" />
+			<Assert test="f_low &lt; f_high" error="Low Cut Frequency ({f_low} Hz) must be less than High Cut Frequency ({f_high} Hz). Adjust one of these parameters so Low Cut Frequency is smaller." />
 			<Assert test="f_high &lt;= sample_rate / 2" error="High cut frequency ({f_high} Hz) must be equal or less than half of sample rate ({sample_rate} Hz) due to Nyquist–Shannon sampling theorem." />
 		</Contracts>
 

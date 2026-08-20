@@ -118,13 +118,13 @@
 		<Contracts>
 			<Assert
 			  test="stride &lt;= window_shape.flat"
-			  error="Stride ({stride}) can't be bigger than window size ({window_shape.flat})" />
+			  error="Stride ({stride}) can't be bigger than the window size ({window_shape.flat}). Reduce Stride or increase Window Shape." />
 			<Assert
 			  test="window_shape.flat % input_size == 0"
-			  error="Window shape ({window_shape.flat}) must be a multiple of input size ({input_size})" />
+			  error="Window Shape ({window_shape.flat}) must be a multiple of the input size ({input_size}). Adjust the Window Shape parameter." />
 			<Assert
 			  test="stride % input_size == 0"
-			  error="Stride ({stride}) must be a multiple of input size ({input_size})" />
+			  error="Stride ({stride}) must be a multiple of the input size ({input_size}). Adjust the Stride parameter." />
 		</Contracts>
 
 

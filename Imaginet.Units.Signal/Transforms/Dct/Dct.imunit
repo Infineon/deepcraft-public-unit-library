@@ -49,9 +49,9 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions." />
-			<Assert test="output_count &lt;= d1" error="Output size ({output_count}) must be equal of less than the input axis ({d1})" />
-			<Assert test="input.type == System.Float32" error="Input array must be of type float32." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
+			<Assert test="output_count &lt;= d1" error="Output Size ({output_count}) must be less than or equal to the input axis length ({d1}). Reduce Output Size or increase the input size." />
+			<Assert test="input.type == System.Float32" error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
 		</Contracts>
 
 		<Implementations>

@@ -74,10 +74,10 @@
 	<Contracts>
 			<Assert
 				test="output.shape.count == 2 || (output.shape.count == 3)"
-				error="Unexpected input tensor format ({output.shape}). Expect tensor to have shape [width, height] or [width, height, channels] where channels is one or three" />
+				error="Input must be 2D [height, width] or 3D [height, width, channels], but it has shape {input.shape}." />
 			<Assert
 				test="scale_factor>=1"
-				error="Negative Scale Factor." />
+				error="Scale Factor must be at least 1, but it's {scale_factor}. Enter a positive integer." />
     </Contracts>
 	  
     <Implementations>

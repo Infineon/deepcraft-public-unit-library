@@ -25,9 +25,9 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.type == System.Float32" error="The input tensor ({input.type}) must have type: Float32" />
-			<Assert test="frequency > 0" error="Frequency must be positive." />
-			<Assert test="Q > 0" error="Q factor must be positive." />
+			<Assert test="input.type == System.Float32" error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
+			<Assert test="frequency > 0" error="Frequency must be positive, but it's {frequency} Hz. Enter a value greater than 0." />
+			<Assert test="Q > 0" error="Q Factor must be positive, but it's {Q}. Enter a value greater than 0." />
 		</Contracts>
 
 		<Implementations>

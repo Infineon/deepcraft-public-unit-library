@@ -63,12 +63,12 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC)." />
-      <Assert test="value.shape.count == 0 || (value.shape.count == 1 &amp;&amp; value.shape.size(0) == 1)" error="Value input must be a scalar." />
-      <Assert test="x_position >= 0.0 &amp;&amp; x_position &lt;= 1.0" error="X position must be between 0.0 and 1.0." />
-      <Assert test="y_position >= 0.0 &amp;&amp; y_position &lt;= 1.0" error="Y position must be between 0.0 and 1.0." />
-      <Assert test="font_size >= 0 &amp;&amp; font_size &lt;= 3" error="Font size must be between 0 and 3." />
-      <Assert test="decimal_places >= 0 &amp;&amp; decimal_places &lt;= 6" error="Decimal places must be between 0 and 6." />
+      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC), but it has {image.shape.count} dimensions." />
+      <Assert test="value.shape.count == 0 || (value.shape.count == 1 &amp;&amp; value.shape.size(0) == 1)" error="Value input must be a scalar, but it has shape {value.shape}." />
+      <Assert test="x_position >= 0.0 &amp;&amp; x_position &lt;= 1.0" error="X Position must be between 0.0 and 1.0, but it's {x_position}. Enter a normalized coordinate in that range." />
+      <Assert test="y_position >= 0.0 &amp;&amp; y_position &lt;= 1.0" error="Y Position must be between 0.0 and 1.0, but it's {y_position}. Enter a normalized coordinate in that range." />
+      <Assert test="font_size >= 0 &amp;&amp; font_size &lt;= 3" error="Font Size must be between 0 and 3, but it's {font_size}. Enter a value in that range." />
+      <Assert test="decimal_places >= 0 &amp;&amp; decimal_places &lt;= 6" error="Decimal Places must be between 0 and 6, but it's {decimal_places}. Enter a value in that range." />
     </Contracts>
 
     <Implementations>

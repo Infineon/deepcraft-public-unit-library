@@ -36,10 +36,10 @@
     </Parameters>
 	
     <Contracts>
-        <Assert test="input.shape.count &lt;= 1" error="Rotate 3D Vector requires a vector input." />
-        <Assert test="index &lt; input.shape.size(0)" error="Index must be less than the vector length." />
-		<Assert test="index &gt; -1 " error="Index must not be negative." />
-	    <Assert test="input.shape.size(0) == 3" error="Rotate 3D Vector only supports vectors of length 3." />
+        <Assert test="input.shape.count &lt;= 1" error="Input must be a vector (1D), but it has {input.shape.count} dimensions. Provide a flat 3-element vector." />
+        <Assert test="index &lt; input.shape.size(0)" error="Index must be less than the vector length ({input.shape.size(0)}), but it's {index}. Enter a value from 0 to {input.shape.size(0) - 1}." />
+		<Assert test="index &gt; -1 " error="Index must not be negative, but it's {index}. Enter a value of 0 or greater." />
+	    <Assert test="input.shape.size(0) == 3" error="Input vector must have exactly 3 elements, but it has {input.shape.size(0)}. This unit only supports 3D vectors." />
     </Contracts>
 	
 	<Init returnStatus="true">

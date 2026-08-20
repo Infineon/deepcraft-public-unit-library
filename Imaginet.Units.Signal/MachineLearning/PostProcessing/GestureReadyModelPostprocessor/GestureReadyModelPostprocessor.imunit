@@ -59,9 +59,9 @@
 
     <Contracts>
       <Assert test="input.type == System.Float32"
-              error="Input ({input.type}) must be Float32." />
+              error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
       <Assert test="none_class_index &lt; num_classes"
-              error="None class index ({none_class_index}) must be less than the number of classes ({num_classes})." />
+              error="None Class Index must be less than the number of classes ({num_classes}), but it's {none_class_index}. Enter a value from 0 to {num_classes - 1}." />
     </Contracts>
 
     <Init returnStatus="true">

@@ -64,9 +64,9 @@
 					<Input param="RefDistance" type="Real" />
 				</Inputs>
 				<Tests>
-					<Test assert="Distance &lt;= 0" error="Distance ({Distance} m) must be positive." />
-					<Test assert="RefDistance &lt;= 0" error="Reference distance ({RefDistance} m) must be positive." />
-					<Test assert="Distance &lt; RefDistance" error="Distance ({Distance} m) must be at or beyond reference distance ({RefDistance} m)." />
+					<Test assert="Distance &lt;= 0" error="Distance is {Distance} m, but it must be positive. Increase the Distance parameter." />
+					<Test assert="RefDistance &lt;= 0" error="Reference Distance is {RefDistance} m, but it must be positive. Increase the Reference Distance parameter." />
+					<Test assert="Distance &lt; RefDistance" error="Distance ({Distance} m) is closer than Reference Distance ({RefDistance} m), so the gain calculation would be undefined below that point. Increase Distance to at least {RefDistance} m, or decrease Reference Distance." />
 				</Tests>
 			</AssertNode>
 
