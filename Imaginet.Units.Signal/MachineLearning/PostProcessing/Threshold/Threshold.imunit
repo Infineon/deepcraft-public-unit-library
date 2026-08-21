@@ -23,8 +23,8 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="threshold >= 0" error="Threshold needs to be in the range [0.0, 1.0]." />
-			<Assert test="threshold &lt;= 1" error="Threshold needs to be in the range [0.0, 1.0]." />
+			<Assert test="threshold >= 0" error="Threshold must be in the range [0.0, 1.0], but it's {threshold}." />
+			<Assert test="threshold &lt;= 1" error="Threshold must be in the range [0.0, 1.0], but it's {threshold}." />
 		</Contracts>
 
 		<Implementations>

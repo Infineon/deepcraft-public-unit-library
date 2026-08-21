@@ -36,11 +36,11 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.type == System.Float32" error="Input array must be of type float32." />
-			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions." />
-			<Assert test="axis &gt; 0" error="The first (inner) axis is the complex dimension. Therefore axis must be &gt;0." />
-			<Assert test="input.shape.size(0) == 2" error="The first (inner) axis is the complex dimension. Therefore this axis has to be be equal to two." />
-			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="Size of axis dimension must be the power of two." />
+			<Assert test="input.type == System.Float32" error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
+			<Assert test="axis &gt; 0" error="The first axis (axis 0) is the complex dimension, so Axis must be greater than 0, but it's {axis}." />
+			<Assert test="input.shape.size(0) == 2" error="The first axis (axis 0) is the complex dimension and must have size 2, but it's {input.shape.size(0)}." />
+			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="The selected axis must have a size that's a power of two, but it's {input.shape.size(axis)}. Adjust the window size upstream so this axis is a power of two." />
 		</Contracts>
 
 		<Implementations>

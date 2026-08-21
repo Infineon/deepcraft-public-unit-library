@@ -30,7 +30,7 @@
 			<Assert test="shift &gt;=  " error="Shift to small. Min is {i}" />-->
 			<Assert 
 				test="input.type == System.Q31 || input.type == System.Q15 || input.type == System.Q7" 
-				error="QShift unit only works for quantized tensors (Q31, Q15 or Q7)" />
+				error="This unit only works on quantized tensors (Q31, Q15, or Q7), but the input is {input.type}. Add a Quantize unit before this one to convert it." />
 		</Contracts>
 
 		<Implementations>

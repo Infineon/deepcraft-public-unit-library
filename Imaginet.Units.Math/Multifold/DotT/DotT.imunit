@@ -35,11 +35,11 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="axis == 0" error="Only case when axis is 0 is implemented." />
-			<Assert test="a.shape.size(0) == b.shape.size(0)" error="Last dimension for a and b must be equal" />
-			<Assert test="a.shape.count == 1 | a.shape.count == 2" error="First argument to dot must be 1D or 2D" />
-			<Assert test="b.shape.count == 1 | b.shape.count == 2" error="Second argument to dot must be 1D or 2D" />
-			<Assert test="a.type == b.type" error="Operand types must match. {a.type} not same as {b.type}" />
+			<Assert test="axis == 0" error="Axis {axis} isn't supported yet; only axis 0 is implemented for this unit. Set Axis to 0." />
+			<Assert test="a.shape.size(0) == b.shape.size(0)" error="The innermost dimension of Input A ({a.shape.size(0)}) must match Input B ({b.shape.size(0)}). Reshape one of the inputs so they match." />
+			<Assert test="a.shape.count == 1 | a.shape.count == 2" error="Input A must be 1D or 2D, but it has {a.shape.count} dimensions. Add a Reshape unit before this one." />
+			<Assert test="b.shape.count == 1 | b.shape.count == 2" error="Input B must be 1D or 2D, but it has {b.shape.count} dimensions. Add a Reshape unit before this one." />
+			<Assert test="a.type == b.type" error="Input A ({a.type}) and Input B ({b.type}) must be the same type. Add a Cast unit before one of them so both match." />
 		</Contracts>
 
 		<Implementations>

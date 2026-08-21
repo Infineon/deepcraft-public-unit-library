@@ -30,7 +30,7 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
 		</Contracts>
 
 		<Implementations>

@@ -81,21 +81,21 @@
 
     <Contracts>
       <Assert test="input.type == System.Float32"
-              error="Input ({input.type}) must be Float32." />
+              error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
       <Assert test="input_count == expected_count"
-              error="Input size ({input_count}) must equal channels x chirps x samples ({expected_count})." />
+              error="Input size ({input_count}) must equal Channels x Chirps x Samples ({expected_count}). Check that these parameters match the input buffer." />
       <Assert test="n_samples % 2 == 0"
-              error="Samples per chirp must be even (power-of-two range FFT)." />
+              error="Samples per chirp must be even (power-of-two range FFT), but it's {n_samples}." />
       <Assert test="n_range_bins == n_samples / 2"
               error="Range bins ({n_range_bins}) must equal samples / 2 ({n_samples / 2})." />
       <Assert test="min_range_bin &lt; n_range_bins"
-              error="Min range bin ({min_range_bin}) must be less than range bins ({n_range_bins})." />
+              error="Min Range Bin ({min_range_bin}) must be less than range bins ({n_range_bins}). Lower the Min Range Bin parameter." />
       <Assert test="n_channels == 3"
-              error="Gesture preprocessor currently requires 3 RX channels (got {n_channels})." />
+              error="This preprocessor currently requires 3 RX channels, but it got {n_channels}." />
       <Assert test="n_chirps == 32"
-              error="Gesture preprocessor window tables require 32 chirps (got {n_chirps})." />
+              error="This preprocessor's window tables require 32 chirps, but it got {n_chirps}." />
       <Assert test="n_samples == 64"
-              error="Gesture preprocessor window tables require 64 samples (got {n_samples})." />
+              error="This preprocessor's window tables require 64 samples, but it got {n_samples}." />
     </Contracts>
 
     <Init returnStatus="true">

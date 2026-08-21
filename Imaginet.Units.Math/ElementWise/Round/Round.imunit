@@ -33,7 +33,7 @@
 		<Contracts>
 			<Assert 
 				test="input.type == System.Float32"
-				error="The input tensor ({input.type}) must have type: Float32" />
+				error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
 		</Contracts>
 
 		<Implementations>

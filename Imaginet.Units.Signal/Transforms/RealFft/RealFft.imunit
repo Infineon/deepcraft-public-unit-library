@@ -45,10 +45,10 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.type == System.Float32 || input.type == System.Q31 || input.type == System.Q15" error="Input array must be of type Float32, Q31 or Q15." />
-			<Assert test="axis &lt; input.shape.count" error="Axis must be less then the number of input dimensions." />
-			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="Size of axis dimension must be the power of two." />
-			<Assert test="!global_use_cmsis || d1 &gt;= 32" error="CMSIS only support FFT axis with size {d1} >= 32" />
+			<Assert test="input.type == System.Float32 || input.type == System.Q31 || input.type == System.Q15" error="Input tensor must be Float32, Q31, or Q15, but it's {input.type}. Add a Cast unit before this one to convert it." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
+			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="The selected axis must have a size that's a power of two, but it's {input.shape.size(axis)}. Adjust the window size upstream so this axis is a power of two." />
+			<Assert test="!global_use_cmsis || d1 &gt;= 32" error="CMSIS requires an axis size of at least 32, but it's {d1}. Disable Use CMSIS or increase the input size." />
 		</Contracts>
 
 		<Init returnStatus="true">

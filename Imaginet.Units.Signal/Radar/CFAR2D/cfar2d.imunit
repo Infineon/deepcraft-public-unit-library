@@ -56,12 +56,12 @@
     </Parameters>
 
 	<Contracts>
-		<Assert test="bias >= 0" error="Bias needs to be positive." />
-		<Assert test="window_size_range >= 0" error="Reference Cells Range needs to be positive." />
-		<Assert test="window_size_doppler >= 0" error="Reference Cells Doppler needs to be positive." />
-		<Assert test="gap_cells_range >= 0" error="Gap Cells Range needs to be positive." />
-		<Assert test="gap_cells_doppler >= 0" error="Gap Cells Doppler needs to be positive." />
-		<Assert test="input.shape.count == 3" error="Unexpected input tensor format ({output.shape}). Expect tensor to have shape [Chirps, Samples, Antennas]" />
+		<Assert test="bias >= 0" error="Bias must be 0 or greater, but it's {bias}." />
+		<Assert test="window_size_range >= 0" error="Reference Cells Range must be 0 or greater, but it's {window_size_range}." />
+		<Assert test="window_size_doppler >= 0" error="Reference Cells Doppler must be 0 or greater, but it's {window_size_doppler}." />
+		<Assert test="gap_cells_range >= 0" error="Gap Cells Range must be 0 or greater, but it's {gap_cells_range}." />
+		<Assert test="gap_cells_doppler >= 0" error="Gap Cells Doppler must be 0 or greater, but it's {gap_cells_doppler}." />
+		<Assert test="input.shape.count == 3" error="Input must have shape [Chirps, Samples, Antennas], but it has shape {input.shape}." />
 	</Contracts>
 
 	<Implementations>

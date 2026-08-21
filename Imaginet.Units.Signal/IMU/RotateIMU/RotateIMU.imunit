@@ -37,10 +37,10 @@
     </Parameters>
 	
     <Contracts>
-        <Assert test="input.shape.size(0) == 3" error="Rotate IMU requires a [2,3] matrix." />
-		<Assert test="input.shape.size(1) == 2" error="Rotate IMU requires a [2,3] matrix." />
-        <Assert test="index &lt; 3" error="Index must be 0, 1, or 2." />
-	    <Assert test="index &gt; -1 " error="Index must be 0, 1, or 2." />
+        <Assert test="input.shape.size(0) == 3" error="Input must have shape [2, 3], but dimension 0 has size {input.shape.size(0)} (expected 3)." />
+		<Assert test="input.shape.size(1) == 2" error="Input must have shape [2, 3], but dimension 1 has size {input.shape.size(1)} (expected 2)." />
+        <Assert test="index &lt; 3" error="Index must be 0, 1, or 2, but it's {index}." />
+	    <Assert test="index &gt; -1 " error="Index must be 0, 1, or 2, but it's {index}." />
     </Contracts>
 	
 	<Init returnStatus="true">

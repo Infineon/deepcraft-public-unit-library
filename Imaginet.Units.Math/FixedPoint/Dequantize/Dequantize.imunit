@@ -45,7 +45,7 @@
 				input.type == System.Q31 || input.type == System.Q15 ||  input.type == System.Q7 ||
 				input.type == System.D32 || input.type == System.D16 ||  input.type == System.D8 ||
 				input.type == System.Int8 || input.type == System.Int16 || input.type == System.Int32" 
-			error="Input must be one of Q31, Q15, Q7, D32, D16, D8, Int8, Int16, Int32." />
+			error="Input tensor must be one of Q31, Q15, Q7, D32, D16, D8, Int8, Int16, or Int32, but it's {input.type}. Connect a quantized tensor, or use a different unit if the input is already Float32." />
 	</Contracts>
 
 

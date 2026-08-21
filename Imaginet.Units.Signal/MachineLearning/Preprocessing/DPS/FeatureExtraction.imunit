@@ -58,13 +58,13 @@
     <Contracts>
       <Assert
         test="input.shape.count == 2"
-        error="Input must be 2-dimensional [samples, channels]. Got {input.shape.count} dimensions." />
+        error="Input must be 2D [samples, channels], but it has {input.shape.count} dimensions." />
       <Assert
         test="input.shape.size(0) == 2"
-        error="Input must have exactly 2 channels (pressure, temperature). Got {input.shape.size(0)}." />
+        error="Input must have exactly 2 channels (pressure, temperature), but it has {input.shape.size(0)}." />
       <Assert
         test="input.shape.size(1) &gt;= 4"
-        error="Window must have at least 4 samples for meaningful statistics. Got {input.shape.size(1)}." />
+        error="Window must have at least 4 samples for meaningful statistics, but it has {input.shape.size(1)}. Increase the window size upstream." />
     </Contracts>
 
     <Implementations>

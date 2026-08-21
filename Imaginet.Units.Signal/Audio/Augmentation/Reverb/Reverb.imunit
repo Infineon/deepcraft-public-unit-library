@@ -40,13 +40,13 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.type == System.Float32" error="The input tensor ({input.type}) must have type: Float32" />
-			<Assert test="room_size > 0" error="Room size must be greater than 0." />
-			<Assert test="room_size &lt;= 1" error="Room size must be at most 1." />
-			<Assert test="damping >= 0" error="Damping must be at least 0." />
-			<Assert test="damping &lt;= 1" error="Damping must be at most 1." />
-			<Assert test="wet >= 0" error="Wet level must be at least 0." />
-			<Assert test="dry >= 0" error="Dry level must be at least 0." />
+			<Assert test="input.type == System.Float32" error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
+			<Assert test="room_size > 0" error="Room Size must be greater than 0, but it's {room_size}. Enter a value between 0 and 1." />
+			<Assert test="room_size &lt;= 1" error="Room Size must be at most 1, but it's {room_size}. Enter a value between 0 and 1." />
+			<Assert test="damping >= 0" error="Damping must be at least 0, but it's {damping}. Enter a value between 0 and 1." />
+			<Assert test="damping &lt;= 1" error="Damping must be at most 1, but it's {damping}. Enter a value between 0 and 1." />
+			<Assert test="wet >= 0" error="Wet Level must be at least 0, but it's {wet}. Enter a value of 0 or greater." />
+			<Assert test="dry >= 0" error="Dry Level must be at least 0, but it's {dry}. Enter a value of 0 or greater." />
 		</Contracts>
 
 		<Implementations>

@@ -36,10 +36,10 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.type == System.Float32" error="Input array must be of type Float32." />
-			<Assert test="input.shape.size(0) == 2" error="Rightmost dimension (axis 0) must have size 2 (complex [real, imaginary] pairs)." />
-			<Assert test="axis+1 &lt; input.shape.count" error="axis+1 must be less than the number of input dimensions." />
-			<Assert test="N == Math.pow(2, Math.floor(Math.log(N, 2)))" error="Output signal length N must be a power of two." />
+			<Assert test="input.type == System.Float32" error="Input tensor must be Float32, but it's {input.type}. Add a Cast unit before this one to convert it." />
+			<Assert test="input.shape.size(0) == 2" error="Rightmost dimension (axis 0) must have size 2 (complex [real, imaginary] pairs), but it's {input.shape.size(0)}." />
+			<Assert test="axis+1 &lt; input.shape.count" error="Axis + 1 must be less than the number of input dimensions ({input.shape.count}), but Axis is {axis}. Reduce Axis or increase input dimensions." />
+			<Assert test="N == Math.pow(2, Math.floor(Math.log(N, 2)))" error="Output signal length N must be a power of two, but it's {N}. Adjust N so it's a power of two." />
 		</Contracts>
 
 		<Implementations>

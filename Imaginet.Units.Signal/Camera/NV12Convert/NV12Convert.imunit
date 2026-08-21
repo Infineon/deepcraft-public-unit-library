@@ -59,10 +59,10 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.shape.count == 1" error="Input must be a flat 1D tensor." />
-			<Assert test="height % 2 == 0" error="Image height must be even (NV12 chroma subsampling requirement)." />
-			<Assert test="width % 2 == 0" error="Image width must be even (NV12 chroma subsampling requirement)." />
-			<Assert test="input.shape.size(0) == height * width * 3 / 2" error="Input buffer size must equal height * width * 3 / 2." />
+			<Assert test="input.shape.count == 1" error="Input must be a flat 1D tensor, but it has {input.shape.count} dimensions. Provide the raw NV12 buffer as a flat 1D uint8 tensor." />
+			<Assert test="height % 2 == 0" error="Image Height must be even (NV12 chroma subsampling requirement), but it's {height}. Enter an even value." />
+			<Assert test="width % 2 == 0" error="Image Width must be even (NV12 chroma subsampling requirement), but it's {width}. Enter an even value." />
+			<Assert test="input.shape.size(0) == height * width * 3 / 2" error="Input buffer size ({input.shape.size(0)}) must equal Image Height * Image Width * 3 / 2 ({height * width * 3 / 2}). Check that Image Height and Image Width match the camera resolution." />
 		</Contracts>
 
 		<Implementations>

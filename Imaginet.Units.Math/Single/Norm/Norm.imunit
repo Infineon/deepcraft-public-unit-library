@@ -39,8 +39,8 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.shape.count &gt;= 2" error="norm(axis) requires an input with two or more dimensions since it reduces one dimension." />
-			<Assert test="axis &lt; input.shape.count" error="Axis must be less that number of input dimensions." />
+			<Assert test="input.shape.count &gt;= 2" error="This unit needs an input with at least 2 dimensions, since it reduces one dimension, but the input has {input.shape.count}D. Add a Reshape unit before this one to add a dimension." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
 		</Contracts>
 
 		<Implementations>

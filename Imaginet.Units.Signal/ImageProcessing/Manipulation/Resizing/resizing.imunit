@@ -60,11 +60,11 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="input.shape.count >= 2" error="Input must be at least 2D (HxW or HxWxC)." />
-			<Assert test="input_height > 0" error="Input height must be greater than 0" />
-			<Assert test="input_width > 0" error="Input width must be greater than 0" />
-			<Assert test="target_height > 0" error="Target height must be positive" />
-			<Assert test="target_width > 0" error="Target width must be positive" />
+			<Assert test="input.shape.count >= 2" error="Input must be at least 2D (HxW or HxWxC), but it has {input.shape.count} dimensions." />
+			<Assert test="input_height > 0" error="Input Height must be greater than 0, but it's {input_height}." />
+			<Assert test="input_width > 0" error="Input Width must be greater than 0, but it's {input_width}." />
+			<Assert test="target_height > 0" error="Target Height must be positive, but it's {target_height}. Enter a value greater than 0." />
+			<Assert test="target_width > 0" error="Target Width must be positive, but it's {target_width}. Enter a value greater than 0." />
 		</Contracts>
 
 		<Implementations>

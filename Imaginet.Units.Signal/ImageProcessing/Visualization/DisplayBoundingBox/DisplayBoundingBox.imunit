@@ -60,10 +60,10 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC)." />
-      <Assert test="detections.shape.count == 2" error="Detections input must be 2D [confidence_count, max_detections]." />
-      <Assert test="confidence_count >= 4" error="Detection data must have at least 4 elements (x, y, w, h) per detection." />
-      <Assert test="box_thickness >= 1" error="Box thickness must be at least 1 pixel." />
+      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC), but it has {image.shape.count} dimensions." />
+      <Assert test="detections.shape.count == 2" error="Detections input must be 2D [confidence_count, max_detections], but it has {detections.shape.count} dimensions." />
+      <Assert test="confidence_count >= 4" error="Detection data must have at least 4 elements (x, y, w, h) per detection, but it has {confidence_count}." />
+      <Assert test="box_thickness >= 1" error="Box Thickness must be at least 1 pixel, but it's {box_thickness}." />
     </Contracts>
 
     <Implementations>

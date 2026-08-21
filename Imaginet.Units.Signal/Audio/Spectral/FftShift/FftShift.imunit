@@ -33,8 +33,8 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="axis &lt; input.shape.count" error="Axis must be less then the number of input dimensions." />
-			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="Size of axis dimension must be the power of two." />
+			<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
+			<Assert test="input.shape.size(axis) == Math.pow(2, Math.floor(Math.log(input.shape.size(axis), 2)))" error="The selected axis must have a size that's a power of two, but it's {input.shape.size(axis)}. Adjust the window size downstream so this axis is a power of two." />
 		</Contracts>
 
 		<Implementations>

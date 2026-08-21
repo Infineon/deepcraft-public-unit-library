@@ -53,7 +53,7 @@
 		<Contracts>
 			<Assert
 			  test="input.type == System.Float32 || input.type == System.Int8"
-			  error="Resample requires float32 or int8 input, but got {input.type}." />
+			  error="Input must be Float32 or Int8, but it's {input.type}. Add a Cast unit before this one to convert it." />
 		</Contracts>
 
 		<Init returnStatus="true">

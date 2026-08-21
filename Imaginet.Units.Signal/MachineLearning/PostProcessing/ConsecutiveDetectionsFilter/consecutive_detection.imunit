@@ -19,9 +19,9 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="confidence_threshold &gt;= 0" error="Threshold needs to be in the range [0.0, 1.0]." />
-      <Assert test="confidence_threshold &lt;= 1" error="Threshold needs to be in the range [0.0, 1.0]." />
-      <Assert test="min_consecutive_count &gt; 0" error="Minimum Consecutive Count needs to be a positive integer." />
+      <Assert test="confidence_threshold &gt;= 0" error="Threshold must be in the range [0.0, 1.0], but it's {confidence_threshold}." />
+      <Assert test="confidence_threshold &lt;= 1" error="Threshold must be in the range [0.0, 1.0], but it's {confidence_threshold}." />
+      <Assert test="min_consecutive_count &gt; 0" error="Minimum Consecutive Count must be a positive integer, but it's {min_consecutive_count}." />
     </Contracts>
     
     <Implementations>

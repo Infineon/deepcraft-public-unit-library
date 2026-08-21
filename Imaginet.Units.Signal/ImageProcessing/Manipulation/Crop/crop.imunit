@@ -55,15 +55,15 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="start_height >= 0" error="Start height must be greater than 0" />
-			<Assert test="count_height >= 1" error="Crop height must be greater than 0" />
-			<Assert test="start_width >= 0" error="Start width must be positive" />
-			<Assert test="count_width >= 1" error="Crop width must be positive" />
-			<Assert test="input.shape.count >= 2" error="Input must be at least 2D (HxW or HxWxC)." />
+			<Assert test="start_height >= 0" error="Start Height must be 0 or greater, but it's {start_height}." />
+			<Assert test="count_height >= 1" error="Crop Height must be at least 1, but it's {count_height}." />
+			<Assert test="start_width >= 0" error="Start Width must be 0 or greater, but it's {start_width}." />
+			<Assert test="count_width >= 1" error="Crop Width must be at least 1, but it's {count_width}." />
+			<Assert test="input.shape.count >= 2" error="Input must be at least 2D (HxW or HxWxC), but it has {input.shape.count} dimensions." />
 			<Assert test="(start_height + count_height) &lt;= input.shape.size(1+index_offset)"
-				   error="Height range exceeds input dimensions ({start_height + count_height} > {input.shape.size(1+index_offset)})." />
+				   error="Crop region exceeds the input height: Start Height + Crop Height ({start_height + count_height}) must be at most {input.shape.size(1+index_offset)}. Reduce Start Height or Crop Height." />
 			<Assert test="(start_width + count_width) &lt;= input.shape.size(0+index_offset)"
-				   error="Width range exceeds input dimensions ({start_width + count_width} > {input.shape.size(0+index_offset)})." />
+				   error="Crop region exceeds the input width: Start Width + Crop Width ({start_width + count_width}) must be at most {input.shape.size(0+index_offset)}. Reduce Start Width or Crop Width." />
 		</Contracts>
 
 		<Implementations>

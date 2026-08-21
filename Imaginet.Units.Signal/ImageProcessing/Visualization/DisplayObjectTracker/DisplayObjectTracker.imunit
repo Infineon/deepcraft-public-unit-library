@@ -65,9 +65,9 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC)." />
-      <Assert test="tracked_detections.shape.count == 2" error="Tracked detections input must be 2D [confidence_count, max_detections]." />
-      <Assert test="confidence_count >= 6" error="Tracked detection data must have at least 6 elements (x, y, w, h, track_id, tracking_confidence)." />
+      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC), but it has {image.shape.count} dimensions." />
+      <Assert test="tracked_detections.shape.count == 2" error="Tracked Detections input must be 2D [confidence_count, max_detections], but it has {tracked_detections.shape.count} dimensions." />
+      <Assert test="confidence_count >= 6" error="Tracked detection data must have at least 6 elements (x, y, w, h, track_id, tracking_confidence), but it has {confidence_count}." />
     </Contracts>
 
     <Implementations>

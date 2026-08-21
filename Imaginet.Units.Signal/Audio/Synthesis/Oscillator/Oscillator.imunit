@@ -30,9 +30,9 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="frequency &gt; 0" error="Frequency must be positive." />
-			<Assert test="sampleRate &gt; 0" error="Sample rate must be positive." />
-			<Assert test="length &gt; 0" error="Buffer length must be positive." />
+			<Assert test="frequency &gt; 0" error="Frequency must be positive, but it's {frequency} Hz. Enter a value greater than 0." />
+			<Assert test="sampleRate &gt; 0" error="Sample Rate must be positive, but it's {sampleRate} Hz. Enter a value greater than 0." />
+			<Assert test="length &gt; 0" error="Buffer Length must be positive, but it's {length}. Enter a value of at least 1." />
 		</Contracts>
 
 		<Implementations>

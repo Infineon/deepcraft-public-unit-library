@@ -40,7 +40,7 @@
 		<Contracts>
 			<Assert 
 				test="input == null || input.shape.flat == shape.flat" 
-				error="Input shape ({input.shape}) and output shape ({shape}) must have the same number of elements."/>
+				error="Target shape {shape} doesn't have the same number of elements as the input shape {input.shape}. Adjust the Shape parameter so the element counts match."/>
 		</Contracts>
 				
 		<Implementations>

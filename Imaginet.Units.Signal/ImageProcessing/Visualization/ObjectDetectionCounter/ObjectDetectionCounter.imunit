@@ -83,14 +83,14 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="tracked_detections.shape.count == 2" error="Tracked detections input must be 2D [confidence_count, max_detections]." />
-      <Assert test="confidence_count >= 6" error="Tracked detection data must have at least 6 elements (x, y, w, h, track_id, tracking_confidence)." />
-      <Assert test="region_x1 >= 0.0 &amp;&amp; region_x1 &lt;= 1.0" error="Region X1 must be between 0.0 and 1.0." />
-      <Assert test="region_y1 >= 0.0 &amp;&amp; region_y1 &lt;= 1.0" error="Region Y1 must be between 0.0 and 1.0." />
-      <Assert test="region_x2 >= 0.0 &amp;&amp; region_x2 &lt;= 1.0" error="Region X2 must be between 0.0 and 1.0." />
-      <Assert test="region_y2 >= 0.0 &amp;&amp; region_y2 &lt;= 1.0" error="Region Y2 must be between 0.0 and 1.0." />
-      <Assert test="reset_hour >= -1 &amp;&amp; reset_hour &lt;= 23" error="Reset hour must be -1 (Off) or between 0 and 23." />
-      <Assert test="tracked_detections.type == System.Float32 || tracked_detections.type == System.Int8" error="Tracked detections must be Float32 or Int8." />
+      <Assert test="tracked_detections.shape.count == 2" error="Tracked Detections input must be 2D [confidence_count, max_detections], but it has {tracked_detections.shape.count} dimensions." />
+      <Assert test="confidence_count >= 6" error="Tracked detection data must have at least 6 elements (x, y, w, h, track_id, tracking_confidence), but it has {confidence_count}." />
+      <Assert test="region_x1 >= 0.0 &amp;&amp; region_x1 &lt;= 1.0" error="Region X1 must be between 0.0 and 1.0, but it's {region_x1}. Enter a normalized coordinate in that range." />
+      <Assert test="region_y1 >= 0.0 &amp;&amp; region_y1 &lt;= 1.0" error="Region Y1 must be between 0.0 and 1.0, but it's {region_y1}. Enter a normalized coordinate in that range." />
+      <Assert test="region_x2 >= 0.0 &amp;&amp; region_x2 &lt;= 1.0" error="Region X2 must be between 0.0 and 1.0, but it's {region_x2}. Enter a normalized coordinate in that range." />
+      <Assert test="region_y2 >= 0.0 &amp;&amp; region_y2 &lt;= 1.0" error="Region Y2 must be between 0.0 and 1.0, but it's {region_y2}. Enter a normalized coordinate in that range." />
+      <Assert test="reset_hour >= -1 &amp;&amp; reset_hour &lt;= 23" error="Reset Hour must be -1 (Off) or between 0 and 23, but it's {reset_hour}." />
+      <Assert test="tracked_detections.type == System.Float32 || tracked_detections.type == System.Int8" error="Tracked Detections must be Float32 or Int8, but it's {tracked_detections.type}. Add a Cast unit before this one to convert it." />
     </Contracts>
 
     <Init returnStatus="true">

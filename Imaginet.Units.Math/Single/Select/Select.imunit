@@ -48,9 +48,9 @@
     </Parameters>
 	
 	<Contracts>
-		<Assert test="axis &lt; input.shape.count" error="Axis ({axis}) must be one of input dimensions (0...{input.shape.count-1})." />
-		<Assert test="index &gt;= -input.shape.size(axis)" error="Negative index ({index}) must not be smaller than -{input.shape.size(axis)} (the size of the selected axis)." />
-		<Assert test="(count + resolved_index) &lt;= input.shape.size(axis)" error="Count+Index ({count}+{resolved_index}) must be less than or equal to {input.shape.size(axis)}." />
+		<Assert test="axis &lt; input.shape.count" error="Axis must be less than the number of input dimensions ({input.shape.count}), but it's {axis}. Update the Axis parameter." />
+		<Assert test="index &gt;= -input.shape.size(axis)" error="Index {index} is out of range for axis {axis} (size {input.shape.size(axis)}). Negative indices can't be smaller than -{input.shape.size(axis)}. Update the Index parameter." />
+		<Assert test="(count + resolved_index) &lt;= input.shape.size(axis)" error="Count ({count}) starting at index {resolved_index} would extend past the end of axis {axis} (size {input.shape.size(axis)}). Reduce Count or Index so they fit within the axis." />
 	</Contracts>
 
     <Implementations>

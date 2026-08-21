@@ -55,22 +55,22 @@
 	<Contracts>
 		<Assert
 			test="max_detections>=1"
-			error="Max number of detections has to be more than 1." />
+			error="Max Detections must be at least 1, but it's {max_detections}." />
 		<Assert
 			test="threshold&lt;=1"
-			error="Threshold has to be less or equal to 1." />
+			error="Threshold must be at most 1, but it's {threshold}. Enter a value between 0.0 and 1.0." />
 		<Assert
 			test="threshold>=0"
-			error="Threshold cant be negative." />
+			error="Threshold must be at least 0, but it's {threshold}. Enter a value between 0.0 and 1.0." />
 		<Assert
 			test="iou_threshold&lt;=1"
-			error="IOU threshold has to be less or equal to 1." />
+			error="IOU Threshold must be at most 1, but it's {iou_threshold}. Enter a value between 0.0 and 1.0." />
 		<Assert
 			test="iou_threshold>=0"
-			error="IOU threshold cant be negative." />
+			error="IOU Threshold must be at least 0, but it's {iou_threshold}. Enter a value between 0.0 and 1.0." />
 		<Assert
 			test="input.type == System.Float32 || input.type == System.Int8"
-			error="Input must be Float32 or Int8." />
+			error="Input must be Float32 or Int8, but it's {input.type}. Add a Cast unit before this one to convert it." />
 	</Contracts>
 	  
     <Implementations>

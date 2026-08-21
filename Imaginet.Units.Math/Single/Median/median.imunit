@@ -22,7 +22,7 @@
 	  <Contracts>
 		  <Assert
 			  test="output.shape.count == 1"
-			  error="Input tensor needs to be 1D." />
+			  error="Input tensor must be 1D, but it has {input.shape.count} dimensions. Add a Reshape or Select unit before this one to flatten it." />
 	  </Contracts>
     <Implementations>
       <Implementation language="C" fragment="median.h:median_f32" call="median_f32(input, output, count)">

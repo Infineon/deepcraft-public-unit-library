@@ -60,12 +60,12 @@
     </Parameters>
 
     <Contracts>
-      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC)." />
-      <Assert test="thickness >= 1" error="Thickness must be at least 1 pixel." />
-      <Assert test="x1 >= 0.0 &amp;&amp; x1 &lt;= 1.0" error="X1 coordinate must be between 0.0 and 1.0." />
-      <Assert test="y1 >= 0.0 &amp;&amp; y1 &lt;= 1.0" error="Y1 coordinate must be between 0.0 and 1.0." />
-      <Assert test="x2 >= 0.0 &amp;&amp; x2 &lt;= 1.0" error="X2 coordinate must be between 0.0 and 1.0." />
-      <Assert test="y2 >= 0.0 &amp;&amp; y2 &lt;= 1.0" error="Y2 coordinate must be between 0.0 and 1.0." />
+      <Assert test="image.shape.count >= 2" error="Image input must be at least 2D (HxW or HxWxC), but it has {image.shape.count} dimensions." />
+      <Assert test="thickness >= 1" error="Thickness must be at least 1 pixel, but it's {thickness}. Enter a value of 1 or greater." />
+      <Assert test="x1 >= 0.0 &amp;&amp; x1 &lt;= 1.0" error="X1 coordinate must be between 0.0 and 1.0, but it's {x1}. Enter a normalized coordinate in that range." />
+      <Assert test="y1 >= 0.0 &amp;&amp; y1 &lt;= 1.0" error="Y1 coordinate must be between 0.0 and 1.0, but it's {y1}. Enter a normalized coordinate in that range." />
+      <Assert test="x2 >= 0.0 &amp;&amp; x2 &lt;= 1.0" error="X2 coordinate must be between 0.0 and 1.0, but it's {x2}. Enter a normalized coordinate in that range." />
+      <Assert test="y2 >= 0.0 &amp;&amp; y2 &lt;= 1.0" error="Y2 coordinate must be between 0.0 and 1.0, but it's {y2}. Enter a normalized coordinate in that range." />
     </Contracts>
 
     <Implementations>

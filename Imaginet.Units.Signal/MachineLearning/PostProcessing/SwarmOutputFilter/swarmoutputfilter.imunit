@@ -27,11 +27,11 @@
 		</Parameters>
 
 		<Contracts>
-			<Assert test="confidence_threshold >= 0" error="Confidence threshold needs to be in the range [0.0, 1.0]." />
-			<Assert test="confidence_threshold &lt;= 1" error="Confidence threshold needs to be in the range [0.0, 1.0]." />
-			<Assert test="num_triggers >= 0" error="Triggers needs to be positive." />
-			<Assert test="filter_length >= 0" error="Filter Length needs to be positive." />
-			<Assert test="filter_cooloff >= 0" error="Filter Cooloff needs to be positive." />
+			<Assert test="confidence_threshold >= 0" error="Confidence Threshold must be in the range [0.0, 1.0], but it's {confidence_threshold}." />
+			<Assert test="confidence_threshold &lt;= 1" error="Confidence Threshold must be in the range [0.0, 1.0], but it's {confidence_threshold}." />
+			<Assert test="num_triggers >= 0" error="Triggers must be 0 or greater, but it's {num_triggers}." />
+			<Assert test="filter_length >= 0" error="Filter Length must be 0 or greater, but it's {filter_length}." />
+			<Assert test="filter_cooloff >= 0" error="Filter Cooloff must be 0 or greater, but it's {filter_cooloff}." />
 		</Contracts>
 
 		<Implementations>

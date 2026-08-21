@@ -23,9 +23,9 @@
 					<Input param="Input" type="Tensor" />
 				</Inputs>
 				<Tests>
-					<Test assert="1/Length &gt; PredictionFreq" error="Prediction frequency {PredictionFreq} Hz is too low. Min is {1/Length} Hz" />
-					<Test assert="Input.rate &lt; PredictionFreq" error="Prediction frequency {PredictionFreq} Hz is too high. Max is {Input.rate} Hz" />
-					<Test assert="Length &lt; 1.0/Input.rate" error="Window length {Length} seconds is too low. Min is {1.0/Input.rate} seconds when sample frequency is {Input.rate} Hz." />
+					<Test assert="1/Length &gt; PredictionFreq" error="Prediction Frequency ({PredictionFreq} Hz) is too low for the current window length. Increase it to at least {1/Length} Hz, or decrease Window Length." />
+					<Test assert="Input.rate &lt; PredictionFreq" error="Prediction Frequency ({PredictionFreq} Hz) is higher than the input sample rate ({Input.rate} Hz). Decrease Prediction Frequency to at most {Input.rate} Hz." />
+					<Test assert="Length &lt; 1.0/Input.rate" error="Window Length ({Length} seconds) is too short to contain a sample at {Input.rate} Hz. Increase it to at least {1.0/Input.rate} seconds." />
 				</Tests>
 			</AssertNode>
 			<UnitNode id="node_5" x="559.984415056384" y="392.8727820886581" enabled="true" unit="Imaginet.Units.Signal.SlidingWindow">
