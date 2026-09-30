@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+  <Unit name="Imaginet.Units.Signal.ObjectDetectionClassSelect">
+    <DisplayName>Object Detection Class Select</DisplayName>
+    <DisplayPath>/Image Processing/Object Detection</DisplayPath>
+
+    <Description>
+      <Header>Description</Header>
+      Keep only the wanted classes from an object detection head, in one pass.
+
+      A detection head lays its feature axis out as [x, y, w, h][class scores] — four box values followed by one score per class. This unit passes the box values through unchanged and keeps just the class scores you list, discarding the rest. It replaces a chain of Select units followed by Concatenate units, and unlike that chain it never materialises the intermediate tensors: every output element is written exactly once.
+
+      Classes are addressed by their index on the feature axis, the same numbering the Select unit uses. The four box values occupy indices 0 to 3, so the first class the model was trained on sits at index 4, the second at 5, and so on — a model with three classes exposes them at 4, 5 and 6 exactly as an eighty class model exposes its first three. The order you list them in is the order they appear on the output.
+
+      The input is expected to be a [features, detections] tensor whose feature axis begins with x, y, w, h. That layout is fixed rather than configurable; a mismatch is reported as a contract error rather than silently producing wrong boxes.
+
+      Class names are read off the incoming tensor by default. Whatever labels the input carries for the classes you select are carried over to the output, so a downstream Bounding Box Filter and Display Bounding Box see the right names without a Labels unit in between. This needs the model output to be labelled already, by the model itself or by an upstream Labels unit; if it isn't, switch Class labels to Custom or None.
+
+      Supports float32, int8, int16, int32, uint8, uint16 and uint32, as well as the fixed-point types Q7/Q15/Q31 and D8/D16/D32. Quantization metadata is carried through unchanged, so this unit can sit directly on a quantized model output with the Dequantize unit after it, which is considerably cheaper than dequantizing every class first.
+
+      <Header>Usage</Header>
+      Place between a detection model (or its Dequantize unit) and the Bounding Box Filter. Set Class indices to the classes you want, for example [4,6] to keep the first and third class.
+    </Description>
+
+    <Parameters>
+      <InputSocket name="input" pipe="data" text="Input"
+                   description="Detection head output. One axis holds the box values followed by the class scores; the other axis holds the individual detections." />
+
+      <!-- Fixed layout assumptions: a [features, detections] tensor whose
+           feature axis starts with x, y, w, h. Not exposed in the UI. -->
+      <Expression name="axis" value="1" description="Axis holding the box values and class scores." />
+      <Expression name="box_count" value="4" description="Leading values on the feature axis that pass through unchanged." />
+      <Expression name="box_labels" value="'x,y,w,h'" description="Labels for the leading box values." />
+
+      <ShapeOption name="class_indices" text="Class indices" default="[4]"
+                   description="Indices on the feature axis of the classes to keep, in the order they should appear on the output. The four box values occupy indices 0 to 3, so the first class the model was trained on sits at 4, the second at 5, and so on. Example: [4,6] keeps the first and third class. Duplicates are allowed, at most 16 entries." />
+
+      <Int32Option name="label_source" text="Class labels" default="1"
+                   description="Where the output class labels come from. 'From input' reads them off the incoming tensor, which needs the model or an upstream Labels unit to already name its classes. 'Custom' lets you type them instead. 'None' leaves the output unlabeled, which is the right choice when a downstream Labels unit names the classes.">
+        <OneOf>
+          <Item text="None">0</Item>
+          <Item text="From input">1</Item>
+          <Item text="Custom">2</Item>
+        </OneOf>
+      </Int32Option>
+
+      <StringOption name="class_names" text="Custom class names" default="class_a"
+                    description="Comma separated names for the selected classes, in the same order as Class indices. Only used when Class labels is set to Custom." />
+
+      <StringOption name="output_type" text="Output Type" default="same"
+                    description="Data type of the output. 'Same as input' is a pure copy and preserves quantization metadata. The conversions use the same [0,1] range mapping as the Cast unit.">
+        <OneOf>
+          <Item text="Same as input">same</Item>
+          <Item text="Float 32-bit">float32</Item>
+          <Item text="Signed Integer 8-bit">int8</Item>
+        </OneOf>
+      </StringOption>
+
+      <!-- Flat-array decomposition of the feature axis. -->
+      <Expression name="step" value="input.shape.step(axis)" description="Stride between adjacent entries along the feature axis." />
+      <Expression name="size" value="input.shape.size(axis)" description="Size of the feature axis: box values plus class scores." />
+      <Expression name="slot" value="input.shape.slot(axis)" description="Number of independent slices along the feature axis." />
+      <Expression name="class_count" value="size - box_count" description="Number of class scores available on the input." />
+      <Expression name="selected_count" value="class_indices.count" description="Number of selected classes." />
+      <Expression name="out_size" value="box_count + selected_count" description="Size of the feature axis on the output." />
+
+      <!-- Divisors kept at or above 1 so the guarded expressions below stay
+           safe even while the contracts are being violated. -->
+      <Expression name="count_mod" value="Math.max(selected_count, 1)" description="Selected class count, floored at 1." />
+      <Expression name="size_mod" value="Math.max(size, 1)" description="Feature axis size, floored at 1." />
+
+      <!-- Shape dimensions are enumerated right to left, so entry k of the
+           list the user sees is size(selected_count - 1 - k). Unused slots
+           fall back to box_count, which is always a valid row. -->
+      <Expression name="c0" value="selected_count &gt; 0 ? class_indices.size((selected_count - 1) % count_mod) : box_count" />
+      <Expression name="c1" value="selected_count &gt; 1 ? class_indices.size((selected_count - 2) % count_mod) : box_count" />
+      <Expression name="c2" value="selected_count &gt; 2 ? class_indices.size((selected_count - 3) % count_mod) : box_count" />
+      <Expression name="c3" value="selected_count &gt; 3 ? class_indices.size((selected_count - 4) % count_mod) : box_count" />
+      <Expression name="c4" value="selected_count &gt; 4 ? class_indices.size((selected_count - 5) % count_mod) : box_count" />
+      <Expression name="c5" value="selected_count &gt; 5 ? class_indices.size((selected_count - 6) % count_mod) : box_count" />
+      <Expression name="c6" value="selected_count &gt; 6 ? class_indices.size((selected_count - 7) % count_mod) : box_count" />
+      <Expression name="c7" value="selected_count &gt; 7 ? class_indices.size((selected_count - 8) % count_mod) : box_count" />
+      <Expression name="c8" value="selected_count &gt; 8 ? class_indices.size((selected_count - 9) % count_mod) : box_count" />
+      <Expression name="c9" value="selected_count &gt; 9 ? class_indices.size((selected_count - 10) % count_mod) : box_count" />
+      <Expression name="c10" value="selected_count &gt; 10 ? class_indices.size((selected_count - 11) % count_mod) : box_count" />
+      <Expression name="c11" value="selected_count &gt; 11 ? class_indices.size((selected_count - 12) % count_mod) : box_count" />
+      <Expression name="c12" value="selected_count &gt; 12 ? class_indices.size((selected_count - 13) % count_mod) : box_count" />
+      <Expression name="c13" value="selected_count &gt; 13 ? class_indices.size((selected_count - 14) % count_mod) : box_count" />
+      <Expression name="c14" value="selected_count &gt; 14 ? class_indices.size((selected_count - 15) % count_mod) : box_count" />
+      <Expression name="c15" value="selected_count &gt; 15 ? class_indices.size((selected_count - 16) % count_mod) : box_count" />
+
+      <!-- Label lookup, one entry per selected class, using the same getLabels
+           call the Display Bounding Box unit uses to read names off its input.
+           getLabels only slices contiguously, so a non-contiguous selection
+           has to be assembled an entry at a time. Each step carries the
+           previous list forward unchanged rather than contributing an empty
+           string, because the expression tokenizer rejects an empty string
+           literal outright. A
+           shape always has at least one dimension, so acc0 is always valid. -->
+      <Expression name="acc0" value="input.shape.getLabels(axis, c0 % size_mod, 1)" />
+      <Expression name="acc1" value="selected_count &gt; 1 ? acc0 + ',' + input.shape.getLabels(axis, c1 % size_mod, 1) : acc0" />
+      <Expression name="acc2" value="selected_count &gt; 2 ? acc1 + ',' + input.shape.getLabels(axis, c2 % size_mod, 1) : acc1" />
+      <Expression name="acc3" value="selected_count &gt; 3 ? acc2 + ',' + input.shape.getLabels(axis, c3 % size_mod, 1) : acc2" />
+      <Expression name="acc4" value="selected_count &gt; 4 ? acc3 + ',' + input.shape.getLabels(axis, c4 % size_mod, 1) : acc3" />
+      <Expression name="acc5" value="selected_count &gt; 5 ? acc4 + ',' + input.shape.getLabels(axis, c5 % size_mod, 1) : acc4" />
+      <Expression name="acc6" value="selected_count &gt; 6 ? acc5 + ',' + input.shape.getLabels(axis, c6 % size_mod, 1) : acc5" />
+      <Expression name="acc7" value="selected_count &gt; 7 ? acc6 + ',' + input.shape.getLabels(axis, c7 % size_mod, 1) : acc6" />
+      <Expression name="acc8" value="selected_count &gt; 8 ? acc7 + ',' + input.shape.getLabels(axis, c8 % size_mod, 1) : acc7" />
+      <Expression name="acc9" value="selected_count &gt; 9 ? acc8 + ',' + input.shape.getLabels(axis, c9 % size_mod, 1) : acc8" />
+      <Expression name="acc10" value="selected_count &gt; 10 ? acc9 + ',' + input.shape.getLabels(axis, c10 % size_mod, 1) : acc9" />
+      <Expression name="acc11" value="selected_count &gt; 11 ? acc10 + ',' + input.shape.getLabels(axis, c11 % size_mod, 1) : acc10" />
+      <Expression name="acc12" value="selected_count &gt; 12 ? acc11 + ',' + input.shape.getLabels(axis, c12 % size_mod, 1) : acc11" />
+      <Expression name="acc13" value="selected_count &gt; 13 ? acc12 + ',' + input.shape.getLabels(axis, c13 % size_mod, 1) : acc12" />
+      <Expression name="acc14" value="selected_count &gt; 14 ? acc13 + ',' + input.shape.getLabels(axis, c14 % size_mod, 1) : acc13" />
+      <Expression name="acc15" value="selected_count &gt; 15 ? acc14 + ',' + input.shape.getLabels(axis, c15 % size_mod, 1) : acc14" />
+
+      <Expression name="input_class_labels" value="acc15"
+                  description="Labels the input carries for the selected classes, in the selected order." />
+      <Expression name="class_labels" value="label_source == 2 ? class_names : input_class_labels" description="Class labels written to the output." />
+      <Expression name="output_labels" value="box_labels + ',' + class_labels" description="Full label list for the output feature axis." />
+
+      <Expression name="output_shape" value="input.shape.replace(axis, out_size)" description="Output shape: input shape with the feature axis shrunk to the kept entries." />
+      <Expression name="final_shape" value="label_source == 0 ? output_shape : output_shape.withLabels(axis, output_labels)" description="Output shape, carrying the class labels unless labelling was switched off." />
+
+      <!-- Output type, and the quantization metadata that goes with it. -->
+      <Expression name="converted_type" value="System.parseType(output_type)" conditional="output_type != 'same'" description="Requested output type when a conversion was selected." />
+      <Expression name="same_type" value="converted_type == null" description="Whether the output keeps the input type." />
+      <Expression name="out_shift" value="same_type ? input.shift : 0" description="Q-format shift carried to the output." />
+      <Expression name="out_scale" value="same_type ? input.scale : 1.0" description="D-format scale carried to the output." />
+      <Expression name="out_offset" value="same_type ? input.offset : 0" description="D-format offset carried to the output." />
+
+      <Handle name="index_table" size="out_size * 2" text="Row index table"
+              description="One int16 row index per output entry, built once during initialisation." />
+
+      <OutputSocket name="output" pipe="data" text="Output"
+                    type="same_type ? input.type : converted_type"
+                    shape="final_shape"
+                    shift="out_shift" scale="out_scale" offset="out_offset"
+                    description="The four box values followed by the selected class scores, with the feature axis shrunk to 4 + the number of selected classes." />
+    </Parameters>
+
+    <Contracts>
+      <Assert test="axis &lt; input.shape.count"
+              error="Input must have at least {axis + 1} dimensions but has {input.shape.count}. This unit expects a [features, detections] tensor." />
+      <Assert test="box_count &lt; size"
+              error="The feature axis is only {size} long, which leaves no class scores after the {box_count} box values. Check that the input is a [features, detections] tensor and not the transpose." />
+      <Assert test="selected_count &lt;= 16"
+              error="At most 16 classes can be selected, but Class indices has {selected_count} entries." />
+      <Assert test="c0 &lt; size &amp;&amp; c1 &lt; size &amp;&amp; c2 &lt; size &amp;&amp; c3 &lt; size &amp;&amp; c4 &lt; size &amp;&amp; c5 &lt; size &amp;&amp; c6 &lt; size &amp;&amp; c7 &lt; size &amp;&amp; c8 &lt; size &amp;&amp; c9 &lt; size &amp;&amp; c10 &lt; size &amp;&amp; c11 &lt; size &amp;&amp; c12 &lt; size &amp;&amp; c13 &lt; size &amp;&amp; c14 &lt; size &amp;&amp; c15 &lt; size"
+              error="A class index is past the end of the feature axis. The input exposes {class_count} classes at indices {box_count}...{size-1}: {input.shape.getLabels(axis, box_count, class_count)}" />
+      <Assert test="c0 &gt;= box_count &amp;&amp; c1 &gt;= box_count &amp;&amp; c2 &gt;= box_count &amp;&amp; c3 &gt;= box_count &amp;&amp; c4 &gt;= box_count &amp;&amp; c5 &gt;= box_count &amp;&amp; c6 &gt;= box_count &amp;&amp; c7 &gt;= box_count &amp;&amp; c8 &gt;= box_count &amp;&amp; c9 &gt;= box_count &amp;&amp; c10 &gt;= box_count &amp;&amp; c11 &gt;= box_count &amp;&amp; c12 &gt;= box_count &amp;&amp; c13 &gt;= box_count &amp;&amp; c14 &gt;= box_count &amp;&amp; c15 &gt;= box_count"
+              error="A class index points at a box value. Indices 0...{box_count-1} are x, y, w, h and are always kept, so class indices must start at {box_count}. Available classes: {input.shape.getLabels(axis, box_count, class_count)}" />
+      <Assert test="output_type == 'same' || input.type != converted_type"
+              error="Input is already {input.type}, so Output Type {output_type} would have no effect. Select 'Same as input'." />
+    </Contracts>
+
+    <Init returnStatus="true">
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_init"
+                      call="object_detection_class_select_init(index_table, box_count, size, selected_count, c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15)" />
+    </Init>
+
+    <Implementations>
+      <!-- Pass-through: the output keeps the input type, so this is a pure copy. -->
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_f32"
+                      call="object_detection_class_select_f32(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="same_type &amp;&amp; input.type == System.Float32" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i8"
+                      call="object_detection_class_select_i8(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="same_type &amp;&amp; (input.type == System.Int8 || input.type == System.Q7 || input.type == System.D8)" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i16"
+                      call="object_detection_class_select_i16(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="same_type &amp;&amp; (input.type == System.Int16 || input.type == System.Q15 || input.type == System.D16)" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i32"
+                      call="object_detection_class_select_i32(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="same_type &amp;&amp; (input.type == System.Int32 || input.type == System.Q31 || input.type == System.D32)" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_u8"
+                      call="object_detection_class_select_u8(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="same_type &amp;&amp; input.type == System.UInt8" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_u16"
+                      call="object_detection_class_select_u16(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="same_type &amp;&amp; input.type == System.UInt16" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_u32"
+                      call="object_detection_class_select_u32(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="same_type &amp;&amp; input.type == System.UInt32" />
+      </Implementation>
+
+      <!-- Gather and convert in the same pass. -->
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i8_to_f32"
+                      call="object_detection_class_select_i8_to_f32(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="output.type == System.Float32 &amp;&amp; (input.type == System.Int8 || input.type == System.Q7 || input.type == System.D8)" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i16_to_f32"
+                      call="object_detection_class_select_i16_to_f32(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="output.type == System.Float32 &amp;&amp; (input.type == System.Int16 || input.type == System.Q15 || input.type == System.D16)" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_u8_to_f32"
+                      call="object_detection_class_select_u8_to_f32(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="output.type == System.Float32 &amp;&amp; input.type == System.UInt8" />
+      </Implementation>
+      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_f32_to_i8"
+                      call="object_detection_class_select_f32_to_i8(input, index_table, step, size, slot, out_size, output)">
+        <Conditional value="output.type == System.Int8 &amp;&amp; input.type == System.Float32" />
+      </Implementation>
+    </Implementations>
+  </Unit>
+</Imaginet>
