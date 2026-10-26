@@ -4,13 +4,23 @@
 		<DisplayName>Resample</DisplayName>
 		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
 
+		<Tags>
+			<ContextPushData/>
+		</Tags>
+
 		<Description>
 			<Header>Description</Header>
 			Convert a signal from one sample rate to another using nearest-neighbor or linear interpolation.
 
-			This unit resamples an incoming signal to a target sample rate by maintaining a small state buffer containing the most recently seen sample. For upsampling, each input sample is held or interpolated across the required number of output steps. For downsampling, one output sample is emitted per group of input samples, either by selecting the center sample (nearest) or averaging adjacent samples (linear). The resampling ratio is computed at compile time from the configured sample rates.
+			The unit places output samples at times k / Target Sample Rate, counted from the first input sample, and computes each one from the two input samples that surround that time. Linear mode interpolates between the two; Nearest mode takes the closer one, and the earlier one when both are equally close. The first output sample equals the first input sample and the unit adds no delay.
 
-			Supports float32 and int8 data types.
+			Any pair of rates works, including non-integer ratios such as 100 Hz to 250 Hz. The ratio is tracked as an exact fraction, so the output rate does not drift. Each input sample may produce zero, one or several output samples, so the output is a new time domain at the target rate.
+
+			Downsampling does not low-pass filter the signal. Content above half the target rate aliases into the output, so filter the signal before the Resample unit when that matters.
+
+			Supports float32 and int8 data types. Linear interpolation of int8 data rounds to the nearest integer.
+
+			When the input carries timestamps, each output sample is stamped with the range of timestamps of the input samples it was computed from.
 
 			<Header>Usage</Header>
 			Use the Resample unit to align signals that are acquired at different sample rates before combining them, or to reduce the sample rate of a signal prior to feature extraction.
@@ -20,26 +30,38 @@
 			<InputSocket
 			  name="input"
 			  text="Input"
-			  description="Input signal to resample. Can be any shape. Supports float32 and int8 data types." />
+			  description="Input signal to resample. Each input tensor is one sample; all of its elements are resampled together. Supports float32 and int8 data types." />
+
+			<InputSocket
+			  name="time_input"
+			  timestamps="yes"
+			  text="Time Input"
+			  description="Optional timestamps of the input signal. When provided, the output is timestamped too." />
 
 			<DoubleOption
 			  name="target_sample_rate"
 			  text="Target Sample Rate"
 			  description="Desired output sample rate in Hz. Values greater than the input rate produce upsampled output; values less than the input rate produce downsampled output." />
 
-			<Int32Option name="sampling_mode" ui="textbox" text="Interpolation Mode" description="Algorithm used to compute output samples. Linear interpolates between adjacent input samples for a smoother result. Nearest selects the closest input sample." default="0">
+			<Int32Option name="sampling_mode" ui="textbox" text="Interpolation Mode" description="Algorithm used to compute output samples. Linear interpolates between the two surrounding input samples for a smoother result. Nearest selects the closer input sample." default="0">
 				<OneOf>
 					<Item text="Linear">0</Item>
 					<Item text="Nearest">1</Item>
 				</OneOf>
 			</Int32Option>
 
-			<Expression name="count" value="input.shape.flat" description="Total number of elements in each input chunk (computed from flattened shape)." />
-			<Expression name="incoming_sample_rate" value="input.rate" description="Sample rate (Hz) of the input signal, automatically extracted from input tensor metadata." />
-			<Expression name="output_samples_per_input" value="target_sample_rate / input.rate" description="Number of output samples produced per input sample (upsample ratio). Greater than 1 for upsampling." />
-			<Expression name="input_samples_per_output" value="Math.round(input.rate / target_sample_rate)" description="Number of input samples consumed per output sample (downsample ratio, rounded to nearest integer)." />
+			<Expression name="count" value="input.shape.flat" description="Total number of elements in each input sample (computed from flattened shape)." />
+			<Expression name="sample_bytes" value="count * input.type.size" description="Size of one input sample in bytes." />
 
-			<Handle name="state_ptr" size="4 + count * input.type.size" description="Internal state buffer holding the cycle counter and the most recent input sample (count * input.type.size bytes)." />
+			<Expression name="rate_scale" value="(Math.abs(input.rate - Math.round(input.rate)) &lt; 0.000001 &amp;&amp; Math.abs(target_sample_rate - Math.round(target_sample_rate)) &lt; 0.000001) ? 1 : 1000" description="Factor that turns both rates into integers: 1 for whole-number rates, otherwise 1000 (three decimals)." />
+			<Expression name="ticks_per_output" value="Math.round(input.rate * rate_scale)" description="Time advanced between two output samples, in ticks. Together with ticks_per_input this is the exact ratio of the two rates." />
+			<Expression name="ticks_per_input" value="Math.round(target_sample_rate * rate_scale)" description="Time advanced between two input samples, in ticks." />
+
+			<Expression name="timestamp_count" value="time_input == null ? 0 : time_input.shape.flat" description="Number of timestamps in the input, or 0 if timestamps are not provided." />
+
+			<Expression name="state_header_bytes" value="36" description="Size of the resample_t state structure in bytes." />
+
+			<Handle name="state_ptr" size="state_header_bytes + 2 * sample_bytes" description="Internal state: the phase of the next output sample and the two most recent input samples with their timestamps." />
 
 			<OutputSocket
 			  name="output"
@@ -48,77 +70,69 @@
 			  shape="input.shape"
 			  text="Output"
 			  description="Resampled output signal at the target sample rate. Has the same shape and data type as the input." />
+
+			<OutputSocket
+			  name="time_output"
+			  type="System.Float32"
+			  shape="System.Shape(2)"
+			  timestamps="yes"
+			  text="Time Output"
+			  conditional="time_input != null"
+			  description="Timestamp range [start_time, end_time] of the input samples each output sample was computed from. Only produced when time_input is provided." />
 		</Parameters>
-		
+
 		<Contracts>
 			<Assert
 			  test="input.type == System.Float32 || input.type == System.Int8"
 			  error="Input must be Float32 or Int8, but it's {input.type}. Add a Cast unit before this one to convert it." />
+			<Assert
+			  test="target_sample_rate &gt; 0"
+			  error="Target Sample Rate ({target_sample_rate}) must be greater than 0. Enter the output sample rate in Hz." />
+			<Assert
+			  test="input.rate &gt; 0"
+			  error="The input to Resample has no sample rate. Set a sample rate on the input signal." />
+			<Assert
+			  test="ticks_per_output &lt; 1000000000 &amp;&amp; ticks_per_input &lt; 1000000000"
+			  error="The input rate ({input.rate} Hz) and Target Sample Rate ({target_sample_rate} Hz) are too large or have too many decimals to resample between. Use whole-number rates below 1 GHz, or rates below 1 MHz with at most three decimals." />
 		</Contracts>
 
-		<Init returnStatus="true">
-			<!-- Linear float32 -->
-			<Implementation language="C" fragment="linear_state.h:linear_init_f32" call="linear_init_f32(count, state_ptr)">
+		<Init>
+			<Implementation language="C" fragment="resample.h:resample_init" call="resample_init(state_ptr, sample_bytes, ticks_per_input, ticks_per_output)" />
+		</Init>
+
+		<SoftReset>
+			<Implementation language="C" fragment="resample.h:resample_init" call="resample_init(state_ptr, sample_bytes, ticks_per_input, ticks_per_output)" />
+		</SoftReset>
+
+		<Enqueue returnStatus="true">
+			<Implementation language="C" fragment="resample.h:resample_enqueue" call="resample_enqueue(state_ptr, input, time_input, timestamp_count)" />
+		</Enqueue>
+
+		<Dequeue>
+			<Implementation language="C" fragment="linear.h:resample_dequeue_linear_f32" call="resample_dequeue_linear_f32(state_ptr, output, count, time_output)">
 				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0" />
 			</Implementation>
 
-			<!-- Nearest float32 -->
-			<Implementation language="C" fragment="nearest_state.h:nearest_init_f32" call="nearest_init_f32(count, state_ptr)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1" />
-			</Implementation>
-
-			<!-- Linear int8 -->
-			<Implementation language="C" fragment="linear_state.h:linear_init_i8" call="linear_init_i8(count, state_ptr)">
+			<Implementation language="C" fragment="linear.h:resample_dequeue_linear_i8" call="resample_dequeue_linear_i8(state_ptr, output, count, time_output)">
 				<Conditional value="input.type == System.Int8 &amp;&amp; sampling_mode == 0" />
 			</Implementation>
 
-			<!-- Nearest int8 -->
-			<Implementation language="C" fragment="nearest_state.h:nearest_init_i8" call="nearest_init_i8(count, state_ptr)">
+			<Implementation language="C" fragment="nearest.h:resample_dequeue_nearest_f32" call="resample_dequeue_nearest_f32(state_ptr, output, count, time_output)">
+				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1" />
+			</Implementation>
+
+			<Implementation language="C" fragment="nearest.h:resample_dequeue_nearest_i8" call="resample_dequeue_nearest_i8(state_ptr, output, count, time_output)">
 				<Conditional value="input.type == System.Int8 &amp;&amp; sampling_mode == 1" />
 			</Implementation>
-		</Init>
-		
-		<Implementations>
-			<!-- Linear upsample float32 -->
-			<Implementation language="C" fragment="linear_upsample.h:linear_upsample_f32" call="linear_upsample_f32(input, output, count, state_ptr, output_samples_per_input)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0 &amp;&amp; output_samples_per_input >= 1"/>
-			</Implementation>
+		</Dequeue>
 
-			<!-- Linear downsample float32 -->
-			<Implementation language="C" fragment="linear_downsample.h:linear_downsample_f32" call="linear_downsample_f32(input, output, count, state_ptr, input_samples_per_output)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 0 &amp;&amp; output_samples_per_input &lt; 1"/>
-			</Implementation>
+		<CanEnqueue>
+			<Implementation language="C" fragment="resample.h:resample_can_enqueue" call="resample_can_enqueue(state_ptr)" />
+		</CanEnqueue>
 
-			<!-- Nearest upsample float32 -->
-			<Implementation language="C" fragment="nearest_upsample.h:nearest_upsample_f32" call="nearest_upsample_f32(input, output, count, state_ptr, output_samples_per_input)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input >= 1"/>
-			</Implementation>
-
-			<!-- Nearest downsample float32 -->
-			<Implementation language="C" fragment="nearest_downsample.h:nearest_downsample_f32" call="nearest_downsample_f32(input, output, count, state_ptr, input_samples_per_output)">
-				<Conditional value="input.type == System.Float32 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input &lt; 1"/>
-			</Implementation>
-
-			<!-- Linear upsample int8 -->
-			<Implementation language="C" fragment="linear_upsample.h:linear_upsample_i8" call="linear_upsample_i8(input, output, count, state_ptr, output_samples_per_input)">
-				<Conditional value="input.type == System.Int8 &amp;&amp; sampling_mode == 0 &amp;&amp; output_samples_per_input >= 1"/>
-			</Implementation>
-
-			<!-- Linear downsample int8 -->
-			<Implementation language="C" fragment="linear_downsample.h:linear_downsample_i8" call="linear_downsample_i8(input, output, count, state_ptr, input_samples_per_output)">
-				<Conditional value="input.type == System.Int8 &amp;&amp; sampling_mode == 0 &amp;&amp; output_samples_per_input &lt; 1"/>
-			</Implementation>
-
-			<!-- Nearest upsample int8 -->
-			<Implementation language="C" fragment="nearest_upsample.h:nearest_upsample_i8" call="nearest_upsample_i8(input, output, count, state_ptr, output_samples_per_input)">
-				<Conditional value="input.type == System.Int8 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input >= 1"/>
-			</Implementation>
-
-			<!-- Nearest downsample int8 -->
-			<Implementation language="C" fragment="nearest_downsample.h:nearest_downsample_i8" call="nearest_downsample_i8(input, output, count, state_ptr, input_samples_per_output)">
-				<Conditional value="input.type == System.Int8 &amp;&amp; sampling_mode == 1 &amp;&amp; output_samples_per_input &lt; 1"/>
-			</Implementation>
-		</Implementations>
+		<CanDequeue>
+			<Implementation language="C" fragment="resample.h:resample_can_dequeue" call="resample_can_dequeue(state_ptr)" />
+		</CanDequeue>
 
 	</Unit>
 
