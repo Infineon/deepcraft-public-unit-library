@@ -6,25 +6,19 @@
 
     <Description>
       <Header>Description</Header>
-      Keep only the wanted classes from an object detection head, in one pass.
+      Keep only the selected classes from an object detection head, in a single pass.
 
-      A detection head lays its feature axis out as [x, y, w, h][class scores] — four box values followed by one score per class. This unit passes the box values through unchanged and keeps just the class scores you list, discarding the rest. It replaces a chain of Select units followed by Concatenate units, and unlike that chain it never materialises the intermediate tensors: every output element is written exactly once.
+      The input is a detection head with the four box values (x, y, w, h) followed by one score per class on its smaller axis, in either [features, detections] or [detections, features] layout. The box values are passed through unchanged, and only the class scores listed in Class indices are kept, in the order given. Replaces a chain of Select and Concatenate units.
 
-      Classes are addressed by their index on the feature axis, the same numbering the Select unit uses. The four box values occupy indices 0 to 3, so the first class the model was trained on sits at index 4, the second at 5, and so on — a model with three classes exposes them at 4, 5 and 6 exactly as an eighty class model exposes its first three. The order you list them in is the order they appear on the output.
-
-      The input must be a [features, detections] or [detections, features] tensor whose feature axis begins with the four box values x, y, w, h. As in Bounding Box Filter, the feature axis is the smaller of the two dimensions. Heads with an extra objectness score are not supported.
-
-      Class names are read off the incoming tensor by default. Whatever labels the input carries for the classes you select are carried over to the output, so a downstream Bounding Box Filter and Display Bounding Box see the right names without a Labels unit in between. This needs the model output to be labelled already, by the model itself or by an upstream Labels unit; if it isn't, switch Class labels to None.
-
-      Supports float32, int8, int16, int32, uint8, uint16 and uint32, as well as the fixed-point types Q7/Q15/Q31 and D8/D16/D32. Quantization metadata is carried through unchanged, so this unit can sit directly on a quantized model output with the Dequantize unit after it, which is considerably cheaper than dequantizing every class first.
+      Supports all numeric data types, including the Q and D fixed-point types. Quantization metadata is passed through, so the unit can be placed before Dequantize. Heads with an extra objectness score are not supported.
 
       <Header>Usage</Header>
-      Place between a detection model (or its Dequantize unit) and the Bounding Box Filter. Set Class indices to the classes you want, for example [4,6] to keep the first and third class.
+      Place between a detection model (or its Dequantize unit) and Bounding Box Filter. Classes are addressed by their index on the feature axis, so the first class is at index 4, the second at 5, and so on. For example, [4,6] keeps the first and third class.
     </Description>
 
     <Parameters>
       <InputSocket name="input" pipe="data" text="Input"
-                   description="Detection head output. One axis holds the box values followed by the class scores; the other axis holds the individual detections." />
+                   description="Detection head output with the box values followed by the class scores on one axis and the detections on the other." />
 
       <!-- Same detection/feature axis rule as Bounding Box Filter, so both agree on the layout. -->
       <Expression name="axis" value="input.shape.count &lt; 2 ? 0 : (input.shape.size(0) &gt;= input.shape.size(1) ? 1 : 0)" description="Axis holding the box values and class scores: the smaller of the two leading dimensions." />
@@ -32,10 +26,10 @@
       <Expression name="box_labels" value="'x,y,w,h'" description="Labels for the leading box values." />
 
       <ShapeOption name="class_indices" text="Class indices" default="[4]"
-                   description="Indices on the feature axis of the classes to keep, in the order they should appear on the output. The four box values occupy indices 0 to 3, so the first class the model was trained on sits at 4, the second at 5, and so on. Example: [4,6] keeps the first and third class. Duplicates are allowed, at most 16 entries." />
+                   description="Feature axis indices of the classes to keep, in output order. Indices 0 to 3 are the box values, so the first class is at 4. Example: [4,6] keeps the first and third class. At most 16 entries." />
 
       <Int32Option name="label_source" text="Class labels" default="1"
-                   description="Where the output class labels come from. 'From input' reads them off the incoming tensor, which needs the model or an upstream Labels unit to already name its classes. 'None' leaves the output unlabeled, which is the right choice when a downstream Labels unit names the classes.">
+                   description="Whether the output carries the class labels of the input. Use None if the input has no labels, for example when a Labels unit follows.">
         <OneOf>
           <Item text="None">0</Item>
           <Item text="From input">1</Item>
@@ -114,7 +108,7 @@
                     type="input.type"
                     shape="final_shape"
                     shift="input.shift" scale="input.scale" offset="input.offset"
-                    description="The four box values followed by the selected class scores, with the feature axis shrunk to 4 + the number of selected classes." />
+                    description="The four box values followed by the selected class scores." />
     </Parameters>
 
     <Contracts>
