@@ -82,72 +82,53 @@ static inline void object_detection_class_select_rows(const void *restrict input
 
 #pragma IMAGINET_FRAGMENT_END
 
-#pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_lanes"
-
-// Same gather as object_detection_class_select_rows, but for layouts where the
-// feature axis is innermost (step == 1). A row is then a single element, so
-// memcpy would degenerate into one call per element.
-static inline void object_detection_class_select_lanes(const void *restrict input,
-                                                const void *restrict index_table,
-                                                int size, int slot, int out_size,
-                                                int elem_size, void *restrict output)
-{
-	const int16_t *idx = (const int16_t *)index_table;
-	const uint8_t *in = (const uint8_t *)input;
-	uint8_t *out = (uint8_t *)output;
-
-	switch (elem_size) {
-	case 1:
-		for (int j = 0; j < slot; j++) {
-			const int8_t *ip = (const int8_t *)in + j * size;
-			int8_t *op = (int8_t *)out + j * out_size;
-			for (int k = 0; k < out_size; k++)
-				op[k] = ip[idx[k]];
-		}
-		break;
-	default:
-		for (int j = 0; j < slot; j++) {
-			const int32_t *ip = (const int32_t *)in + j * size;
-			int32_t *op = (int32_t *)out + j * out_size;
-			for (int k = 0; k < out_size; k++)
-				op[k] = ip[idx[k]];
-		}
-		break;
-	}
-}
-
-#pragma IMAGINET_FRAGMENT_END
-
 #pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_f32"
 #pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_rows"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_lanes"
 
 static inline void object_detection_class_select_f32(const float *restrict input,
                                               const void *restrict index_table,
                                               int step, int size, int slot, int out_size,
                                               float *restrict output)
 {
-	if (step == 1)
-		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 4, output);
-	else
-		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 4, output);
+// A row is a single element when the feature axis is innermost, so memcpy per row would be slower.
+if (step == 1) {
+const int16_t *idx = (const int16_t *)index_table;
+
+for (int j = 0; j < slot; j++) {
+const float *ip = input + j * size;
+float *op = output + j * out_size;
+
+for (int k = 0; k < out_size; k++)
+op[k] = ip[idx[k]];
+}
+} else {
+object_detection_class_select_rows(input, index_table, step, size, slot, out_size, sizeof(float), output);
+}
 }
 
 #pragma IMAGINET_FRAGMENT_END
 
 #pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_i8"
 #pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_rows"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_lanes"
 
 static inline void object_detection_class_select_i8(const int8_t *restrict input,
                                              const void *restrict index_table,
                                              int step, int size, int slot, int out_size,
                                              int8_t *restrict output)
 {
-	if (step == 1)
-		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 1, output);
-	else
-		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 1, output);
+if (step == 1) {
+const int16_t *idx = (const int16_t *)index_table;
+
+for (int j = 0; j < slot; j++) {
+const int8_t *ip = input + j * size;
+int8_t *op = output + j * out_size;
+
+for (int k = 0; k < out_size; k++)
+op[k] = ip[idx[k]];
+}
+} else {
+object_detection_class_select_rows(input, index_table, step, size, slot, out_size, sizeof(int8_t), output);
+}
 }
 
 #pragma IMAGINET_FRAGMENT_END
