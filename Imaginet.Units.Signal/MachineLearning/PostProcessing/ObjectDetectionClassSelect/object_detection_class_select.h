@@ -105,14 +105,6 @@ static inline void object_detection_class_select_lanes(const void *restrict inpu
 				op[k] = ip[idx[k]];
 		}
 		break;
-	case 2:
-		for (int j = 0; j < slot; j++) {
-			const int16_t *ip = (const int16_t *)in + j * size;
-			int16_t *op = (int16_t *)out + j * out_size;
-			for (int k = 0; k < out_size; k++)
-				op[k] = ip[idx[k]];
-		}
-		break;
 	default:
 		for (int j = 0; j < slot; j++) {
 			const int32_t *ip = (const int32_t *)in + j * size;
@@ -156,91 +148,6 @@ static inline void object_detection_class_select_i8(const int8_t *restrict input
 		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 1, output);
 	else
 		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 1, output);
-}
-
-#pragma IMAGINET_FRAGMENT_END
-
-#pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_i16"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_rows"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_lanes"
-
-static inline void object_detection_class_select_i16(const int16_t *restrict input,
-                                              const void *restrict index_table,
-                                              int step, int size, int slot, int out_size,
-                                              int16_t *restrict output)
-{
-	if (step == 1)
-		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 2, output);
-	else
-		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 2, output);
-}
-
-#pragma IMAGINET_FRAGMENT_END
-
-#pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_i32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_rows"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_lanes"
-
-static inline void object_detection_class_select_i32(const int32_t *restrict input,
-                                              const void *restrict index_table,
-                                              int step, int size, int slot, int out_size,
-                                              int32_t *restrict output)
-{
-	if (step == 1)
-		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 4, output);
-	else
-		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 4, output);
-}
-
-#pragma IMAGINET_FRAGMENT_END
-
-#pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_u8"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_rows"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_lanes"
-
-static inline void object_detection_class_select_u8(const uint8_t *restrict input,
-                                             const void *restrict index_table,
-                                             int step, int size, int slot, int out_size,
-                                             uint8_t *restrict output)
-{
-	if (step == 1)
-		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 1, output);
-	else
-		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 1, output);
-}
-
-#pragma IMAGINET_FRAGMENT_END
-
-#pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_u16"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_rows"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_lanes"
-
-static inline void object_detection_class_select_u16(const uint16_t *restrict input,
-                                              const void *restrict index_table,
-                                              int step, int size, int slot, int out_size,
-                                              uint16_t *restrict output)
-{
-	if (step == 1)
-		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 2, output);
-	else
-		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 2, output);
-}
-
-#pragma IMAGINET_FRAGMENT_END
-
-#pragma IMAGINET_FRAGMENT_BEGIN "object_detection_class_select_u32"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_rows"
-#pragma IMAGINET_FRAGMENT_DEPENDENCY "object_detection_class_select_lanes"
-
-static inline void object_detection_class_select_u32(const uint32_t *restrict input,
-                                              const void *restrict index_table,
-                                              int step, int size, int slot, int out_size,
-                                              uint32_t *restrict output)
-{
-	if (step == 1)
-		object_detection_class_select_lanes(input, index_table, size, slot, out_size, 4, output);
-	else
-		object_detection_class_select_rows(input, index_table, step, size, slot, out_size, 4, output);
 }
 
 #pragma IMAGINET_FRAGMENT_END

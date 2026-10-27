@@ -10,7 +10,7 @@
 
       The input is a detection head with the four box values (x, y, w, h) followed by one score per class on its smaller axis, in either [features, detections] or [detections, features] layout. The box values are passed through unchanged, and only the class scores listed in Class indices are kept, in the order given. Replaces a chain of Select and Concatenate units.
 
-      Supports all numeric data types, including the Q and D fixed-point types. Quantization metadata is passed through, so the unit can be placed before Dequantize. Heads with an extra objectness score are not supported.
+      Supports float32 and int8 (including the Q7 and D8 fixed-point forms). Quantization metadata is passed through, so the unit can be placed before Dequantize. Heads with an extra objectness score are not supported.
 
       <Header>Usage</Header>
       Place between a detection model (or its Dequantize unit) and Bounding Box Filter. Classes are addressed by their index on the feature axis, so the first class is at index 4, the second at 5, and so on. For example, [4,6] keeps the first and third class.
@@ -112,6 +112,8 @@
     </Parameters>
 
     <Contracts>
+      <Assert test="input.type == System.Float32 || input.type == System.Int8 || input.type == System.Q7 || input.type == System.D8"
+              error="Input must be Float32, Int8, Q7 or D8, but it's {input.type}. Add a Cast unit before this one to convert it." />
       <Assert test="input.shape.count &gt;= 2"
               error="Input must have at least 2 dimensions but has {input.shape.count}. This unit expects a detection head with one axis for the box values and class scores and one axis for the detections." />
       <Assert test="box_count &lt; size"
@@ -138,26 +140,6 @@
       <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i8"
                       call="object_detection_class_select_i8(input, index_table, step, size, slot, out_size, output)">
         <Conditional value="input.type == System.Int8 || input.type == System.Q7 || input.type == System.D8" />
-      </Implementation>
-      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i16"
-                      call="object_detection_class_select_i16(input, index_table, step, size, slot, out_size, output)">
-        <Conditional value="input.type == System.Int16 || input.type == System.Q15 || input.type == System.D16" />
-      </Implementation>
-      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_i32"
-                      call="object_detection_class_select_i32(input, index_table, step, size, slot, out_size, output)">
-        <Conditional value="input.type == System.Int32 || input.type == System.Q31 || input.type == System.D32" />
-      </Implementation>
-      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_u8"
-                      call="object_detection_class_select_u8(input, index_table, step, size, slot, out_size, output)">
-        <Conditional value="input.type == System.UInt8" />
-      </Implementation>
-      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_u16"
-                      call="object_detection_class_select_u16(input, index_table, step, size, slot, out_size, output)">
-        <Conditional value="input.type == System.UInt16" />
-      </Implementation>
-      <Implementation language="C" fragment="object_detection_class_select.h:object_detection_class_select_u32"
-                      call="object_detection_class_select_u32(input, index_table, step, size, slot, out_size, output)">
-        <Conditional value="input.type == System.UInt32" />
       </Implementation>
     </Implementations>
   </Unit>
