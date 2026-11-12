@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Imaginet version="2.0.0.0">
+	<Compound unit="Imaginet.Units.Signal.SensorFusion">
+		<DisplayName>Sensor Fusion</DisplayName>
+		<DisplayPath>/Signal Processing/Time Domain</DisplayPath>
+		<Description>
+			<Header>Description</Header>
+			Combine two sensor signals that are sampled at different rates into one signal, sample by sample.
+
+			Both inputs are resampled to the higher of the two input sample rates, so neither signal loses detail and no anti-aliasing filter is needed. An input that is already at that rate passes through unchanged. Interpolation Mode selects how new samples are computed: Linear interpolates between the two surrounding input samples, Nearest takes the closer one.
+
+			Each input sample is flattened to one dimension, and the output sample holds every value of Input A followed by every value of Input B. For example, an accelerometer sample of shape [3] and a gyroscope sample of shape [3] become one sample of shape [6]. Axis labels on the inputs are not carried over; add a Labels unit after this one to name the output channels.
+
+			The two signals are paired by sample count: the first resampled sample of Input A is combined with the first resampled sample of Input B, and so on. The unit assumes both sensors start recording at the same time. If one starts later, its values are offset in time from the other's by that difference. The output ends when the shorter signal ends.
+
+			Both inputs must have a sample rate and the same data type, Float32 or Int8. Timestamps are not supported.
+
+			<Header>Usage</Header>
+			Use the Sensor Fusion unit to merge sensors with different sample rates, such as an accelerometer at 100 Hz and a barometer at 20 Hz, into a single signal for a preprocessor or model.
+		</Description>
+		<Nodes>
+			<TensorInputNode id="input_a" x="-400" y="200" enabled="true" name="Input A" param="input_a">
+				<Description>First sensor signal. Its values come first in each output sample. Supports Float32 and Int8 data types.</Description>
+			</TensorInputNode>
+			<TensorInputNode id="input_b" x="-400" y="500" enabled="true" name="Input B" param="input_b">
+				<Description>Second sensor signal. Its values follow those of Input A in each output sample. Must have the same data type as Input A.</Description>
+			</TensorInputNode>
+			<Int32OptionNode id="sampling_mode" x="-400" y="800" enabled="true" name="Interpolation Mode" param="sampling_mode">
+				<Description>Algorithm used to compute resampled samples. Linear interpolates between the two surrounding input samples for a smoother result. Nearest selects the closer input sample.</Description>
+				<OneOf>
+					<Item text="Linear">0</Item>
+					<Item text="Nearest">1</Item>
+				</OneOf>
+			</Int32OptionNode>
+			<AssertNode id="validation" x="0" y="-100" enabled="true" name="Validation">
+				<Inputs>
+					<Input param="A" type="Tensor" />
+					<Input param="B" type="Tensor" />
+				</Inputs>
+				<Tests>
+					<Test assert="!(A.rate &gt; 0)" error="Input A has no sample rate, so Sensor Fusion cannot align it with Input B. Set a sample rate on the signal connected to Input A." />
+					<Test assert="!(B.rate &gt; 0)" error="Input B has no sample rate, so Sensor Fusion cannot align it with Input A. Set a sample rate on the signal connected to Input B." />
+					<Test assert="A.type != B.type" error="Input A is {A.type} but Input B is {B.type}. Both inputs to Sensor Fusion must have the same data type. Add a Cast unit before one of them." />
+					<Test assert="A.type != System.Float32 &amp;&amp; A.type != System.Int8" error="Sensor Fusion supports Float32 and Int8 inputs, but Input A is {A.type}. Add a Cast unit before it." />
+					<Test assert="B.type != System.Float32 &amp;&amp; B.type != System.Int8" error="Sensor Fusion supports Float32 and Int8 inputs, but Input B is {B.type}. Add a Cast unit before it." />
+				</Tests>
+			</AssertNode>
+			<ExpressionNode id="target_rate" x="0" y="800" enabled="true" name="Target Rate">
+				<Expression type="Real" output="Output">Math.max(A.rate, B.rate)</Expression>
+				<Input param="A" type="Tensor" />
+				<Input param="B" type="Tensor" />
+			</ExpressionNode>
+			<ExpressionNode id="flat_shape_a" x="0" y="100" enabled="true" name="Flat Shape A">
+				<Expression type="Shape" output="Output">System.Shape(Input.shape.flat)</Expression>
+				<Input param="Input" type="Tensor" />
+			</ExpressionNode>
+			<ExpressionNode id="flat_shape_b" x="0" y="400" enabled="true" name="Flat Shape B">
+				<Expression type="Shape" output="Output">System.Shape(Input.shape.flat)</Expression>
+				<Input param="Input" type="Tensor" />
+			</ExpressionNode>
+			<UnitNode id="flatten_a" x="300" y="200" enabled="true" unit="Imaginet.Units.Math.Reshape" />
+			<UnitNode id="flatten_b" x="300" y="500" enabled="true" unit="Imaginet.Units.Math.Reshape" />
+			<UnitNode id="resample_a" x="600" y="200" enabled="true" unit="Imaginet.Units.Signal.Resample" />
+			<UnitNode id="resample_b" x="600" y="500" enabled="true" unit="Imaginet.Units.Signal.Resample" />
+			<UnitNode id="concat" x="900" y="350" enabled="true" unit="Imaginet.Units.Math.Concat">
+				<Int32Argument param="axis">0</Int32Argument>
+			</UnitNode>
+			<TensorOutputNode id="output" param="output" x="1200" y="350" enabled="true" name="Output">
+				<Description>Flattened values of Input A followed by those of Input B, at the higher of the two input sample rates.</Description>
+			</TensorOutputNode>
+		</Nodes>
+		<Connections>
+			<Connection>
+				<Source node="input_a" param="value" />
+				<Target node="validation" param="A" />
+			</Connection>
+			<Connection>
+				<Source node="input_b" param="value" />
+				<Target node="validation" param="B" />
+			</Connection>
+			<Connection>
+				<Source node="input_a" param="value" />
+				<Target node="target_rate" param="A" />
+			</Connection>
+			<Connection>
+				<Source node="input_b" param="value" />
+				<Target node="target_rate" param="B" />
+			</Connection>
+			<Connection>
+				<Source node="input_a" param="value" />
+				<Target node="flat_shape_a" param="Input" />
+			</Connection>
+			<Connection>
+				<Source node="input_b" param="value" />
+				<Target node="flat_shape_b" param="Input" />
+			</Connection>
+			<Connection>
+				<Source node="input_a" param="value" />
+				<Target node="flatten_a" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="flat_shape_a" param="output" />
+				<Target node="flatten_a" param="shape" />
+			</Connection>
+			<Connection>
+				<Source node="input_b" param="value" />
+				<Target node="flatten_b" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="flat_shape_b" param="output" />
+				<Target node="flatten_b" param="shape" />
+			</Connection>
+			<Connection>
+				<Source node="flatten_a" param="output" />
+				<Target node="resample_a" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="flatten_b" param="output" />
+				<Target node="resample_b" param="input" />
+			</Connection>
+			<Connection>
+				<Source node="target_rate" param="output" />
+				<Target node="resample_a" param="target_sample_rate" />
+			</Connection>
+			<Connection>
+				<Source node="target_rate" param="output" />
+				<Target node="resample_b" param="target_sample_rate" />
+			</Connection>
+			<Connection>
+				<Source node="sampling_mode" param="value" />
+				<Target node="resample_a" param="sampling_mode" />
+			</Connection>
+			<Connection>
+				<Source node="sampling_mode" param="value" />
+				<Target node="resample_b" param="sampling_mode" />
+			</Connection>
+			<Connection>
+				<Source node="resample_a" param="output" />
+				<Target node="concat" param="i0" />
+			</Connection>
+			<Connection>
+				<Source node="resample_b" param="output" />
+				<Target node="concat" param="i1" />
+			</Connection>
+			<Connection>
+				<Source node="concat" param="output" />
+				<Target node="output" param="value" />
+			</Connection>
+		</Connections>
+	</Compound>
+</Imaginet>
